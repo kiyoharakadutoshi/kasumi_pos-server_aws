@@ -1,0 +1,33 @@
+----実際に追加作成したサービスの命名--------------------------------------------------
+「Scan＆Go中継サーバ」の略称として「sg」を使用しています（オプション）
+
+
+■Lambda
+・ksm-posspk-lmd-function-unzip-file-sg
+	Zip解凍用（Scan＆Goサーバー用）
+・ksm-posspk-lmd-function-send-file-sg
+	送信用（Scan＆Goサーバー用）
+
+■StepFunction
+・ksm-posspk-sf-unzip-file-sg
+	Zip解凍用（Scan＆Goサーバー用）
+・ksm-posspk-sf-send-file-sg
+	送信用（Scan＆Goサーバー用）
+・ksm-posspk-sf-create-pos-master-sg	
+	CreatePOSマスター（Scan＆Goサーバー用）
+
+■EventBridgeルール
+・ksm-posspk-eb-rule-unzip-file-sg
+	Zip解凍用（Scan＆Goサーバー用）
+・ksm-posspk-eb-rule-send-file-sg
+	送信用（Scan＆Goサーバー用）
+・ksm-posspk-eb-rule-create-pos-master-sg
+	CreatePOSマスター（Scan＆Goサーバー用）
+
+
+
+
+
+
+
+
