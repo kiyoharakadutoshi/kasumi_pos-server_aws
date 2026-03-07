@@ -1,0 +1,17 @@
+@import '../../styles/styles';
+
+.message-staging {
+  width: 100vw;
+  height: 250px;
+  z-index: 10000;
+  position: fixed;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  top: calc(50% - 125px);
+  font-size: 200px;
+  font-weight: $bold-weight;
+  opacity: 0.15;
+  color: red;
+  pointer-events: none;
+}

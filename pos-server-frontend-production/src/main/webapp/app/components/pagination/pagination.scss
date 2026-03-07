@@ -1,0 +1,28 @@
+@import '../../styles/styles';
+
+.wrap-pagination {
+  display: flex;
+  justify-content: space-between;
+
+  .wrap-pagination-item {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+  }
+
+  .promotion-container {
+    .promotion-main {
+      display: flex;
+      align-items: flex-start;
+      gap: 16px;
+    }
+
+    .promotion-right-bottom {
+      display: flex;
+      justify-content: flex-end;
+      gap: 8px;
+      box-sizing: border-box;
+    }
+  }
+}
+

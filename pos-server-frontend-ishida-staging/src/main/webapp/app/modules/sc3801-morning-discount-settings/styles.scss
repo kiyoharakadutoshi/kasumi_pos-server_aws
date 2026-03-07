@@ -1,0 +1,97 @@
+@import '../../styles/variable';
+@import '../../styles/mixins';
+
+.morning-discount {
+  padding-left: 24px;
+  --input-height: 45px;
+
+  .morning-discount-wapper {
+    display: flex;
+    gap: 20px;
+
+    .morning-discount-left {
+      width: calc(88% - 10px);
+      height: calc(89vh - 64px);
+      background-color: $white;
+      display: flex;
+      flex-direction: column;
+      gap: calc(0.88vh - 3px);
+      padding: 10px 10px 10px 22px;
+      border-radius: 15px;
+
+      &__item {
+        display: flex;
+       
+        .label {
+          font-weight: 500;
+          min-width: 16%;
+          height: 50px;
+          color: $blue001440;
+
+          .label-input {
+            line-height: 50px;
+            min-width: 220px;
+          }
+        }
+
+        .content {
+          display: flex;
+          width: 87%;
+          flex-wrap: wrap;
+          gap: 5px;
+          align-items: center;
+
+          .percent{
+            line-height: 50px;
+            font-weight: 500;
+            color: $blue001440;
+          }
+
+          &__exclusion {
+            display: flex;
+            gap: 8px;
+          }
+
+          .wrap-label-text {
+            width: 216px;
+          }
+
+          .input_right {
+            text-align: right;
+          }
+
+          .content__day {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-content: center;
+            font-weight: 500;
+            color: $blue001440;
+            gap: 4px;
+          }
+
+          &__discount-time {
+            --input-text-width: 100px;
+            
+            .discount-time-separation {
+              margin-top: 2px;
+              margin-left: 4px;
+              margin-right: 4px;
+              color: $blue001440;
+              font-weight: 500;
+            }
+          }
+        }
+
+        .set_day {
+          gap: 12px;
+        }
+      }
+    }
+
+    .morning-discount-right {
+      width: calc(21% - 10px);
+      flex: 0 0 auto;
+    }
+  }
+}

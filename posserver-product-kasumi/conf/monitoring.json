@@ -1,0 +1,15 @@
+{
+  "to": [
+    "tranvandat@luvina.net"
+  ],
+  "cc": [
+    "nguyenbaan2@luvina.net",
+    "nguyenthanhloc@luvina.net"
+  ],
+  "phone_number": [
+    "84858691230"
+  ],
+  "check_maxvalue": false,
+  "check_kasumi": true,
+  "check_maruetsu": true
+}

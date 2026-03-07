@@ -1,0 +1,28 @@
+{
+  "standardChange":{
+    "title": "1, 7, 8 standard changes"
+  },
+  "searchCondition":{
+    "bookingDate": "Booking date",
+    "groupCode": "Group code",
+    "productCodeSwitching": "Product code switching",
+    "pluCodeSwitching": "PLU code switching"
+  },
+  "table": {
+    "checkboxDelete": "Delete",
+    "productCode": "Product code",
+    "pluCode": "PLU code",
+    "description": "Description",
+    "unitPrice": "Unit price",
+    "currentPrice": "Current price",
+    "standardPrice": "Standard price"
+  },
+  "fieldName": {
+    "operation_type": "Operation type",
+    "store_code": "Store code",
+    "item_code": "PLU code",
+    "booking_date": "Booking Date",
+    "group_code": "Group code",
+    "new_price": "New price"
+  }
+}

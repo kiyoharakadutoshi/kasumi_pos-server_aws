@@ -1,0 +1,18 @@
+{
+  "modalCategoryProduct": {
+    "title": "Copy Title",
+    "name_search": "Search Name",
+    "warning": "There are more than 100 search results, so the first 100 are displayed.",
+    "table": {
+      "col_title": "Choice",
+      "button_choose": "Choice",
+      "col_group_product": "Group Name",
+      "col_name_product": "Product Name",
+      "col_date": "Effective Date"
+    },
+    "button": {
+      "search": "Search",
+      "cancel": "Cancel"
+    }
+  }
+}

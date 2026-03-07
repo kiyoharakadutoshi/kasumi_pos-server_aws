@@ -1,0 +1,42 @@
+{
+  "modalEditPaymentMachine.rate_customer_excluded": "構成比除外",
+  "modalEditPaymentMachine.attendant_monitor_excluded": "380アテンダントモニタ除外",
+  "modalEditPaymentMachine.receipt_coupon_excluded": "レシートクーポン発行除外",
+  "modalEditPaymentMachine.used_standard_price": "定番売価使用",
+  "modalEditPaymentMachine": {
+    "store_choice": {
+      "Add": "新規",
+      "Copy": "コピー",
+      "Edit": "編集"
+    },
+    "store_name": "店舗",
+    "code": "レジ番号",
+    "type_code": "レジ種別",
+    "type_node": "ノード種別",
+    "button_layout_code": "プリセットレイアウト",
+    "function_layout_code": "ファンクションレイアウト",
+    "keyboard_layout_code": "キーボードレイアウト",
+    "receipt_message_code": "レシートメッセージ",
+    "ip_address": "IPアドレス",
+    "mac_address": "MACアドレス",
+    "payment_type_code": "支払い種別",
+    "automatic_start_time": "自動起動時間",
+    "customer_count_excluded": "客数集計除外",
+    "morning_discount_excluded": "朝割除外",
+    "mega_discount_excluded": "メガ割除外",
+    "pos_model": "POS機種",
+    "cash_machine_model": "釣銭機機種",
+    "scanner_model": "スキャナ機種",
+    "tenant_cashier_department": "テナントレジ部門",
+    "updated_date": "更新日",
+    "updated_employee": "更新者",
+    "note_1": "備考1",
+    "note_2": "備考2",
+    "note_3": "備考3",
+    "valueNode": "フリースペース",
+    "button": {
+      "close": "閉じる",
+      "decide": "確定"
+    }
+  }
+}

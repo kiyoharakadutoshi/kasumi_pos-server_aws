@@ -1,0 +1,20 @@
+
+.page-login {
+  .box-button-header {
+    display: none;
+  }
+  .default-modal-container {
+    &__modal-content {
+      .modal-content-infor {
+        white-space: normal;
+      }
+      max-width: 640px;
+    }
+    &__modal-button-bottom {
+      justify-content: right;
+    }
+    &__modal-body {
+      padding: 30px;
+    }
+  }
+}

@@ -1,0 +1,17 @@
+{
+  "employeeSettingDefaultModal": {
+    "title": {
+      "editMode" : "Edit modal",
+      "createMode" : "Create modal"
+    },
+    "store": "Store",
+    "employeeCode": "Employee Code",
+    "employeeName": "Employee Name",
+    "employeeDescription": "Description",
+    "button": {
+      "submit": "Submit",
+      "update": "Update",
+      "back": "Back"
+    }
+  }
+}

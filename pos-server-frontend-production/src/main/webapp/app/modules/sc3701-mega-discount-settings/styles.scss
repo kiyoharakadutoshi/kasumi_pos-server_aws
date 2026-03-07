@@ -1,0 +1,85 @@
+@import '../../styles/variable';
+@import '../../styles/mixins';
+
+.mega-discount {
+  padding-left: 24px;
+  --input-height: 46px;
+
+  .mega-discount-wapper {
+    display: flex;
+    gap: 20px;
+
+    .mega-discount-left {
+      width: calc(88% - 10px);
+      height: calc(89vh - 64px);
+      background-color: $white;
+      display: flex;
+      flex-direction: column;
+      gap: 0.88vh;
+      padding: 10px 10px 10px 22px;
+      border-radius: 15px;
+
+      &__item {
+        display: flex;
+       
+        .label {
+          font-weight: 500;
+          width: 13%;
+          height: 50px;
+          color: $blue001440;
+
+          .label-input {
+            line-height: 50px;
+          }
+        }
+
+        .content {
+          display: flex;
+          width: 87%;
+          flex-wrap: wrap;
+          gap: 6px;
+          align-items: center;
+
+          .percent{
+            line-height: 50px;
+            font-weight: 500;
+            color: $blue001440;
+          }
+
+          &__exclusion {
+            display: flex;
+            gap: 8px;
+          }
+
+          .wrap-label-text {
+            width: 216px;
+          }
+
+          .input_right {
+            text-align: right;
+          }
+
+          .content__day {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-content: center;
+            font-weight: 500;
+            color: $blue001440;
+            gap: 4px;
+          }
+        }
+
+        .set_day {
+          gap: 12px;
+        }
+
+      }
+    }
+
+    .mega-discount-right {
+      width: calc(21% - 10px);
+      flex: 0 0 auto;
+    }
+  }
+}

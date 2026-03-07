@@ -1,0 +1,34 @@
+@import '../../styles/mixins';
+@import '../../styles/variable';
+
+.printer-enabled {
+  cursor: pointer;
+
+  .print-icon {
+    fill: $white;
+  }
+
+  &:hover {
+    .print-icon {
+      fill: $blueE3E5F6;
+    }
+  }
+
+  &:active {
+    .print-icon {
+      fill: $blue545F95;
+    }
+  }
+
+  &:hover {
+    opacity: 0.8;
+  }
+}
+
+.printer-disabled {
+  .print-icon {
+    fill: $white;
+  }
+  opacity: 0.3;
+  pointer-events: none;
+}

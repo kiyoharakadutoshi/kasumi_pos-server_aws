@@ -1,0 +1,144 @@
+@import '../../styles/variable';
+@import '../../styles/mixins';
+
+.category-discount-receipt-coupon-settings {
+  padding-left: 24px;
+  --input-height: 50px;
+
+  &__search {
+    display: flex;
+    flex-direction: row;
+    column-gap: 16px;
+    background-color: $white;
+    border-radius: 15px;
+    padding: 16px 16px;
+    row-gap: 2px;
+    margin-bottom: 16px;
+
+    & .dropdown-container__dropdown-button {
+      min-width: 380px;
+      max-width: 380px;
+    }
+  }
+
+  &__input-coupon {
+    display: flex;
+    column-gap: 16px;
+  }
+
+  &-table {
+    display: flex;
+    gap: 20px;
+
+    .category-discount-receipt-coupon-settings-right {
+      width: calc(21% - 10px);
+      flex: 0 0 auto;
+
+      .exclude-store__container {
+        height: calc(79vh - 64px);
+
+        .exclude-store__tab-menu {
+          overflow: unset;
+        }
+        .exclude-store__list-store-checkbox {
+          height: calc(89vh - 64px - 292px);
+        }
+      }
+    }
+
+    &__error {
+      display: flex;
+      justify-content: end;
+      gap: 2vw;
+      width: calc(100% - 35px);
+      height: fit-content;
+      border-radius: 16px;
+      margin-left: 30px;
+      align-items: center;
+      color: $redE62C2C;
+      font-weight: $medium-weight;
+    }
+
+    .table-data .table-scroll {
+      height: calc(84vh - 160px);
+
+      @media (max-height: 919px) {
+        height: calc(84vh - 160px);
+      }
+    }
+  }
+
+  &-table-exceed {
+    display: flex;
+    gap: 20px;
+
+    .category-discount-receipt-coupon-settings-right {
+      width: calc(21% - 10px);
+      flex: 0 0 auto;
+
+      .exclude-store__container {
+        height: calc(79vh - 64px);
+
+        .exclude-store__tab-menu {
+          overflow: unset;
+        }
+        .exclude-store__list-store-checkbox {
+          height: calc(89vh - 64px - 292px);
+        }
+      }
+    }
+
+    &__error {
+      display: flex;
+      justify-content: end;
+      gap: 2vw;
+      width: calc(100% - 35px);
+      height: fit-content;
+      border-radius: 16px;
+      margin-left: 30px;
+      align-items: center;
+      color: $redE62C2C;
+      font-weight: $medium-weight;
+    }
+
+    .table-data .table-scroll {
+      height: calc(80vh - 160px);
+
+      @media (max-height: 919px) {
+        height: calc(80vh - 160px);
+      }
+    }
+  }
+
+  & .back-side-box,
+  & .front-side-box {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    padding: 4px 0;
+    color: $blue001440;
+    font-weight: $medium-weight;
+  }
+
+  & .back-side-box {
+    padding-bottom: 16px;
+  }
+
+  .default-modal-container__modal-body-content {
+    min-height: 285px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    width: 70vw;
+  }
+
+  .default-modal-container {
+    & .dropdown-container__dropdown-button {
+      width: 60%;
+    }
+  }
+
+  & .date-time-start-end .date-picker .wrap-label {
+    min-width: 538px;
+  }
+}

@@ -1,0 +1,57 @@
+{
+  "productManagement": {
+    "title": "商品管理",
+    "productCode": "商品コード",
+    "pluCode": "PLUコード",
+    "description": "商品名称",
+    "unitPrice": "定番売価",
+    "forcePrice": "緊急売価",
+    "detailProduct": "F1：商品管理詳細",
+    "changePriceProduct": "F2：緊急売価変更",
+    "setPrice": "F3：特売新規",
+    "newMixMatch": "F6：ミックスマッチ新規",
+    "status": "状態",
+    "type": "種別",
+    "promotionCode": "プロモーション",
+    "code": "ミックスマッチ",
+    "stage": "期間",
+    "priceInfo": "売価情報",
+    "edit": "F7：編集"
+  },
+  "productInfo": {
+    "unit_price": "単価",
+    "tax_group_code": "税種別コード",
+    "code_level_one": "部門",
+    "code_level_two": "品群",
+    "code_level_three": "品種",
+    "code_level_four": "分類",
+    "standard_price": "定番売価",
+    "member_price": "会員価格",
+    "original_price": "原価",
+    "product_name": "商品名称",
+    "receipt_name": "レシート商品名称",
+    "kana_name": "カナ名称",
+    "is_item_manual_discount": "単品値引き除外",
+    "is_sub_total_discount": "小計マニュアル値引き除外",
+    "storage_unit": "保存単位",
+    "storage_time": "保存期限"
+  },
+  "children": {
+    "item_code": "PLUコード"
+  },
+  "forcePriceChange": {
+    "pdfFile": "緊急売価変更リスト",
+    "title": "緊急売価変更"
+  },
+  "mixMatchs": {
+    "unitsCompleted": "成立個数",
+    "priceCompleted": "成立金額",
+    "option": "第{0}段階",
+    "mixMatchCode": "ミックスマッチコード",
+    "type": "ミックスマッチ区分",
+    "status": "状態",
+    "quantity": "成立個数",
+    "value": "成立金額",
+    "itemCode": "PLUコード"
+  }
+}

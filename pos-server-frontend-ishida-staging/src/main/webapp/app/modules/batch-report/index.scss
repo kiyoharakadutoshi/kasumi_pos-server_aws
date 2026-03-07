@@ -1,0 +1,121 @@
+@import "src/main/webapp/app/styles/styles";
+
+.batch-report {
+  padding-left: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  --input-height: 50px;
+  --input-horizontal-padding: 10px;
+
+  .table-scroll {
+    height: calc(100vh - 292px); // view height without table: 296px - 4px offset
+  }
+
+  // SearchView
+  &__search-container {
+    align-items: center;
+    display: flex;
+    gap: 32px;
+    padding: 8px;
+    background-color: $white;
+    border-radius: 15px;
+    flex-wrap: wrap;
+  }
+
+  &__date {
+    color: $black464646;
+    font-weight: $medium-weight;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  &__type-container {
+    margin-top: 2px;
+    display: flex;
+    align-items: center;
+  }
+
+  &__type-label {
+    display: flex;
+    align-items: center;
+    color: $blue001440;
+    margin-bottom: 2px;
+    font-weight: $medium-weight;
+  }
+
+  &__required {
+    color: $redBC1C42;
+  }
+
+  &__list-type-item {
+    background-color: $white;
+    display: flex;
+    padding: 0 16px;
+    align-items: center;
+    height: 100%;
+    gap: 32px;
+  }
+
+  .date-picker {
+    width: 310px;
+
+    .wrap-label {
+      flex-shrink: 0;
+    }
+  }
+
+  &__target-month {
+    width: 20%;
+  }
+
+  &__cashier-select {
+    flex: 1;
+  }
+
+  .bottom-button {
+     &__action-button {
+       flex: 1;
+     }
+
+    &__label-page-container {
+      flex: 1;
+    }
+  }
+
+  @media (max-width: 1680px) {
+    .table-data__table-header tr {
+      display: flex;
+    }
+
+    .type {
+      width: 170px !important;
+      flex-shrink: 0;
+    }
+
+    .start_date_time, .end_date_time {
+      width: 226px !important;
+      flex-shrink: 0;
+    }
+
+    .duration {
+      width: 172px !important;
+      flex-shrink: 0;
+    }
+
+    .total_record {
+      width: 160px !important;
+      flex-shrink: 0;
+    }
+
+    .speed {
+      width: 140px !important;
+      flex-shrink: 0;
+    }
+
+    .item_name {
+      flex: 1;
+    }
+  }
+}

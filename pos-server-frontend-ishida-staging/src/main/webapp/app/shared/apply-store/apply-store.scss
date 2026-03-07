@@ -1,0 +1,31 @@
+@import "../../styles/variable";
+
+.apply-store {
+  display: flex;
+  flex-direction: column;
+  .header-apply-store {
+    display: flex;
+    gap: 8px;
+  }
+
+  .normal-button {
+    margin-left: 4px;
+  }
+
+  .list-store {
+    border: 1px solid $grey666666;
+    background-color: white;
+    padding: 8px;
+    width: 100%;
+    box-sizing: border-box;
+    overflow-y: auto;
+    position: relative;
+    margin: 8px 0 16px;
+  }
+
+  .list-store-item {
+    height: 40px;
+    line-height: 40px;
+    display: flex;
+  }
+}

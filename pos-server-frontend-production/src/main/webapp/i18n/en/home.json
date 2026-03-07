@@ -1,0 +1,17 @@
+{
+  "home": {
+    "title": "Products store confirmation",
+    "PLUCode": "PLU Code",
+    "productName": "Product Name",
+    "condition": "Condition",
+    "store": "Store",
+    "radio": {
+      "value_1": "Kasumi",
+      "value_2": "Welcia"
+    },
+    "button": {
+      "clear": "F04:Clear",
+      "confirm": "F09:Confirm"
+    }
+  }
+}

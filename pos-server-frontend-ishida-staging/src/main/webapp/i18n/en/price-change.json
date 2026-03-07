@@ -1,0 +1,14 @@
+{
+  "priceChange": {
+    "title": "Emergency price change",
+    "productCodeSwitching": "Product code switching",
+    "PLUCodeSwitching": "PLU code switching",
+    "searchCondition": {
+      "bookingDate": "Booking Date",
+      "groupCode": "Group code"
+    },
+    "itemName": "商品名",
+    "newPrice": "変更後売価",
+    "currentPrice": "前回送信売価"
+  }
+}

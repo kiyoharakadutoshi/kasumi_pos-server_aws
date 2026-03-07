@@ -1,0 +1,34 @@
+{
+  "error": {
+    "title": "Error page!",
+    "http": {
+      "400": "Bad request.",
+      "403": "You are not authorized to access this page.",
+      "404": "The page does not exist.",
+      "405": "The HTTP verb you used is not supported for this URL.",
+      "500": "Internal server error."
+    },
+    "concurrencyFailure": "Another user modified this data at the same time as you. Your changes were rejected.",
+    "validation": "Validation error on the server."
+  },
+  "MSG_ERR_SERVER": "Server error.",
+  "MSG_ERR_001": "データが見つかりませんでした。",
+  "MSG_ERR_002": "選択された店舗はテナント連携が行われている店舗で はないため、当機能は利用できません。",
+  "MSG_ERR_003": "重複するデータが存在するため登録できません。",
+  "MSG_ERR_004": "通信に失敗しました。",
+  "MSG_ERR_005": "ユーザIDが見つかりませんでした。",
+  "MSG_ERR_006": "セッションの有効期限が切れました。再度ログインしてください。",
+  "MSG_ERR_007": "リクエストの読み取りが失敗しました。",
+  "MSG_ERR_008": "デフォルト店舗を編集済の為選択できません。",
+  "MSG_ERR_009": "You do not have permission to access this link",
+  "MSG_ERR_010": "No lines selected.",
+  "MSG_ERR_011": "Bad request.",
+  "MSG_ERR_012": "Unauthorized.",
+  "MSG_ERR_013": "Forbidden.",
+  "MSG_ERR_014": "Method Not Allowed.",
+  "MSG_ERR_015": "Conflict.",
+  "MSG_ERR_016": "Unsupported Media Type.",
+  "MSG_ERR_017": "Service Unavailable.",
+  "MSG_ERR_018": "HTTP Version Not Supported.",
+  "MSG_ERR_422": "Invalid request parameters."
+}

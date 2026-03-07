@@ -1,0 +1,254 @@
+{
+  "label.groupCode": "Group Code",
+  "label.productionCode": "Production Code",
+  "label.pluCode": "PLU Code",
+  "label.productionName": "Production Name",
+  "label.todayPrice": "Today Price",
+  "label.standardPrice": "Standard Price",
+  "label.detail": "Detail",
+  "label.startDate": "開始日",
+  "label.endDate": "終了日",
+  "label.startTime": "開始時",
+  "label.endTime": "終了時",
+  "label.title": "Title",
+  "label.printingPeriod": "Printing Period",
+  "label.couponCode": "Coupon Code",
+  "label.message": "Message",
+  "label.updateDate": "Update Date",
+  "label.updateBy": "Update By",
+  "label.excludedStores": "除外店舗",
+  "label.createMode": "新規",
+  "label.editMode": "編集",
+  "label.f10Delete": "F10 : 削除",
+  "label.f7Edit": "F7 : 編集",
+  "label.f11Create": "F11 : 新規",
+  "label.f8Copy": "F8 : コピー",
+  "label.f9Confirm": "F9 : 確定",
+  "label.f4Clear": "F4 : クリア",
+  "global": {
+    "title": "Products store confirmation",
+    "browsehappy": "You are using an <strong>outdated</strong> browser. Please <a href=\"http://browsehappy.com/?locale=en\">upgrade your browser</a> to improve your experience.",
+    "menu": {
+      "home": "Home",
+      "mainMenu": "Main menu",
+      "jhipster-needle-menu-add-element": "JHipster will add additional menu entries here (do not translate!)",
+      "entities": {
+        "main": "Entities",
+        "jhipster-needle-menu-add-entry": "JHipster will add additional entities here (do not translate!)"
+      },
+      "account": {
+        "main": "Account",
+        "settings": "Settings",
+        "password": "Password",
+        "sessions": "Sessions",
+        "login": "Sign in",
+        "logout": "Sign out",
+        "register": "Register"
+      },
+      "admin": {
+        "main": "Administration",
+        "userManagement": "User management",
+        "tracker": "User tracker",
+        "metrics": "Metrics",
+        "health": "Health",
+        "configuration": "Configuration",
+        "logs": "Logs",
+        "apidocs": "API",
+        "database": "Database",
+        "jhipster-needle-menu-add-admin-element": "JHipster will add additional menu entries here (do not translate!)"
+      },
+      "language": "Language"
+    },
+    "form": {
+      "username.label": "Username",
+      "username.placeholder": "Your username",
+      "currentpassword.label": "Current password",
+      "currentpassword.placeholder": "Current password",
+      "newpassword.label": "New password",
+      "newpassword.placeholder": "New password",
+      "confirmpassword.label": "New password confirmation",
+      "confirmpassword.placeholder": "Confirm the new password",
+      "email.label": "Email",
+      "email.placeholder": "Your email"
+    },
+    "messages": {
+      "info": {
+        "authenticated": {
+          "prefix": "If you want to ",
+          "link": "sign in",
+          "suffix": ", you can try the default accounts:<br/>- Administrator (login=\"admin\" and password=\"admin\") <br/>- User (login=\"user\" and password=\"user\")."
+        },
+        "register": {
+          "noaccount": "You don't have an account yet?",
+          "link": "Register a new account"
+        }
+      },
+      "error": {
+        "dontmatch": "The password and its confirmation do not match!"
+      },
+      "validate": {
+        "newpassword": {
+          "required": "Your password is required.",
+          "minlength": "Your password is required to be at least 4 characters.",
+          "maxlength": "Your password cannot be longer than 50 characters.",
+          "strength": "Password strength:"
+        },
+        "confirmpassword": {
+          "required": "Your confirmation password is required.",
+          "minlength": "Your confirmation password is required to be at least 4 characters.",
+          "maxlength": "Your confirmation password cannot be longer than 50 characters."
+        },
+        "email": {
+          "required": "Your email is required.",
+          "invalid": "Your email is invalid.",
+          "minlength": "Your email is required to be at least 5 characters.",
+          "maxlength": "Your email cannot be longer than 50 characters."
+        }
+      }
+    },
+    "field": {
+      "id": "ID"
+    },
+    "ribbon": {
+      "dev": "Development"
+    },
+    "item-count": "Showing {{first}} - {{second}} of {{total}} items.",
+    "f04Clear": "F04: Clear",
+    "f09Confirm": "F09: Confirm",
+    "selectDropdown": "---選択---"
+  },
+  "action": {
+    "cancel": "Cancel",
+    "delete": "Delete",
+    "copy": "Copy",
+    "addMain": "Add",
+    "edit": "Edit",
+    "confirm": "Confirm",
+    "update": "Update",
+    "register": "Registration",
+    "decide": "Decide",
+    "select": "Select",
+    "logout": "Logout",
+    "previous": "前画面",
+    "f12Search": "F12:Search",
+    "search": "Search",
+    "add": "Add List",
+    "f10Delete": "F10 : Delete",
+    "f03Copy": "F3 : Copy",
+    "f02Add": "F2 : Add",
+    "f01Edit": "F1 : Edit",
+    "f11Confirm": "F11 : Confirm",
+    "f04Clear": "F4:Clear",
+    "f08Clear": "F8 : Clear",
+    "F09:確定": "F9:Confirmed",
+    "F08:商品コード切替": "F8:Other products",
+    "F08:PLUコード切替": "F8:PLU Store"
+  },
+  "entity": {
+    "action": {
+      "addblob": "Add blob",
+      "addimage": "Add image",
+      "back": "Back",
+      "cancel": "Cancel",
+      "delete": "Delete",
+      "edit": "Edit",
+      "new": "New",
+      "confirm": "Confirm",
+      "open": "Open",
+      "save": "Save",
+      "view": "View",
+      "show": "Show {{otherEntity}}",
+      "search": "Search",
+      "register": "Register",
+      "exportCSV": "CSVexport",
+      "F1:前ページ": "F1 : Previous Page",
+      "F2:次ページ": "F2 : Next Page"
+    },
+    "detail": {
+      "field": "Field",
+      "value": "Value"
+    },
+    "delete": {
+      "title": "Confirm delete operation"
+    },
+    "validation": {
+      "required": "This field is required.",
+      "minlength": "This field is required to be at least {{ min }} characters.",
+      "maxlength": "This field cannot be longer than {{ max }} characters.",
+      "min": "This field should be at least {{ min }}.",
+      "max": "This field cannot be more than {{ max }}.",
+      "minbytes": "This field should be at least {{ min }} bytes.",
+      "maxbytes": "This field cannot be more than {{ max }} bytes.",
+      "pattern": "This field should follow pattern for {{ pattern }}.",
+      "number": "This field should be a number.",
+      "datetimelocal": "This field should be a date and time.",
+      "patternLogin": "This field can only contain letters, digits and e-mail addresses."
+    },
+    "filters": {
+      "set": "Following filters are set",
+      "clear": "Clear filter",
+      "clearAll": "Clear all filters"
+    }
+  },
+  "error": {
+    "MSG_ERR_001": "No data found.",
+    "internalServerError": "Internal server error",
+    "server.not.reachable": "Server not reachable",
+    "url.not.found": "Not found",
+    "NotNull": "Field {{ fieldName }} cannot be empty!",
+    "Size": "Field {{ fieldName }} does not meet min/max size requirements!",
+    "userexists": "Login name already used!",
+    "emailexists": "Email is already in use!",
+    "idexists": "A new {{ entityName }} cannot already have an ID",
+    "idnull": "Invalid ID",
+    "idinvalid": "Invalid ID",
+    "idnotfound": "ID cannot be found",
+    "file": {
+      "could.not.extract": "Could not extract file",
+      "not.image": "File was expected to be an image but was found to be \"{{ fileType }}\""
+    }
+  },
+  "footer": "This is your footer",
+  "header": {
+    "new": "New",
+    "edit": "Edit"
+  },
+  "matching": {
+    "start": "Start",
+    "include": "Include",
+    "end": "End"
+  },
+  "apply-store": {
+    "title": "Registed store",
+    "unselectAll": "UnSelect all",
+    "selectAll": "Select all",
+    "decide": "decide"
+  },
+  "dayOfWeek": {
+    "Mon": "Mon",
+    "Tue": "Tue",
+    "Wed": "Wed",
+    "Thu": "Thu",
+    "Fri": "Fri",
+    "Sat": "Sat",
+    "Sun": "Sun"
+  },
+  "sidebar": {
+    "result": "店舗 選択中",
+    "searchPlaceholder": "店番 または 店名で検索",
+    "store": "Store Selection",
+    "search": "Search"
+  },
+  "paging": {
+    "in": "件中",
+    "item": "件",
+    "firstRow": "F3：先頭行",
+    "lastRow": "F4：最終行",
+    "prevPage": "F1：前頁",
+    "nextPage": "F2：次頁"
+  },
+  "dateTimeLabel": {
+    "year": "年",
+    "month": "月"
+  }
+}

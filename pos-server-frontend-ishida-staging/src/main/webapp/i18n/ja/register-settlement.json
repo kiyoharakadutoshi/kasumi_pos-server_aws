@@ -1,0 +1,22 @@
+{
+  "register-settlement": {
+    "title": "レジ精算入力",
+    "cash_register": "レジ",
+    "status": "状態",
+    "checkout_status": "精算状態",
+    "cash_on_hand_at_checkout": "精算時現金在高",
+    "checkout_entry": "精算入力",
+    "correction_date": "訂正日付",
+    "item_name": "項目名",
+    "before_correction": "訂正前",
+    "after_correction": "訂正後",
+    "date_of_correction": "訂正日付",
+    "register": "レジ",
+    "buttonAction": "設定",
+    "modal": {
+      "titleModal": "印刷",
+      "titleDate": "日付",
+      "textConfirm": "この内容で、レジ精算一覧表を出力します。 よろしいですか？"
+    }
+  }
+}

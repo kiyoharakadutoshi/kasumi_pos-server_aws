@@ -1,0 +1,29 @@
+{
+  "addPaymentMachine": {
+    "searchCriteria": "Search Criteria",
+    "cashRegisterType": "Cash Register",
+    "placeholder": "aaa",
+    "button": {
+      "search": "Search",
+      "delete": "Delete",
+      "update": "Update",
+      "create": "Create",
+      "decide": "Confirm"
+    },
+    "table": {
+      "no": "No",
+      "code": "コード",
+      "typeCashRegister": "Type Cash Register"
+    },
+    "modal": {
+      "store": "取消",
+      "register": "登録",
+      "update": "更新"
+    },
+    "errorMsg": {
+      "MSG_ERR_010": "Data not found",
+      "MSG_VAL_002": "Name cannot be more than 50 characters'",
+      "maxLengthRecord": "There are more than 100 search results, so the first 100 are displayed."
+    }
+  }
+}

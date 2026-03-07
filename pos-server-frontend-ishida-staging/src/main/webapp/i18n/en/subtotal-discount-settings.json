@@ -1,0 +1,8 @@
+{
+  "title": "Subtotal Discount Settings",
+  "date": "Date",
+  "percentDiscount": "General subtotal discount rate",
+  "targetDate": "Target Date",
+  "contentDay": "Set day",
+  "excludedStores": "Excluded Stores"
+}

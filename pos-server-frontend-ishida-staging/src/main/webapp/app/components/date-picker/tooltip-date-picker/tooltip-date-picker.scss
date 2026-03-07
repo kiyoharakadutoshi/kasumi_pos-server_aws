@@ -1,0 +1,103 @@
+@import "src/main/webapp/app/styles/styles";
+
+.popover.date-picker__popover-date-picker {
+  max-width: fit-content;
+}
+
+.date-picker {
+  position: relative;
+  display: inline-block;
+  color: $black464646;
+  font: normal normal $medium-weight 24px/36px 'Noto Sans JP', sans-serif;
+
+  &__calendar {
+    outline: none;
+    position: absolute;
+    top: 100%;
+    left: 0;
+    background-color: white;
+    border: 1px solid $greyE5E5E5;
+    border-radius: 8px;
+    padding: 16px;
+    z-index: 1;
+    height: 387px;
+    display: block;
+    box-shadow: 3px 3px 3px 0 rgba(0, 0, 0, 0.25);
+  }
+
+  &__popover-date-picker {
+    height: 387px;
+    width: fit-content;
+    max-width: fit-content;
+
+    .popover-body {
+      background-color: $white;
+      font-size: min(1.25vw, 24px);
+      height: 100%;
+    }
+  }
+
+  &__calendar-popover {
+    outline: none;
+    height: 100%;
+  }
+
+  &__calendar-header {
+    @include center(space-between);
+    font-weight: $semibold-weight;
+    margin-bottom: 8px;
+  }
+
+  &__calendar-action-button {
+    display: flex;
+    align-items: center;
+    background-color: transparent;
+    border: var(--input-border, 3px) solid transparent;
+    cursor: pointer;
+    padding: 4px;
+
+    &:focus {
+      border-color: $blue001440;
+      border-radius: var(--input-border-radius, 10px);
+    }
+  }
+
+  &__calendar-grid-day {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    grid-gap: 8px;
+  }
+
+  &__calendar-day {
+    width: min(1.875vw, 36px);
+    height: min(1.875vw, 36px);
+    border-radius: 50%;
+    text-align: center;
+    cursor: pointer;
+    background-color: transparent;
+    color: inherit;
+    @include center();
+    font-weight: $medium-weight;
+  }
+
+  &__calendar-selected-day {
+    background-color: $blue545F95;
+    color: $white;
+    @include center();
+  }
+
+  &__calendar-today {
+    color: $blue545F95;
+  }
+
+  &__calendar-day-hover {
+    &:hover {
+      background-color: $blueB0B9D7;
+    }
+  }
+
+  &__calendar-day-invalid {
+    pointer-events: none;
+    opacity: 0.2;
+  }
+}

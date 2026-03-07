@@ -1,0 +1,52 @@
+@import '../../styles/styles';
+@import '../../styles/variable';
+
+.master-settings-business {
+  --input-height: 50px;
+  padding-left: 24px;
+
+  &__main {
+    &-search {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      padding: 8px;
+      border-radius: 15px;
+      background-color: $white;
+      margin-bottom: 16px;
+
+      .dropdown-month {
+        max-width: 310px;
+      }
+    }
+
+    &-table {
+      .table-scroll {
+        min-height: 528px;
+        height: calc(83vh - 140px);
+      }
+
+      .dropdown-container {
+        height: var(--dropdown-height, 50px);
+      }
+    }
+  }
+
+  .budget-registration__total-info {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 15px;
+  }
+}
+
+@media screen and (max-height: 944px) {
+  .master-settings-business {
+    &__main {
+      &-table {
+        .dropdown-container {
+          height: var(--dropdown-height, 48px);
+        }
+      }
+    }
+  }
+}

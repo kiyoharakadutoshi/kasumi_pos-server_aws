@@ -1,0 +1,21 @@
+{
+  "categoryDiscountReceiptCouponSettings.title": "カテゴリ割引レシートクーポン設定",
+  "categoryDiscountReceiptCouponSettings.searchCondition.store": "店名",
+  "categoryDiscountReceiptCouponSettings.searchCondition.title": "タイトル",
+  "categoryDiscountReceiptCouponSettings.searchCondition.couponCode": "クーポン券コード",
+  "categoryDiscountReceiptCouponSettings.table.no": "No",
+  "categoryDiscountReceiptCouponSettings.table.storeCode": "店舗コード",
+  "categoryDiscountReceiptCouponSettings.table.title": "タイトル",
+  "categoryDiscountReceiptCouponSettings.table.printingAgency": "印字機関",
+  "categoryDiscountReceiptCouponSettings.table.availablePeriod": "利用可能期間",
+  "categoryDiscountReceiptCouponSettings.table.couponCode": "クーポン券コード",
+  "categoryDiscountReceiptCouponSettings.modal.yes": "有",
+  "categoryDiscountReceiptCouponSettings.modal.no": "無",
+  "categoryDiscountReceiptCouponSettings.modal.department": "部門",
+  "categoryDiscountReceiptCouponSettings.modal.group": "品群",
+  "categoryDiscountReceiptCouponSettings.modal.kind": "品種",
+  "categoryDiscountReceiptCouponSettings.modal.classification": "品種",
+  "categoryDiscountReceiptCouponSettings.modal.name": "名称",
+  "categoryDiscountReceiptCouponSettings.modal.avaliableStatus": "取扱有無",
+  "categoryDiscountReceiptCouponSettings.modal.appliedToLowerHierarchicalLevels": "下位階層も同設定"
+}

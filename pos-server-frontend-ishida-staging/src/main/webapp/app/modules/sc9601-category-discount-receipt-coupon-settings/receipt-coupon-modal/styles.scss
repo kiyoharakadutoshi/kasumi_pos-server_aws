@@ -1,0 +1,67 @@
+@import '../../../styles/variable';
+
+.receipt-coupon-setting-modal {
+  --input-height: 46px;
+  --height-btn: 46px;
+
+  .dropdown-container {
+    height: 46px;
+  }
+
+  & .dropdown-container__dropdown-title,
+  & .wrap-input-text .wrap-label,
+  & .input-container .wrap-input-text .wrap-label-text,
+  & .input-condition-keyword .input-number-container__label {
+    width: 40%;
+    min-width: 538px;
+  }
+
+  &__coupon-code {
+    display: flex;
+    column-gap: 12px;
+    --input-text-width: 200px;
+
+    &__category-search {
+      display: flex;
+      column-gap: 8px;
+    }
+  }
+
+  .wrap-search-category {
+    display: flex;
+    column-gap: 16px;
+    justify-content: end;
+    margin-top: 8px;
+
+    &__note {
+      .radio-button__input {
+        border: 3px solid $blue545F95;
+      }
+      .radio-button__input:checked:before {
+        background: $blue545F95 0 0 no-repeat padding-box;
+      }
+    }
+  }
+
+  .table-data .table-scroll {
+    .button-expanding {
+      cursor: pointer;
+
+      svg {
+        fill: $black000000;
+      }
+
+      &:focus-visible {
+        border: none;
+        outline: none;
+        svg {
+          fill: $blue545F95;
+        }
+      }
+    }
+
+    @media (max-height: 919px) {
+      height: calc(80vh - 160px);
+    }
+  }
+}

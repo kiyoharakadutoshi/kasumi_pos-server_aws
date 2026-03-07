@@ -1,0 +1,55 @@
+@import '../../styles/variable';
+
+.cash-report-main {
+  font-size: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+
+  .radio-button__text-value {
+    font-size: 24px;
+  }
+
+  .btn-primary {
+    font-size: 24px;
+  }
+
+  &__search {
+    display: flex;
+    gap: 32px;
+    width: calc(100vw - 48px);
+    height: fit-content;
+    background-color: $white;
+    border-radius: 15px;
+    margin-left: 24px;
+    padding: 8px;
+    align-items: center;
+    color: $black464646;
+    font-weight: 500;
+  }
+
+  &__error {
+    display: flex;
+    justify-content: end;
+    gap: 2vw;
+    width: calc(100% - 35px);
+    height: fit-content;
+    border-radius: 16px;
+    margin-left: 30px;
+    align-items: center;
+    color: $black464646;
+    font-weight: 500;
+  }
+
+  .radio-button-container-vertical {
+    flex-direction: row;
+    gap: 40px;
+  }
+
+  .row-table {
+    .cash-thousand-count:first-child {
+      background-color: #daf5cd;
+      font-size: 30px;
+    }
+  }
+}

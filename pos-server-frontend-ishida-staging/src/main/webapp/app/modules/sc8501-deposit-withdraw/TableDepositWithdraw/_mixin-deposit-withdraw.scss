@@ -1,0 +1,37 @@
+@mixin grid-header-table {
+  display: grid;
+  grid-template-columns: 300px 1fr 500px 13px;
+}
+
+@mixin grid-row-body-scroll {
+  display: grid;
+  grid-template-columns: 300px 1fr 500px;
+  align-items: center;
+}
+
+@mixin grid-row-body {
+  display: grid;
+  grid-template-columns: 300px 1fr 500px 13px;
+  align-items: center;
+}
+
+@mixin column-width {
+
+  &__column-1 {
+    grid-column: 1 / 2;
+    border-right: 3px solid #B0B9D7;
+  }
+
+  &__column-2 {
+    grid-column: 2 / 3;
+    border-right: 3px solid #B0B9D7;
+  }
+
+  &__column-3 {
+    grid-column: 3 / 4;
+  }
+
+  &__column-4 {
+    grid-column: 4 / 5;
+  }
+}

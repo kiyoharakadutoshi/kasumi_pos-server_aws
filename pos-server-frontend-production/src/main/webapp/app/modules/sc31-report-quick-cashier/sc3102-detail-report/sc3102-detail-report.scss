@@ -1,0 +1,142 @@
+@import 'src/main/webapp/app/styles/styles';
+
+.detail-cash-register-report {
+  padding-left: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  --input-height: 50px;
+  --input-horizontal-padding: 10px;
+
+  // SearchView
+  &__search-container {
+    align-items: center;
+    display: flex;
+    gap: 32px;
+    padding: 16px;
+    background-color: $white;
+    border-radius: 15px;
+    flex-wrap: wrap;
+  }
+
+  &__type-container {
+    margin-top: 2px;
+    display: flex;
+    align-items: center;
+  }
+
+  &__type-label {
+    display: flex;
+    align-items: center;
+    color: $blue001440;
+    margin-bottom: 2px;
+    font-weight: $medium-weight;
+  }
+
+  &__required {
+    color: $redBC1C42;
+  }
+
+  &__list-type-item {
+    height: 100%;
+    background-color: $white;
+    display: flex;
+    align-items: center;
+    padding: 0 16px;
+    gap: 32px;
+  }
+
+  .date-picker {
+    width: 310px;
+
+    .wrap-label {
+      flex-shrink: 0;
+    }
+  }
+
+  &__target-month {
+    width: 330px;
+  }
+
+  &__cashier-select {
+    --dropdown-button-width: 20vw;
+    max-width: 800px;
+  }
+
+  &__tab-menu {
+    width: fit-content;
+    min-width: 60%;
+    display: grid;
+    grid-template-rows: 52px;
+    background-color: $blueB0B9D7;
+    border-top-right-radius: 20px;
+  }
+
+  &__content {
+    border-radius: 20px;
+    overflow: hidden;
+  }
+
+  &__table-report-container {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    height: calc(100vh - 276px);
+    overflow-y: auto;
+  }
+
+  &__table-report {
+    $height-record: 44px;
+
+    .table-data {
+      &__cell {
+        height: $height-record;
+      }
+
+      .table-scroll {
+        height: calc(var(--report-table-row) * $height-record);
+      }
+    }
+  }
+
+  &__tab-item {
+    @include center();
+    width: 100%;
+    height: 100%;
+    text-align: center;
+    cursor: pointer;
+    box-sizing: border-box;
+    color: $blue001440;
+    font-weight: $medium-weight;
+    border-top-right-radius: 20px;
+    background-color: $blueB0B9D7;
+    padding: 0 16px;
+  }
+
+  &__previous-selected-tab {
+    background-color: $white;
+  }
+
+  &__selected-tab-item {
+    background-color: $white;
+    border-top-right-radius: 20px;
+  }
+
+  &__table-title {
+    display: flex;
+    justify-content: space-between;
+    gap: 16px;
+    align-items: center;
+  }
+
+  &__table-left-title {
+    color: $blue001440;
+    font-weight: $medium-weight;
+    margin-bottom: 4px;
+  }
+
+  &__table-right-title {
+    color: $blue001440;
+    font-weight: $medium-weight;
+  }
+}

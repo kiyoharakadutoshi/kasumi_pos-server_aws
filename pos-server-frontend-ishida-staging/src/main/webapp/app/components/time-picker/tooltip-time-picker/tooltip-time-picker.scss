@@ -1,0 +1,93 @@
+@import "src/main/webapp/app/styles/styles";
+
+.time-picker {
+  position: relative;
+  display: flex;
+  outline: none;
+
+  &__time-picker-input {
+    text-align: center;
+  }
+
+  &__popover-menu {
+    width: fit-content;
+    max-width: fit-content;
+
+    .popover-body {
+      background-color: $white;
+      font-size: min(1.25vw, 24px);
+      padding: 6px;
+    }
+  }
+
+  &__popover-content {
+    display: flex;
+    width: fit-content;
+    gap: 4px;
+    font-weight: $medium-weight;
+  }
+
+  &__menu {
+    display: flex;
+    width: fit-content;
+    top: calc(100% + 3px);
+    gap: 4px;
+    z-index: 10;
+    position: absolute;
+    height: 172px;
+    margin: 0;
+    padding: 6px;
+    background: $white 0 0 no-repeat padding-box;
+    border-radius: 4px;
+    box-shadow: 2px 6px 10px 4px $black0000004d;
+    left: 2px;
+
+
+    /* Set style scrollbar */
+    ::-webkit-scrollbar {
+      width: 10px;
+      height: 10px;
+    }
+
+    ::-webkit-scrollbar-track {
+      margin: 0;
+    }
+  }
+
+  &__time-scroll {
+    height: 160px;
+    overflow-y: scroll;
+  }
+
+  &__time-scroll-item {
+    margin-right: 8px;
+    display: flex;
+    align-items: center;
+    color: $black464646;
+    padding: 2px 8px;
+    cursor: pointer;
+    height: 40px;
+    font-weight: $medium-weight;
+
+    &:hover,
+    &:active {
+      background-color: $blueB0B9D7;
+    }
+  }
+
+  &__time-scroll-item-selected {
+    background-color: $blue545F95;
+    color: $white;
+
+    &:hover,
+    &:active {
+      background-color: $blue545F95;
+    }
+  }
+
+  &__vertical-line {
+    width: 1px;
+    height: 140px;
+    background-color: $grey666666;;
+  }
+}

@@ -1,0 +1,48 @@
+{
+  "productRevenuePos": {
+    "title": "Cash Register Item Sales Inspection",
+    "business": "Business Type",
+    "new": "Report",
+    "daily": "Daily Report",
+    "name": "Cash Register",
+    "limitRecord": "Number of Records Displayed",
+    "workingDate": "Working Date",
+    "registerNumber": "Register Number",
+    "outputUnits": "Output Units",
+    "pluCode": "PLU Code"
+  },
+  "table": {
+    "no": "Ranking",
+    "productCode": "Product Code",
+    "pluCode": "PLU Code",
+    "name": "Name",
+    "saleAmount": "Sales Amount",
+    "salePoint": "Sales number",
+    "valuePi": "PI Value",
+    "discountAmount": "Discount Amount",
+    "discountPoint": "Discount Points",
+    "lastSalesDate": "Last Sales Date"
+  },
+  "checkingSalesItems": {
+    "title": "Cash Register Item Sales Inspection",
+    "timeRange": "Time Range",
+    "revenueAmount": "Sales Amount (Yen)",
+    "quantity": "Quantity",
+    "customerCount": "Customer Count",
+    "productCode": "Product Code",
+    "pluCode": "PLU Code",
+    "productName": "Product Name",
+    "storeMachineCode": "Terminal Number",
+    "startDate": "Start Date",
+    "endDate": "End Date"
+  },
+  "productList": {
+    "title": "Product Search",
+    "button_choose": "Choose",
+    "pluCode": "PLU Code",
+    "productCode": "Product Code",
+    "productName": "Product Name",
+    "unitPrice": "Unit Price",
+    "applyDate": "Effective Date"
+  }
+}

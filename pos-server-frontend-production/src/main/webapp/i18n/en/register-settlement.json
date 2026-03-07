@@ -1,0 +1,21 @@
+{
+  "register-settlement": {
+    "title": "title",
+    "cash_register": "Cash register",
+    "status": "Status",
+    "checkout_status": "Checkout status",
+    "cash_on_hand_at_checkout": "Cash on hand at checkout",
+    "checkout_entry": "Checkout entry",
+    "correction_date": "Correction date",
+    "item_name": "Item name",
+    "before_correction": "Before correction",
+    "after_correction": "After correction",
+    "date_of_correction": "Date of correction",
+    "register": "Register",
+    "modal": {
+      "titleModal": "Print",
+      "titleDate": "Date",
+      "textConfirm": "The cash register settlement list will be output with this content. Is that okay?"
+    }
+  }
+}

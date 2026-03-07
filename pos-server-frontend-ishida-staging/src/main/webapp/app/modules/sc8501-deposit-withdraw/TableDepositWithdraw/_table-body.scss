@@ -1,0 +1,86 @@
+@use 'mixin-deposit-withdraw' as mixin-deposit-withdraw;
+
+#table-deposit-withdraw {
+  .body-scroll {
+    max-height: calc(100dvh - 298px);
+    height: auto;
+    overflow-y: auto;
+    border-radius: 0 0 16px 16px;
+    background-color: white;
+    user-select: none;
+  }
+
+  .row-style {
+    color: #464646;
+    font-weight: 500;
+
+    &:nth-child(odd) {
+      background-color: white;
+    }
+
+    &:nth-child(even) {
+      background-color: #E7EAF0;
+    }
+  }
+
+  .padding-input {
+    padding: 6px;
+  }
+
+  .column-height {
+    height: 62px;
+    line-height: 62px;
+  }
+
+  .text {
+    user-select: none;
+    padding-left: 26px;
+  }
+
+  .color-red {
+    color: #bc1c42;
+  }
+
+  .selected {
+    background-color: #545F95 !important;
+    color: white;
+  }
+
+  .row-add-new {
+    background-color: #545F95 !important;
+  }
+
+  .deleted {
+    position: relative;
+
+    &:before {
+      position: absolute;
+      content: '';
+      transform: translate(-50%, -50%);
+      width: 100%;
+      height: 3px;
+      top: 50%;
+      left: 50%;
+      background-color: #bc1c42;
+    }
+  }
+
+  .init {
+    .row-deposit-withdraw {
+      @include mixin-deposit-withdraw.grid-row-body
+    }
+  }
+
+  .add-scroll {
+    .row-deposit-withdraw {
+      @include mixin-deposit-withdraw.grid-row-body-scroll
+    }
+  }
+
+
+  .input-table {
+    width: 100%;
+  }
+
+
+}

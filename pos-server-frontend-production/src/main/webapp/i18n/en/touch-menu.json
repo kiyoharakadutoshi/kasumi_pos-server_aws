@@ -1,0 +1,80 @@
+{
+  "touchMenu": {
+    "productCode": "product code",
+    "PLU": "PLU code",
+    "presetLayoutCode": "Preset Code",
+    "textHeaderSideBar": "Store Selection",
+    "standardPrice": "Standard Price",
+    "changedPrice": "Changed Price",
+    "currentPrice": "Current Price",
+    "button": {
+      "create": "Create",
+      "update": "Update",
+      "search": "F12:Search",
+      "print": "F07:Print",
+      "delete": "F08:Delete",
+      "confirm": "F09:Confirm",
+      "copy": "Copy",
+      "selectAll": "Select All",
+      "unSelectAll": "Unselect All",
+      "searchNormal": "Search",
+      "storeCode": "Store Code"
+    },
+    "table": {
+      "store": "Store",
+      "presetLayoutCode": "Preset Layout Code",
+      "presetLayoutName": "Preset Layout Name",
+      "applyDate": "Apply Date"
+    },
+    "modal": {
+      "store": "Store",
+      "register": "Register",
+      "update": "Update"
+    }
+  },
+  "detailMenu": {
+    "title": "プリセット設定",
+    "store": "店舗",
+    "presetLayoutName": "名称",
+    "presetLayoutCode": "プリセットレイアウトコード",
+    "apply": "適用",
+    "emptyTab": "空きタブ",
+    "cancel": "Cancel",
+    "presetTab": {
+      "title": "タブ編集",
+      "name": "タブ名称",
+      "empty": "非表示",
+      "newTab": "新しいタブ",
+      "color": "タブの色",
+      "settingTitle": "表示設定",
+      "cashRegisterDisplay": "レジ画面表示",
+      "customerDisplay": "客用画面表示",
+      "cashMachineDisplay": "レジ画面表示"
+    },
+    "buttonTab": {
+      "title": "ボタン編集",
+      "name": "ボタンタイプ",
+      "product": "商品",
+      "category": "品種",
+      "function": "機能",
+      "productPLU": "商品コード／PLUコード",
+      "changePriceTitle": "定価売価",
+      "ChangePriceButton": "売価変更",
+      "buttonName": "ボタン名称",
+      "disablePreset": "非表示",
+      "buttonColor": "ボタンの色",
+      "buttonSize": "ボタンサイス",
+      "height": "縦",
+      "width": "横",
+      "image": "イメージ画像",
+      "categoryCode": "品種コード",
+      "reference": "参照",
+      "remove": "削除",
+      "functionTitle": "機能コード",
+      "noImage": "画像を使用しない",
+      "amount": "金額",
+      "disableButton": "非表示",
+      "decideButton": "決定"
+    }
+  }
+}

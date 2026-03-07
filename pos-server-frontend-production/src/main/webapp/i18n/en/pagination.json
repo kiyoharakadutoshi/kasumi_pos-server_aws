@@ -1,0 +1,10 @@
+{
+  "paging": {
+    "currentlyPage": "Currently Page",
+    "recordNumber": "Recor Number",
+    "firstRow": "First Row",
+    "lastRow": "Last Row",
+    "previousPage": "▲ Previous Pgae",
+    "nextPage": "▼ Next Page"
+  }
+}

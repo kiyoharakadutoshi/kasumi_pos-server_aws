@@ -1,0 +1,13 @@
+{
+  "searchJournal": {
+    "title": "Journal Search",
+    "table": {
+      "store": "Store",
+      "cashRegister": "Cash Register",
+      "date": "Transaction Date",
+      "receiptNo": "Receipt No.",
+      "subtotal": "Subtotal",
+      "total": "Total"
+    }
+  }
+}

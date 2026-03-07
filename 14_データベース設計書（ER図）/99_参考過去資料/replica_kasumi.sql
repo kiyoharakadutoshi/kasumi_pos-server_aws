@@ -1,0 +1,770 @@
+/*
+ Navicat MySQL Data Transfer
+
+ Source Server         : POS-STG
+ Source Server Type    : MySQL
+ Source Server Version : 80100
+ Source Host           : 203.162.235.73:33062
+ Source Schema         : replica_kasumi
+
+ Target Server Type    : MySQL
+ Target Server Version : 80100
+ File Encoding         : 65001
+
+ Date: 25/01/2024 18:17:11
+*/
+
+SET NAMES utf8mb4;
+SET FOREIGN_KEY_CHECKS = 0;
+
+-- ----------------------------
+-- Table structure for 00_import_count
+-- ----------------------------
+DROP TABLE IF EXISTS `00_import_count`;
+CREATE TABLE `00_import_count`  (
+  `RECORD_ID` bigint NOT NULL AUTO_INCREMENT COMMENT 'レコードID',
+  `RECORD_CREATE_DATE` date NOT NULL COMMENT 'レコード作成日付',
+  `RECORD_CREATE_TIME` time NOT NULL COMMENT 'レコード作成時間',
+  `RECORD_UPDATE_DATE` date NOT NULL COMMENT 'レコード更新日付/トリガーにより更新',
+  `RECORD_UPDATE_TIME` time NOT NULL COMMENT 'レコード更新時間/トリガーにより更新',
+  `RECORD_VOID_FLAG` char(1) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL DEFAULT '' COMMENT 'レコード無効フラグ  \'\': 有効フラグ、 1:無効フラグ',
+  `Table` varchar(20) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL,
+  `TOTAL_RECORD` int NULL DEFAULT NULL COMMENT 'ファイルレコード数',
+  `INSERT_RECORD` int NULL DEFAULT NULL COMMENT 'インサートレコード数',
+  `START_DATETIME` timestamp NULL DEFAULT NULL COMMENT '開始タイムスタンプ',
+  `END_DATETIME` timestamp NULL DEFAULT NULL COMMENT '終了タイムスタンプ',
+  `ELAPSED_TIME` time NULL DEFAULT NULL COMMENT '経過時間',
+  `END_CODE` varchar(20) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL COMMENT '終了コード',
+  PRIMARY KEY (`RECORD_ID`) USING BTREE,
+  INDEX `RECORD_ID`(`RECORD_ID`) USING BTREE,
+  INDEX `CREATE_DATE`(`RECORD_CREATE_DATE`, `RECORD_CREATE_TIME`) USING BTREE,
+  INDEX `UPDATE_DATE`(`RECORD_UPDATE_DATE`, `RECORD_UPDATE_TIME`) USING BTREE,
+  INDEX `INDEX_01`(`TOTAL_RECORD`, `INSERT_RECORD`) USING BTREE
+) ENGINE = InnoDB CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci COMMENT = '01_ＰＬＵメンテ' ROW_FORMAT = Dynamic;
+
+-- ----------------------------
+-- Table structure for 01_ghplum
+-- ----------------------------
+DROP TABLE IF EXISTS `01_ghplum`;
+CREATE TABLE `01_ghplum`  (
+  `RECORD_ID` bigint NOT NULL AUTO_INCREMENT COMMENT 'レコードID',
+  `RECORD_CREATE_DATE` date NOT NULL COMMENT 'レコード作成日付',
+  `RECORD_CREATE_TIME` time NOT NULL COMMENT 'レコード作成時間',
+  `RECORD_UPDATE_DATE` date NOT NULL COMMENT 'レコード更新日付/トリガーにより更新',
+  `RECORD_UPDATE_TIME` time NOT NULL COMMENT 'レコード更新時間/トリガーにより更新',
+  `RECORD_VOID_FLAG` char(1) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL DEFAULT '' COMMENT 'レコード無効フラグ  \'\': 有効フラグ、 1:無効フラグ',
+  `PRCS_TYP` varchar(1) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL COMMENT '処理区分',
+  `PLUID` varchar(24) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL COMMENT '商品コード',
+  `STR_ID` int NULL DEFAULT NULL COMMENT '店舗コード',
+  `TAXBLTY_CD` smallint NULL DEFAULT NULL COMMENT '税種別コード',
+  `DSPL_DESCR` varchar(20) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL COMMENT '単品名称',
+  `DCPT_DESCR` varchar(10) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL COMMENT 'レシート記述名',
+  `STR_HIER_ID` int NULL DEFAULT NULL COMMENT '店舗階層コード',
+  `LN_ITM_CD` int NULL DEFAULT NULL COMMENT '商品／非商品識別コード',
+  `SLS_RSTRCT_GRP` int NULL DEFAULT NULL COMMENT '限定商品グループ',
+  `DFLT_RTN_LOC_ID` varchar(10) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL COMMENT '商品返品場所',
+  `UOM` varchar(10) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL COMMENT '単品販売単位',
+  `UNT_QTY` decimal(9, 2) NULL DEFAULT NULL COMMENT '最小販売単位',
+  `MD_FG` smallint NULL DEFAULT NULL COMMENT '値引識別フラグ',
+  `QTY_RQED_FG` smallint NULL DEFAULT NULL COMMENT '数量登録必須フラグ',
+  `QTY_ALLOWD` smallint NULL DEFAULT NULL COMMENT '数量登録可否フラグ',
+  `SLS_AURH_FG` smallint NULL DEFAULT NULL COMMENT '販売時の承認フラグ',
+  `MNL_PRC_LVL` smallint NULL DEFAULT NULL COMMENT '手入力価格変更フラグ',
+  `SRLZD_MDSE_FG` smallint NULL DEFAULT NULL COMMENT '商品特定フラグ',
+  `FD_STMP_FG` smallint NULL DEFAULT NULL COMMENT 'フードスタンプ対象',
+  `WIC_FG` smallint NULL DEFAULT NULL COMMENT 'ＷＩＣ有効商品フラグ',
+  `PERPET_INV_CD` smallint NULL DEFAULT NULL COMMENT '在庫コード',
+  `RTL_PRC NV_CD` int NULL DEFAULT NULL COMMENT '売価',
+  `UNT_CST` decimal(9, 2) NULL DEFAULT NULL COMMENT '単位原価',
+  `MIN_MDSE_AMT` int NULL DEFAULT NULL COMMENT '最低取引額',
+  `MAX_MDSE_AMT` int NULL DEFAULT NULL COMMENT '最高取引額',
+  `DFLT_SLS_LOC_ID` varchar(10) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL COMMENT '商品の売上場所',
+  `ITM_MVMNT_FG` smallint NULL DEFAULT NULL COMMENT '商品移動',
+  `RCPT_DESCR_1` varchar(20) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL COMMENT 'ＶＦＤ表示名称',
+  `RCPT_DESCR_2` varchar(20) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL COMMENT 'レシート記述名称２',
+  `RCPT_DESCR_3` varchar(20) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL COMMENT 'レシート記述名称３',
+  `RCPT_DESCR_4` varchar(20) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL COMMENT 'レシート記述名称４',
+  `PRC_MTHD` smallint NULL DEFAULT NULL COMMENT '価格算出方法',
+  `DEAL_QTY` decimal(9, 2) NULL DEFAULT NULL COMMENT '組合せ成立数量',
+  `DEAL_PRC` int NULL DEFAULT NULL COMMENT '組合せ成立金額',
+  `PRC_RQRD_FG` smallint NULL DEFAULT NULL COMMENT 'オペレータによる金額入力',
+  `UNT_PRC` int NULL DEFAULT NULL COMMENT '販売単位価格',
+  `RTN_PRC` int NULL DEFAULT NULL COMMENT '返品価格',
+  `PRC_GRP_ID` smallint NULL DEFAULT NULL COMMENT '価格グループ',
+  `EVENT_ID` varchar(12) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL COMMENT '企画番号',
+  `MDSE_STRC_NBR1` varchar(12) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL COMMENT '業態',
+  `MDSE_STRC_NBR2` varchar(12) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL COMMENT 'グループ',
+  `MDSE_STRC_NBR3` varchar(12) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL COMMENT '部門',
+  `MDSE_STRC_NBR4` varchar(12) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL COMMENT 'クラス',
+  `MDSE_STRC_NBR5` varchar(12) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL COMMENT '品群',
+  `MDSE_STRC_NBR6` varchar(12) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL COMMENT '品種',
+  `MDSE_STRC_NBR7` varchar(12) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL COMMENT '分類',
+  `MDSE_STRC_NBR8` varchar(12) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL COMMENT '商品階層８',
+  `MDSE_STRC_NBR9` varchar(12) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL COMMENT '商品階層９',
+  `PROMO_BGN_TS` varchar(20) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL COMMENT 'プロモーション開始時間',
+  `PROMO_END_TS` varchar(20) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL COMMENT 'プロモーション終了時間',
+  `PROMO_PRC_MTHD_` smallint NULL DEFAULT NULL COMMENT 'プロモーション中の価格計算',
+  `PROMO_DEAL_QTY` decimal(9, 2) NULL DEFAULT NULL COMMENT 'プロモーション契約数',
+  `PROMO_DEAL_PRC` int NULL DEFAULT NULL COMMENT 'プロモーション契約価格',
+  `PROMO_UNT_PRC` int NULL DEFAULT NULL COMMENT 'プロモーション単価',
+  `PROMO_EXCL_OFFER` smallint NULL DEFAULT NULL COMMENT 'プロモーション申込',
+  `PROMO_EXPN_FG` smallint NULL DEFAULT NULL COMMENT 'プロモーション費用',
+  `PROMO_GL_ACCT` varchar(20) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL COMMENT 'プロモーション貯金',
+  `VAT_CD` varchar(20) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL COMMENT 'ＶＡＴコード',
+  `GL_ACCT_ID` varchar(20) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL COMMENT 'Ｇ／Ｌ口座ナンバー',
+  `ITM_GRP_CD` smallint NULL DEFAULT NULL COMMENT '商品グループコード',
+  `NON_MDSE_FG` smallint NULL DEFAULT NULL COMMENT '非商品フラグ',
+  `PROMO_EXCL_DISC` smallint NULL DEFAULT NULL COMMENT 'プロモーション割引',
+  `DEAL_EXCL_OFFER` smallint NULL DEFAULT NULL COMMENT '契約申込',
+  `DEAL_EXCL_DISC` smallint NULL DEFAULT NULL COMMENT '契約値引',
+  `DEAL_MAX_QTY` decimal(9, 2) NULL DEFAULT NULL COMMENT '契約最高数量',
+  `PROMO_DEAL_MAX_QTY` decimal(9, 2) NULL DEFAULT NULL COMMENT 'プロモーション最高価格',
+  `LINK_ITM_FG` smallint NULL DEFAULT NULL COMMENT '値引商品',
+  `PRCH_RSTRCT_GRP_ID` int NULL DEFAULT NULL COMMENT '購買制限グループ',
+  `STR_FG` smallint NULL DEFAULT NULL COMMENT 'テナントフラグ',
+  `PLU_QUAL_CD` smallint NULL DEFAULT NULL COMMENT 'ＰＬＵ属性の有無',
+  `DFLT_DP_LOC_ID` varchar(20) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL COMMENT '取引遅延のロケーションコード',
+  `TND_RSTRCT_FG` smallint NULL DEFAULT NULL COMMENT '支払制限フラグ',
+  `DISC_CD` smallint NULL DEFAULT NULL COMMENT '割引コード',
+  `GSFD_MBR_PRC` int NULL DEFAULT NULL COMMENT '会員価格',
+  `GSFD_MINL_DISC_ITEM_EXCL_FG` smallint NULL DEFAULT NULL COMMENT '単品値引除外',
+  `GSFD_MINL_DISC_TRAN_EXCL_FG` smallint NULL DEFAULT NULL COMMENT '小計マニュアル値引除外',
+  `MBR_MTHD` smallint NULL DEFAULT NULL COMMENT '会員価格方式',
+  `RCVD_QTY` int NULL DEFAULT NULL COMMENT '仕入数',
+  `INV_QTY` int NULL DEFAULT NULL COMMENT '在庫数',
+  `ENTRY_DY` varchar(8) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL COMMENT '登録日',
+  `LST_SLS_DY` varchar(8) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL COMMENT '最終売上日',
+  `REG_PRC` int NULL DEFAULT NULL COMMENT '定価',
+  `SCAN_ID` varchar(24) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL COMMENT 'スキャンコード',
+  `SCAN_TYP` smallint NULL DEFAULT NULL COMMENT 'ＰＬＵタイプ',
+  `COUP_FAM_CD` int NULL DEFAULT NULL COMMENT 'クーポンコード',
+  `MFG_ID` int NULL DEFAULT NULL COMMENT 'メーカ発行クーポンコード',
+  `ACCEL_ITM_FG` smallint NULL DEFAULT NULL COMMENT '商品コードの識別',
+  `ITM_ID` varchar(24) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL COMMENT '商品コード',
+  `TNT_ID` int NULL DEFAULT NULL COMMENT 'テナントコード',
+  `PLU_QUAL_TYP2` int NULL DEFAULT NULL COMMENT 'ＰＬＵ属性',
+  `CRT_DT` varchar(8) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL COMMENT '作成日',
+  `PRCS_DT` varchar(8) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL COMMENT '処理日',
+  `RCV_DT` varchar(8) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL COMMENT '受信日',
+  `PRCS_FG` varchar(1) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL COMMENT '処理フラグ',
+  PRIMARY KEY (`RECORD_ID`) USING BTREE,
+  INDEX `RECORD_ID`(`RECORD_ID`) USING BTREE,
+  INDEX `CREATE_DATE`(`RECORD_CREATE_DATE`, `RECORD_CREATE_TIME`) USING BTREE,
+  INDEX `UPDATE_DATE`(`RECORD_UPDATE_DATE`, `RECORD_UPDATE_TIME`) USING BTREE,
+  INDEX `INDEX_01`(`PLUID`, `STR_ID`) USING BTREE
+) ENGINE = InnoDB AUTO_INCREMENT = 3145690 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci COMMENT = '01_ＰＬＵメンテ' ROW_FORMAT = Dynamic;
+
+-- ----------------------------
+-- Table structure for 02_ghdiscountm
+-- ----------------------------
+DROP TABLE IF EXISTS `02_ghdiscountm`;
+CREATE TABLE `02_ghdiscountm`  (
+  `RECORD_ID` bigint NOT NULL AUTO_INCREMENT COMMENT 'レコードID',
+  `RECORD_CREATE_DATE` date NOT NULL COMMENT 'レコード作成日付',
+  `RECORD_CREATE_TIME` time NOT NULL COMMENT 'レコード作成時間',
+  `RECORD_UPDATE_DATE` date NOT NULL COMMENT 'レコード更新日付/トリガーにより更新',
+  `RECORD_UPDATE_TIME` time NOT NULL COMMENT 'レコード更新時間/トリガーにより更新',
+  `RECORD_VOID_FLAG` char(1) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL DEFAULT '' COMMENT 'レコード無効フラグ  \'\': 有効フラグ、 1:無効フラグ',
+  `PRCS_TYP` varchar(1) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL COMMENT '処理区分 Ａ：登録　Ｕ：更新　Ｄ：削除',
+  `STR_ID` int NOT NULL COMMENT '店舗コード ０は不可',
+  `EVNT_NBR` varchar(7) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL COMMENT '企画Ｎo． 左詰  企画マスタに存在すること',
+  `MBR_FG` smallint NOT NULL COMMENT '会員フラグ ０：一般特売  １：会員特売',
+  `PLU_ID` varchar(24) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL COMMENT '商品コード 左詰  数字で最大19桁。 特にＰＬＵコードを使用しない場合はスキャンコードと同じ値を入れておくこと',
+  `EVNT_BGN_TM` varchar(8) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL COMMENT '特売開始日 ＹＹＹＹＭＭＤＤ形式で８桁フルに設定すること',
+  `EVNT_END_TM` varchar(8) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL COMMENT '特売終了日 ＹＹＹＹＭＭＤＤ形式で８桁フルに設定すること',
+  `EVNT_HLDL_DY` varchar(3) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL COMMENT '特売削除日数 期間終了後の削除猶予期間 ００２－０９９ 未使用時はＮＵＬＬ',
+  `EVNT_SRC` smallint NULL DEFAULT NULL COMMENT '特売優先区分 現在１固定  ０：店舗優先  １：本部優先',
+  `EVNT_EXCL_FG` smallint NULL DEFAULT NULL COMMENT '特売保留フラグ ０：保留しない  １：保留する',
+  `TIME_SERVICE_FG` smallint NULL DEFAULT NULL COMMENT 'タイムサービスフラグ ０：期間  １：期間＆曜日  ２：期間＆時間  ３：期間＆時間＆曜日',
+  `MON_EXCL_FG` smallint NULL DEFAULT NULL COMMENT '月曜日除外フラグ ０：除外しない  １：除外する',
+  `TUES_EXCL_FG` smallint NULL DEFAULT NULL COMMENT '火曜日除外フラグ ０：除外しない  １：除外する',
+  `WED_EXCL_FG` smallint NULL DEFAULT NULL COMMENT '水曜日除外フラグ ０：除外しない  １：除外する',
+  `THUS_EXCL_FG` smallint NULL DEFAULT NULL COMMENT '木曜日除外フラグ ０：除外しない  １：除外する',
+  `FRI_EXCL_FG` smallint NULL DEFAULT NULL COMMENT '金曜日除外フラグ ０：除外しない  １：除外する',
+  `SAT_EXCL_FG` smallint NULL DEFAULT NULL COMMENT '土曜日除外フラグ ０：除外しない  １：除外する',
+  `SUN_EXCL_FG` smallint NULL DEFAULT NULL COMMENT '日曜日除外フラグ ０：除外しない  ２：除外する',
+  `PROMO_COST` int NULL DEFAULT NULL COMMENT '特売原価 ０以上',
+  `DISC_MTHD` smallint NULL DEFAULT NULL COMMENT '割引タイプ 現在６固定  １：差額  ２：％（率）  ６：金額',
+  `DISC_VALUE` decimal(9, 2) NULL DEFAULT NULL COMMENT '特売価格 ',
+  `DISC_ITM_LMT` decimal(9, 2) NULL DEFAULT NULL COMMENT '個数制限 現在未使用  ０固定',
+  `PROMO_BGN_TM` varchar(4) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL COMMENT '特売開始時間 ＨＨＭＭ形式で４桁フルに設定すること（２４時間制）',
+  `PROMO_END_TM` varchar(4) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL COMMENT '特売終了時間 ＨＨＭＭ形式で４桁フルに設定すること（２４時間制）',
+  `BFR_EVNT_BGN_TM` varchar(8) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL COMMENT '事前特売開始日 現在未使用  Ｎull固定',
+  `BFR_DISC_MTHD` smallint NULL DEFAULT NULL COMMENT '事前割引タイプ 現在未使用  ０固定',
+  `BFR_DISC_VALUE` decimal(9, 2) NULL DEFAULT NULL COMMENT '事前特売価格 現在未使用  ０固定',
+  `AFT_DISC_END_TM` varchar(8) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL COMMENT '継続特売終了日 現在未使用  Ｎull固定',
+  `AFT_DISC_MTHD` smallint NULL DEFAULT NULL COMMENT '継続割引タイプ 現在未使用  ０固定',
+  `AFT_DISC_VALUE` decimal(9, 2) NULL DEFAULT NULL COMMENT '継続特売価格 現在未使用  ０固定',
+  `PRC_GRP_ID` smallint NULL DEFAULT NULL COMMENT '価格グループＩＤ 現在未使用  ０固定',
+  `MDSE_XREF_NO` int NULL DEFAULT NULL COMMENT '商品階層コード 現在未使用  ０固定',
+  `PLU_QUAL_TYP` int NULL DEFAULT NULL COMMENT 'ＰＬＵ属性 現在未使用  ０固定',
+  `ALT_NO` smallint NULL DEFAULT NULL COMMENT 'ＡＬＴコード 現在未使用  ０固定',
+  `SUB_ID` varchar(20) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL COMMENT 'サブＩＤ 現在未使用  Ｎull固定',
+  `DG_ID` varchar(20) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL COMMENT '割引グループＩＤ 現在未使用  Ｎull固定',
+  `AUX_CD` smallint NULL DEFAULT NULL COMMENT 'ＡＵＸコード ０：一般  １：会員',
+  `DISC_ACCT` varchar(20) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL COMMENT '割引アカウント 現在未使用  Ｎull固定',
+  `DISC_CLASS_ID` int NULL DEFAULT NULL COMMENT '割引クラスＩＤ 現在未使用  ０固定',
+  `MAX_DISC_AMT` int NULL DEFAULT NULL COMMENT '特売最大値引額 現在未使用  ０固定',
+  `DISC_TRAN_CNT` smallint NULL DEFAULT NULL COMMENT '割引トラン数 現在未使用  ０固定',
+  `BATCH_NBR` int NULL DEFAULT NULL COMMENT 'バッチＮｏ． 現在未使用  ０固定',
+  `SEQ_ID` smallint NULL DEFAULT NULL COMMENT 'シーケンス番号 現在未使用  ０固定',
+  `MIN_QTY` decimal(9, 2) NULL DEFAULT NULL COMMENT '成立数量 現在未使用  ０固定',
+  `MIN_AMT` int NULL DEFAULT NULL COMMENT '成立価格 現在未使用  ０固定',
+  `AUX_CD2` smallint NULL DEFAULT NULL COMMENT 'ＡＵＸコード２ 現在未使用  ０固定',
+  `TNT_ID` int NULL DEFAULT NULL COMMENT 'テナントコード 現在未使用  ０固定',
+  `PLU_QUAL_TYP2` int NULL DEFAULT NULL COMMENT 'ＰＬＵ属性２ 現在未使用  ０固定',
+  `CRT_DT` varchar(8) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL COMMENT '作成日 ＹＹＹＹＭＭＤＤ形式で8桁フルに設定すること',
+  `PRCS_DT` varchar(8) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL COMMENT '処理日 ＹＹＹＹＭＭＤＤ形式で8桁フルに設定すること',
+  `RCV_DT` varchar(8) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL COMMENT '受信日 Ｎｕｌｌ固定  システム内で使用',
+  `PRCS_FG` varchar(1) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL COMMENT '処理フラグ ＊固定  システム内で使用（＊：未処理  １：処理済）',
+  PRIMARY KEY (`RECORD_ID`) USING BTREE,
+  INDEX `RECORD_ID`(`RECORD_ID`) USING BTREE,
+  INDEX `CREATE_DATE`(`RECORD_CREATE_DATE`, `RECORD_CREATE_TIME`) USING BTREE,
+  INDEX `UPDATE_DATE`(`RECORD_UPDATE_DATE`, `RECORD_UPDATE_TIME`) USING BTREE,
+  INDEX `INDEX_01`(`STR_ID`, `EVNT_NBR`, `EVNT_BGN_TM`, `EVNT_END_TM`, `PLU_ID`, `MBR_FG`) USING BTREE
+) ENGINE = InnoDB AUTO_INCREMENT = 400028 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci COMMENT = '02_特売マスタ' ROW_FORMAT = Dynamic;
+
+-- ----------------------------
+-- Table structure for 03_ghbundlem
+-- ----------------------------
+DROP TABLE IF EXISTS `03_ghbundlem`;
+CREATE TABLE `03_ghbundlem`  (
+  `RECORD_ID` bigint NOT NULL AUTO_INCREMENT COMMENT 'レコードID',
+  `RECORD_CREATE_DATE` date NOT NULL COMMENT 'レコード作成日付',
+  `RECORD_CREATE_TIME` time NOT NULL COMMENT 'レコード作成時間',
+  `RECORD_UPDATE_DATE` date NOT NULL COMMENT 'レコード更新日付/トリガーにより更新',
+  `RECORD_UPDATE_TIME` time NOT NULL COMMENT 'レコード更新時間/トリガーにより更新',
+  `RECORD_VOID_FLAG` char(1) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL DEFAULT '' COMMENT 'レコード無効フラグ  \'\': 有効フラグ、 1:無効フラグ',
+  `PRCS_TYP` varchar(1) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL COMMENT '処理区分',
+  `STR_ID` int NULL DEFAULT NULL COMMENT '店舗コード',
+  `PARNT_ENVT_ID` varchar(7) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL COMMENT '関連企画Ｎo.',
+  `EVNT_NBR` varchar(7) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL COMMENT '企画Ｎo.',
+  `DESCR` varchar(24) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL COMMENT 'Ｍ＆Ｍ ＮＯ',
+  `MBR_FG` smallint NULL DEFAULT NULL COMMENT '会員フラグ',
+  `PLU_ID` varchar(24) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL COMMENT '商品コード',
+  `EVNT_BGN_TM` varchar(8) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL COMMENT '組合せ開始日',
+  `EVNT_END_TM` varchar(8) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL COMMENT '組合せ終了日',
+  `EVNT_TYP` smallint NULL DEFAULT NULL COMMENT '企画区分',
+  `EVNT_BDGT` int NULL DEFAULT NULL COMMENT '企画予算',
+  `EVNT_DEL_DY` varchar(8) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL COMMENT '組合せ自動削除日数',
+  `EVNT_SRC` smallint NULL DEFAULT NULL COMMENT '組合せ優先区分',
+  `EVNT_EXCL_FG` smallint NULL DEFAULT NULL COMMENT '組合せ保留フラグ',
+  `TIME_SERVICE_FG` smallint NULL DEFAULT NULL COMMENT 'タイムサービスフラグ',
+  `MON_EXCL_FG` smallint NULL DEFAULT NULL COMMENT '月曜日除外フラグ',
+  `TUES_EXCL_FG` smallint NULL DEFAULT NULL COMMENT '火曜日除外フラグ',
+  `WED_EXCL_FG` smallint NULL DEFAULT NULL COMMENT '水曜日除外フラグ',
+  `THUS_EXCL_FG` smallint NULL DEFAULT NULL COMMENT '木曜日除外フラグ',
+  `FRI_EXCL_FG` smallint NULL DEFAULT NULL COMMENT '金曜日除外フラグ',
+  `SAT_EXCL_FG` smallint NULL DEFAULT NULL COMMENT '土曜日除外フラグ',
+  `SUN_EXCL_FG` smallint NULL DEFAULT NULL COMMENT '日曜日除外フラグ',
+  `YOBI1` smallint NULL DEFAULT NULL COMMENT '？？？？？？？？',
+  `PROMO_BGN_TM` varchar(4) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL COMMENT '特売開始時間',
+  `PROMO_END_TM` varchar(4) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL COMMENT '特売終了時間',
+  `DISC_MTHD1` smallint NULL DEFAULT NULL COMMENT '割引タイプ１',
+  `DISC_VALUE1` decimal(9, 2) NULL DEFAULT NULL COMMENT '特売価格１',
+  `MIN_QTY1` decimal(9, 2) NULL DEFAULT NULL COMMENT 'Ｍ＆Ｍ数',
+  `MIN_AMT1` int NULL DEFAULT NULL COMMENT 'Ｍ＆Ｍ売価',
+  `DISC_MTHD2` smallint NULL DEFAULT NULL COMMENT '割引タイプ２',
+  `DISC_VALUE2` decimal(9, 2) NULL DEFAULT NULL COMMENT '特売価格２',
+  `MIN_QTY2` decimal(9, 2) NULL DEFAULT NULL COMMENT 'Ｍ＆Ｍ数２',
+  `MIN_AMT2` int NULL DEFAULT NULL COMMENT 'Ｍ＆Ｍ売価２',
+  `DISC_MTHD3` smallint NULL DEFAULT NULL COMMENT '割引タイプ３',
+  `DISC_VALUE3` decimal(9, 2) NULL DEFAULT NULL COMMENT '特売価格３',
+  `MIN_QTY3` decimal(9, 2) NULL DEFAULT NULL COMMENT 'Ｍ＆Ｍ数３',
+  `MIN_AMT3` int NULL DEFAULT NULL COMMENT 'Ｍ＆Ｍ売価３',
+  `DISC_MTHD4` smallint NULL DEFAULT NULL COMMENT '割引タイプ４',
+  `DISC_VALUE4` decimal(9, 2) NULL DEFAULT NULL COMMENT '特売価格４',
+  `MIN_QTY4` decimal(9, 2) NULL DEFAULT NULL COMMENT '成立数量４',
+  `MIN_AMT4` int NULL DEFAULT NULL COMMENT '成立価格４',
+  `DISC_MTHD5` smallint NULL DEFAULT NULL COMMENT '割引タイプ５',
+  `DISC_VALUE5` decimal(9, 2) NULL DEFAULT NULL COMMENT '特売価格５',
+  `MIN_QTY5` decimal(9, 2) NULL DEFAULT NULL COMMENT '成立数量５',
+  `MIN_AMT5` int NULL DEFAULT NULL COMMENT '成立価格５',
+  `DISC_MTHD6` smallint NULL DEFAULT NULL COMMENT '割引タイプ６',
+  `DISC_VALUE6` decimal(9, 2) NULL DEFAULT NULL COMMENT '特売価格６',
+  `MIN_QTY6` decimal(9, 2) NULL DEFAULT NULL COMMENT '成立数量６',
+  `MIN_AMT6` int NULL DEFAULT NULL COMMENT '成立価格６',
+  `DISC_MTHD7` smallint NULL DEFAULT NULL COMMENT '割引タイプ７',
+  `DISC_VALUE7` decimal(9, 2) NULL DEFAULT NULL COMMENT '特売価格７',
+  `MIN_QTY7` decimal(9, 2) NULL DEFAULT NULL COMMENT '成立数量７',
+  `MIN_AMT7` int NULL DEFAULT NULL COMMENT '成立価格７',
+  `DISC_MTHD8` smallint NULL DEFAULT NULL COMMENT '割引タイプ８',
+  `DISC_VALUE8` decimal(9, 2) NULL DEFAULT NULL COMMENT '特売価格８',
+  `MIN_QTY8` decimal(9, 2) NULL DEFAULT NULL COMMENT '成立数量８',
+  `MIN_AMT8` int NULL DEFAULT NULL COMMENT '成立価格８',
+  `DISC_MTHD9` smallint NULL DEFAULT NULL COMMENT '割引タイプ９',
+  `DISC_VALUE9` decimal(9, 2) NULL DEFAULT NULL COMMENT '特売価格９',
+  `MIN_QTY9` decimal(9, 2) NULL DEFAULT NULL COMMENT '成立数量９',
+  `MIN_AMT9` int NULL DEFAULT NULL COMMENT '成立価格９',
+  `DISC_MTHD10` smallint NULL DEFAULT NULL COMMENT '割引タイプ１０',
+  `DISC_VALUE10` decimal(9, 2) NULL DEFAULT NULL COMMENT '特売価格１０',
+  `MIN_QTY10` decimal(9, 2) NULL DEFAULT NULL COMMENT '成立数量１０',
+  `MIN_AMT10` int NULL DEFAULT NULL COMMENT '成立価格１０',
+  `BFR_PRACTICE_BGN_TM` varchar(8) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL COMMENT '事前組合せ開始日',
+  `EVNT_DISC_MTHD1` smallint NULL DEFAULT NULL COMMENT '事前割引タイプ１',
+  `EVNT_DISC_VALUE1` decimal(9, 2) NULL DEFAULT NULL COMMENT '事前特売価格１',
+  `EVNT_MIN_QTY1` decimal(9, 2) NULL DEFAULT NULL COMMENT '事前成立数量１',
+  `EVNT_MIN_AMT1` int NULL DEFAULT NULL COMMENT '事前成立価格１',
+  `EVNT_DISC_MTHD2` smallint NULL DEFAULT NULL COMMENT '事前割引タイプ２',
+  `EVNT_DISC_VALUE2` decimal(9, 2) NULL DEFAULT NULL COMMENT '事前特売価格２',
+  `EVNT_MIN_QTY2` decimal(9, 2) NULL DEFAULT NULL COMMENT '事前成立数量２',
+  `EVNT_MIN_AMT2` int NULL DEFAULT NULL COMMENT '事前成立価格２',
+  `EVNT_DISC_MTHD3` smallint NULL DEFAULT NULL COMMENT '事前割引タイプ3',
+  `EVNT_DISC_VALUE3` decimal(9, 2) NULL DEFAULT NULL COMMENT '事前特売価格３',
+  `EVNT_MIN_QTY3` decimal(9, 2) NULL DEFAULT NULL COMMENT '事前成立数量３',
+  `EVNT_MIN_AMT3` int NULL DEFAULT NULL COMMENT '事前成立価格３',
+  `EVNT_DISC_MTHD4` smallint NULL DEFAULT NULL COMMENT '事前割引タイプ４',
+  `EVNT_DISC_VALUE4` decimal(9, 2) NULL DEFAULT NULL COMMENT '事前特売価格４',
+  `EVNT_MIN_QTY4` decimal(9, 2) NULL DEFAULT NULL COMMENT '事前成立数量４',
+  `EVNT_MIN_AMT4` int NULL DEFAULT NULL COMMENT '事前成立価格４',
+  `EVNT_DISC_MTHD5` smallint NULL DEFAULT NULL COMMENT '事前割引タイプ5',
+  `EVNT_DISC_VALUE5` decimal(9, 2) NULL DEFAULT NULL COMMENT '事前特売価格５',
+  `EVNT_MIN_QTY5` decimal(9, 2) NULL DEFAULT NULL COMMENT '事前成立数量５',
+  `EVNT_MIN_AMT5` int NULL DEFAULT NULL COMMENT '事前成立価格５',
+  `EVNT_DISC_MTHD6` smallint NULL DEFAULT NULL COMMENT '事前割引タイプ6',
+  `EVNT_DISC_VALUE6` decimal(9, 2) NULL DEFAULT NULL COMMENT '事前特売価格６',
+  `EVNT_MIN_QTY6` decimal(9, 2) NULL DEFAULT NULL COMMENT '事前成立数量６',
+  `EVNT_MIN_AMT6` int NULL DEFAULT NULL COMMENT '事前成立価格６',
+  `EVNT_DISC_MTHD7` smallint NULL DEFAULT NULL COMMENT '事前割引タイプ７',
+  `EVNT_DISC_VALUE7` decimal(9, 2) NULL DEFAULT NULL COMMENT '事前特売価格７',
+  `EVNT_MIN_QTY7` decimal(9, 2) NULL DEFAULT NULL COMMENT '事前成立数量７',
+  `EVNT_MIN_AMT7` int NULL DEFAULT NULL COMMENT '事前成立価格７',
+  `EVNT_DISC_MTHD8` smallint NULL DEFAULT NULL COMMENT '事前割引タイプ８',
+  `EVNT_DISC_VALUE8` decimal(9, 2) NULL DEFAULT NULL COMMENT '事前特売価格８',
+  `BFR_MIN_QTY8` decimal(9, 2) NULL DEFAULT NULL COMMENT '事前成立数量８',
+  `BFR_MIN_AMT8` int NULL DEFAULT NULL COMMENT '事前成立価格８',
+  `BFR_DISC_MTHD9` smallint NULL DEFAULT NULL COMMENT '事前割引タイプ９',
+  `BFR_DISC_VALUE9` decimal(9, 2) NULL DEFAULT NULL COMMENT '事前特売価格９',
+  `BFR_MIN_QTY9` decimal(9, 2) NULL DEFAULT NULL COMMENT '事前成立数量９',
+  `BFR_MIN_AMT9` int NULL DEFAULT NULL COMMENT '事前成立価格９',
+  `BFR_DISC_MTHD10` smallint NULL DEFAULT NULL COMMENT '事前割引タイプ１０',
+  `BFR_DISC_VALUE10` decimal(9, 2) NULL DEFAULT NULL COMMENT '事前特売価格１０',
+  `BFR_MIN_QTY10` decimal(9, 2) NULL DEFAULT NULL COMMENT '事前成立数量１０',
+  `BFR_MIN_AMT10` int NULL DEFAULT NULL COMMENT '事前成立価格１０',
+  `AFT_PRCTICE_END_TM` varchar(8) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL COMMENT '継続組合せ終了日',
+  `AFT_DISC_MTHD1` smallint NULL DEFAULT NULL COMMENT '継続割引タイプ１',
+  `AFT_DISC_VALUE1` decimal(9, 2) NULL DEFAULT NULL COMMENT '継続特売価格１',
+  `AFT_MIN_QTY1` decimal(9, 2) NULL DEFAULT NULL COMMENT '継続成立数量１',
+  `AFT_MIN_AMT1` int NULL DEFAULT NULL COMMENT '継続成立価格１',
+  `AFT_DISC_MTHD2` smallint NULL DEFAULT NULL COMMENT '継続割引タイプ２',
+  `AFT_DISC_VALUE2` decimal(9, 2) NULL DEFAULT NULL COMMENT '継続特売価格２',
+  `AFT_MIN_QTY2` decimal(9, 2) NULL DEFAULT NULL COMMENT '継続成立数量２',
+  `AFT_MIN_AMT2` int NULL DEFAULT NULL COMMENT '継続成立価格2',
+  `AFT_DISC_MTHD3` smallint NULL DEFAULT NULL COMMENT '継続割引タイプ３',
+  `AFT_DISC_VALUE3` decimal(9, 2) NULL DEFAULT NULL COMMENT '継続特売価格３',
+  `AFT_MIN_QTY3` decimal(9, 2) NULL DEFAULT NULL COMMENT '継続成立数量3',
+  `AFT_MIN_AMT3` int NULL DEFAULT NULL COMMENT '継続成立価格3',
+  `AFT_DISC_MTHD4` smallint NULL DEFAULT NULL COMMENT '継続割引タイプ４',
+  `AFT_DISC_VALUE4` decimal(9, 2) NULL DEFAULT NULL COMMENT '継続特売価格4',
+  `AFT_MIN_QTY4` decimal(9, 2) NULL DEFAULT NULL COMMENT '継続成立数量4',
+  `AFT_MIN_AMT4` int NULL DEFAULT NULL COMMENT '継続成立価格4',
+  `AFT_DISC_MTHD5` smallint NULL DEFAULT NULL COMMENT '継続割引タイプ5',
+  `AFT_DISC_VALUE5` decimal(9, 2) NULL DEFAULT NULL COMMENT '継続特売価格5',
+  `AFT_MIN_QTY5` decimal(9, 2) NULL DEFAULT NULL COMMENT '継続成立数量5',
+  `AFT_MIN_AMT5` int NULL DEFAULT NULL COMMENT '継続成立価格5',
+  `AFT_DISC_MTHD6` smallint NULL DEFAULT NULL COMMENT '継続割引タイプ6',
+  `AFT_DISC_VALUE6` decimal(9, 2) NULL DEFAULT NULL COMMENT '継続特売価格6',
+  `AFT_MIN_QTY6` decimal(9, 2) NULL DEFAULT NULL COMMENT '継続成立数量6',
+  `AFT_MIN_AMT6` int NULL DEFAULT NULL COMMENT '継続成立価格6',
+  `AFT_DISC_MTHD7` smallint NULL DEFAULT NULL COMMENT '継続割引タイプ7',
+  `AFT_DISC_VALUE7` decimal(9, 2) NULL DEFAULT NULL COMMENT '継続特売価格7',
+  `AFT_MIN_QTY7` decimal(9, 2) NULL DEFAULT NULL COMMENT '継続成立数量7',
+  `AFT_MIN_AMT7` int NULL DEFAULT NULL COMMENT '継続成立価格7',
+  `AFT_DISC_MTHD8` smallint NULL DEFAULT NULL COMMENT '継続割引タイプ8',
+  `AFT_DISC_VALUE8` decimal(9, 2) NULL DEFAULT NULL COMMENT '継続特売価格8',
+  `AFT_MIN_QTY8` decimal(9, 2) NULL DEFAULT NULL COMMENT '継続成立数量8',
+  `AFT_MIN_AMT8` int NULL DEFAULT NULL COMMENT '継続成立価格8',
+  `AFT_DISC_MTHD9` smallint NULL DEFAULT NULL COMMENT '継続割引タイプ9',
+  `AFT_DISC_VALUE9` decimal(9, 2) NULL DEFAULT NULL COMMENT '継続特売価格9',
+  `AFT_MIN_QTY9` decimal(9, 2) NULL DEFAULT NULL COMMENT '継続成立数量9',
+  `AFT_MIN_AMT9` int NULL DEFAULT NULL COMMENT '継続成立価格9',
+  `AFT_DISC_MTHD10` smallint NULL DEFAULT NULL COMMENT '継続割引タイプ１０',
+  `AFT_DISC_VALUE10` decimal(9, 2) NULL DEFAULT NULL COMMENT '継続特売価格１０',
+  `AFT_MIN_QTY10` decimal(9, 2) NULL DEFAULT NULL COMMENT '継続成立数量１０',
+  `AFT_MIN_AMT10` int NULL DEFAULT NULL COMMENT '継続成立価格１０',
+  `STR_HIER_ID` int NULL DEFAULT NULL COMMENT '商品階層コード',
+  `PLU_QUAL_TYP` int NULL DEFAULT NULL COMMENT 'ＰＬU属性',
+  `ALT_CD` smallint NULL DEFAULT NULL COMMENT 'ALTコード',
+  `DG_ID` varchar(20) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL COMMENT '割引グループID',
+  `AUX_CD` smallint NULL DEFAULT NULL COMMENT 'AUXコード',
+  `DISC_MTHD` smallint NULL DEFAULT NULL COMMENT '割引タイプ',
+  `DISC_ACCT` varchar(20) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL COMMENT '割引アカウント',
+  `DISC_CLSS_ID` int NULL DEFAULT NULL COMMENT '割引クラスID',
+  `DISC_ITM_LMT` decimal(9, 2) NULL DEFAULT NULL COMMENT '個数制限',
+  `MAX_DISC_AMT` smallint NULL DEFAULT NULL COMMENT '特売最大値引き額',
+  `DISC_TRAN_CNT` smallint NULL DEFAULT NULL COMMENT '割引トラン数',
+  `BATCH_NBR` int NULL DEFAULT NULL COMMENT 'バッチＮo.',
+  `SEQ_ID` smallint NULL DEFAULT NULL COMMENT 'シーケンス番号',
+  `QTY` decimal(9, 2) NULL DEFAULT NULL COMMENT '数量',
+  `AUX_CD2` smallint NULL DEFAULT NULL COMMENT 'AUXコード2',
+  `TNT_ID` int NULL DEFAULT NULL COMMENT 'テナントコード',
+  `PLU_QUAL_TYP2` int NULL DEFAULT NULL COMMENT 'PLU属性２',
+  `CRT_DT` varchar(8) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL COMMENT '作成日',
+  `PRCS_DT` varchar(8) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL COMMENT '処理日',
+  `RCV_DT` varchar(8) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL COMMENT '受信日',
+  `PRCS_FG` varchar(1) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL COMMENT '処理フラグ',
+  PRIMARY KEY (`RECORD_ID`) USING BTREE,
+  INDEX `RECORD_ID`(`RECORD_ID`) USING BTREE,
+  INDEX `CREATE_DATE`(`RECORD_CREATE_DATE`, `RECORD_CREATE_TIME`) USING BTREE,
+  INDEX `UPDATE_DATE`(`RECORD_UPDATE_DATE`, `RECORD_UPDATE_TIME`) USING BTREE,
+  INDEX `INDEX_01`(`STR_ID`, `EVNT_TYP`, `EVNT_NBR`, `MBR_FG`, `DESCR`) USING BTREE
+) ENGINE = InnoDB AUTO_INCREMENT = 248206 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci COMMENT = 'MMマスタ' ROW_FORMAT = Dynamic;
+
+-- ----------------------------
+-- Table structure for 04_gheventm
+-- ----------------------------
+DROP TABLE IF EXISTS `04_gheventm`;
+CREATE TABLE `04_gheventm`  (
+  `RECORD_ID` bigint NOT NULL AUTO_INCREMENT COMMENT 'レコードID',
+  `RECORD_CREATE_DATE` date NOT NULL COMMENT 'レコード作成日付',
+  `RECORD_CREATE_TIME` time NOT NULL COMMENT 'レコード作成時間',
+  `RECORD_UPDATE_DATE` date NOT NULL COMMENT 'レコード更新日付/トリガーにより更新',
+  `RECORD_UPDATE_TIME` time NOT NULL COMMENT 'レコード更新時間/トリガーにより更新',
+  `RECORD_VOID_FLAG` char(1) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL DEFAULT '' COMMENT 'レコード無効フラグ  \'\': 有効フラグ、 1:無効フラグ',
+  `PRCS_TYP` varchar(1) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL COMMENT '処理区分',
+  `STR_ID` int NULL DEFAULT NULL COMMENT '店舗コード',
+  `EVNT_NBR` varchar(7) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL COMMENT '企画Ｎｏ．',
+  `PARNT_EVNT_NBR` varchar(20) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL COMMENT '関連企画Ｎo．',
+  `DESCR` varchar(24) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL COMMENT 'タイトル',
+  `EVNT_BGN_TM` varchar(8) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL COMMENT '企画開始日',
+  `EVNT_END_TM` varchar(8) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL COMMENT '企画終了日',
+  `EVNT_BDGT` int NULL DEFAULT NULL COMMENT '企画予算',
+  `EVNT_HLDL_DY` varchar(3) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL COMMENT '企画削除日数',
+  `EVNT_SRC` smallint NULL DEFAULT NULL COMMENT '企画優先区分',
+  `TIME_SERVICE_FG` smallint NULL DEFAULT NULL COMMENT 'タイムサービスフラグ',
+  `MON_EXCL_FG` smallint NULL DEFAULT NULL COMMENT '月曜日除外フラグ',
+  `TUES_EXCL_FG` smallint NULL DEFAULT NULL COMMENT '火曜日除外フラグ',
+  `WED_EXCL_FG` smallint NULL DEFAULT NULL COMMENT '水曜日除外フラグ',
+  `THUS_EXCL_FG` smallint NULL DEFAULT NULL COMMENT '木曜日除外フラグ',
+  `FRI_EXCL_FG` smallint NULL DEFAULT NULL COMMENT '金曜日除外フラグ',
+  `SAT_EXCL_FG` smallint NULL DEFAULT NULL COMMENT '土曜日除外フラグ',
+  `SUN_EXCL_FG` smallint NULL DEFAULT NULL COMMENT '日曜日除外フラグ',
+  `TNT_ ID` int NULL DEFAULT NULL COMMENT 'テナントコード',
+  `CRT_DT` varchar(8) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL COMMENT '作成日',
+  `PRCS_DT` varchar(8) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL COMMENT '処理日',
+  `RCV_DT` varchar(8) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL COMMENT '受信日',
+  `PRCS_FG` smallint NULL DEFAULT NULL COMMENT '処理フラグ',
+  PRIMARY KEY (`RECORD_ID`) USING BTREE,
+  INDEX `RECORD_ID`(`RECORD_ID`) USING BTREE,
+  INDEX `CREATE_DATE`(`RECORD_CREATE_DATE`, `RECORD_CREATE_TIME`) USING BTREE,
+  INDEX `UPDATE_DATE`(`RECORD_UPDATE_DATE`, `RECORD_UPDATE_TIME`) USING BTREE,
+  INDEX `INDEX_01`(`STR_ID`, `EVNT_NBR`) USING BTREE
+) ENGINE = InnoDB AUTO_INCREMENT = 593268 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci COMMENT = '企画マスタ' ROW_FORMAT = Dynamic;
+
+-- ----------------------------
+-- Table structure for 06_p001
+-- ----------------------------
+DROP TABLE IF EXISTS `06_p001`;
+CREATE TABLE `06_p001`  (
+  `RECORD_ID` bigint NOT NULL AUTO_INCREMENT COMMENT 'レコードID',
+  `RECORD_CREATE_DATE` date NOT NULL COMMENT 'レコード作成日付',
+  `RECORD_CREATE_TIME` time NOT NULL COMMENT 'レコード作成時間',
+  `RECORD_UPDATE_DATE` date NOT NULL COMMENT 'レコード更新日付/トリガーにより更新',
+  `RECORD_UPDATE_TIME` time NOT NULL COMMENT 'レコード更新時間/トリガーにより更新',
+  `RECORD_VOID_FLAG` char(1) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL DEFAULT '' COMMENT 'レコード無効フラグ  \'\': 有効フラグ、 1:無効フラグ',
+  `Terminal_ID` char(6) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL COMMENT '端末ID',
+  `PRCS_TYP` char(1) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL COMMENT 'レコード区分',
+  `SequenceNo` char(6) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL COMMENT 'シーケンスNO',
+  `DataType` char(3) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL COMMENT 'データ種別',
+  `DataClass` char(2) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL COMMENT 'データ区分',
+  `UpdateClass` char(2) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL COMMENT '更新区分',
+  `BusinessType` char(2) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL COMMENT '業態',
+  `Department` char(2) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL COMMENT '部門',
+  `ProductCode` char(7) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL COMMENT '商品コード',
+  `MaintenanceDay` char(6) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL COMMENT 'メンテ日',
+  `PartNo` char(4) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL COMMENT '一環NO',
+  `ActivityCategory` char(1) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL COMMENT '活動区分',
+  `ProductGroupCode` char(3) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL COMMENT '品群コード',
+  `VarietyCode` char(3) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL COMMENT '品種コード',
+  `ClassificationCode` char(3) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL COMMENT '分類コード',
+  `ProductName_Kanji` char(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL COMMENT '品名（漢字）',
+  `ProductName_Kana` char(20) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL COMMENT '品名（カナ）',
+  `ReceiptItemName` char(12) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL COMMENT 'レシート品名',
+  `Identification1` char(1) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL COMMENT '識別1（PLU情報）',
+  `PLUCode1` char(13) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL COMMENT 'PLUコード1',
+  `Identification2` char(1) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL COMMENT '識別2（PLU情報）',
+  `PLUCode2` char(13) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL COMMENT 'PLUコード2',
+  `Identification3` char(1) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL COMMENT '識別3（PLU情報）',
+  `PLUCode3` char(13) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL COMMENT 'PLUコード3',
+  `SupplierCode` char(6) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL COMMENT '仕入先コード',
+  `PurchaseQuantity` char(7) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL COMMENT '仕入れ数',
+  `OrderQuantity` char(3) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL COMMENT '発注入り数',
+  `OrderUnit` char(1) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL COMMENT '発注単位',
+  `CenterIdentification` char(1) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL COMMENT 'センター識別',
+  `CenterCord` char(4) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL COMMENT 'センターコード',
+  `SellingPrice` char(7) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL COMMENT '売価',
+  `CostPrice` char(9) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL COMMENT '原価',
+  `loggingFlag` char(1) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL COMMENT 'ロギングフラグ',
+  `PriceConfirmationFlag` char(1) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL COMMENT '価格確認フラグ',
+  `PriceInputFlag` char(1) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL COMMENT '価格入力フラグ',
+  `WeightInputFlag` char(1) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL COMMENT '重量入力フラグ',
+  `SalesAvailabilityFlag` char(1) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL COMMENT '販売可否フラグ',
+  `EmployeeDiscountFlag` char(1) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL COMMENT '社員割引フラグ',
+  `MemberDiscountFlag` char(1) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL COMMENT '会員割引フラグ',
+  `AutomaticItemFlag` char(1) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL COMMENT '自動アイテムフラグ',
+  `DiscountTargetFlag` char(1) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL COMMENT '割引対象フラグ',
+  `FoodFlags` char(1) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL COMMENT '食品フラグ',
+  `NonFoodFlag` char(1) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL COMMENT '非食品フラグ',
+  `locationFlag` char(1) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL COMMENT 'ロケーションフラグ',
+  `NoReturnsFag` char(1) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL COMMENT '返品禁止フラグ',
+  `PurchaseTaxClassification` char(1) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL COMMENT '仕入れ税区分',
+  `SalesTaxClassification` char(1) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL COMMENT '販売税区分',
+  `ConsumptionTaxDepartment` char(2) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL COMMENT '消費税部門',
+  `TaxRate` char(6) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL COMMENT '税率',
+  `SalesPeriod` char(6) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL COMMENT '販売可能期間',
+  `ArrowClassification` char(1) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL COMMENT 'アロー区分',
+  `AssortmentClassification` char(1) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL COMMENT '品揃え区分',
+  `NumberOfUnits` char(7) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL COMMENT 'ユニット数',
+  `Unit` char(2) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL COMMENT 'ユニット単位',
+  `NumberOfStandards` char(7) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL COMMENT '規格数',
+  `StandardUnit` char(2) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL COMMENT '規格単位',
+  `RegistrationDate` char(6) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL COMMENT '登録日',
+  `ConservationCode` char(1) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL COMMENT '保存符号',
+  `StorageLife` char(5) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL COMMENT '保存期限',
+  `StorageUnit` char(1) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL COMMENT '保存単位',
+  `BestBeforePeriod` char(5) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL COMMENT '賞味期間',
+  `BestBeforePeriodUnit` char(1) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL COMMENT '賞味期間単位',
+  `YOBI` char(18) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL COMMENT '予備',
+  PRIMARY KEY (`RECORD_ID`) USING BTREE,
+  INDEX `RECORD_ID`(`RECORD_ID`) USING BTREE,
+  INDEX `CREATE_DATE`(`RECORD_CREATE_DATE`, `RECORD_CREATE_TIME`) USING BTREE,
+  INDEX `UPDATE_DATE`(`RECORD_UPDATE_DATE`, `RECORD_UPDATE_TIME`) USING BTREE,
+  INDEX `INDEX_01`(`Terminal_ID`, `ProductCode`, `PLUCode1`, `PLUCode2`, `PLUCode3`) USING BTREE
+) ENGINE = InnoDB AUTO_INCREMENT = 6238441 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci COMMENT = 'P001(商品マスタ改廃)' ROW_FORMAT = Dynamic;
+
+-- ----------------------------
+-- Table structure for 06_p001_01
+-- ----------------------------
+DROP TABLE IF EXISTS `06_p001_01`;
+CREATE TABLE `06_p001_01`  (
+  `RECORD_ID` bigint NOT NULL AUTO_INCREMENT COMMENT 'レコードID',
+  `RECORD_CREATE_DATE` date NOT NULL COMMENT 'レコード作成日付',
+  `RECORD_CREATE_TIME` time NOT NULL COMMENT 'レコード作成時間',
+  `RECORD_UPDATE_DATE` date NOT NULL COMMENT 'レコード更新日付/トリガーにより更新',
+  `RECORD_UPDATE_TIME` time NOT NULL COMMENT 'レコード更新時間/トリガーにより更新',
+  `RECORD_VOID_FLAG` char(1) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL DEFAULT '' COMMENT 'レコード無効フラグ  \'\': 有効フラグ、 1:無効フラグ',
+  `Terminal_ID` char(6) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL COMMENT '端末ID',
+  `PRCS_TYP` char(1) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL COMMENT 'レコード区分',
+  `STR_ID` int NOT NULL COMMENT '店コード',
+  `CRT_DT` int NOT NULL COMMENT 'データ作成日',
+  `DSPL_CRT_DT` int NOT NULL COMMENT 'データ作成日時',
+  `DATA_TYP` int NOT NULL COMMENT 'データ種別',
+  `YOBI01` char(2) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL COMMENT '予備',
+  `YOBI02` varchar(272) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT NULL COMMENT '予備',
+  PRIMARY KEY (`RECORD_ID`) USING BTREE,
+  INDEX `RECORD_ID`(`RECORD_ID`) USING BTREE,
+  INDEX `CREATE_DATE`(`RECORD_CREATE_DATE`, `RECORD_CREATE_TIME`) USING BTREE,
+  INDEX `UPDATE_DATE`(`RECORD_UPDATE_DATE`, `RECORD_UPDATE_TIME`) USING BTREE,
+  INDEX `INDEX_01`(`STR_ID`, `CRT_DT`, `DSPL_CRT_DT`) USING BTREE
+) ENGINE = InnoDB AUTO_INCREMENT = 5761 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci COMMENT = 'P001(ヘッダー)' ROW_FORMAT = Dynamic;
+
+-- ----------------------------
+-- Table structure for 06_p001_02
+-- ----------------------------
+DROP TABLE IF EXISTS `06_p001_02`;
+CREATE TABLE `06_p001_02`  (
+  `RECORD_ID` bigint NOT NULL AUTO_INCREMENT COMMENT 'レコードID',
+  `RECORD_CREATE_DATE` date NOT NULL COMMENT 'レコード作成日付',
+  `RECORD_CREATE_TIME` time NOT NULL COMMENT 'レコード作成時間',
+  `RECORD_UPDATE_DATE` date NOT NULL COMMENT 'レコード更新日付/トリガーにより更新',
+  `RECORD_UPDATE_TIME` time NOT NULL COMMENT 'レコード更新時間/トリガーにより更新',
+  `RECORD_VOID_FLAG` char(1) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL DEFAULT '' COMMENT 'レコード無効フラグ  \'\': 有効フラグ、 1:無効フラグ',
+  `Terminal_ID` char(6) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL COMMENT '端末ID',
+  `PRCS_TYP` char(1) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL COMMENT 'レコード区分',
+  `STR_ID` int NOT NULL COMMENT '店コード',
+  `CRT_DT` int NOT NULL COMMENT 'データ作成日',
+  `DSPL_CRT_DT` int NOT NULL COMMENT 'データ作成日時',
+  `RECORD_QTY` int NULL DEFAULT NULL COMMENT 'レコード件数',
+  PRIMARY KEY (`RECORD_ID`) USING BTREE,
+  INDEX `RECORD_ID`(`RECORD_ID`) USING BTREE,
+  INDEX `CREATE_DATE`(`RECORD_CREATE_DATE`, `RECORD_CREATE_TIME`) USING BTREE,
+  INDEX `UPDATE_DATE`(`RECORD_UPDATE_DATE`, `RECORD_UPDATE_TIME`) USING BTREE,
+  INDEX `INDEX_01`(`STR_ID`, `CRT_DT`, `DSPL_CRT_DT`) USING BTREE
+) ENGINE = InnoDB AUTO_INCREMENT = 5761 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci COMMENT = 'P001(エンドレコード)' ROW_FORMAT = Dynamic;
+
+-- ----------------------------
+-- Table structure for 07_p003
+-- ----------------------------
+DROP TABLE IF EXISTS `07_p003`;
+CREATE TABLE `07_p003`  (
+  `RECORD_ID` bigint NOT NULL AUTO_INCREMENT COMMENT 'レコードID',
+  `RECORD_CREATE_DATE` date NOT NULL COMMENT 'レコード作成日付',
+  `RECORD_CREATE_TIME` time NOT NULL COMMENT 'レコード作成時間',
+  `RECORD_UPDATE_DATE` date NOT NULL COMMENT 'レコード更新日付/トリガーにより更新',
+  `RECORD_UPDATE_TIME` time NOT NULL COMMENT 'レコード更新時間/トリガーにより更新',
+  `RECORD_VOID_FLAG` char(1) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL DEFAULT '' COMMENT 'レコード無効フラグ  \'\': 有効フラグ、 1:無効フラグ',
+  `STR_ID` int NOT NULL COMMENT '店舗＃',
+  `JAN_ID` char(13) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL COMMENT 'ＪＡＮコード',
+  `SHELF_ID` int NOT NULL COMMENT '棚番',
+  `SHELF_STEP` int NOT NULL COMMENT '棚段',
+  `SHELF_ROW` int NOT NULL COMMENT '棚列',
+  PRIMARY KEY (`RECORD_ID`) USING BTREE,
+  INDEX `RECORD_ID`(`RECORD_ID`) USING BTREE,
+  INDEX `CREATE_DATE`(`RECORD_CREATE_DATE`, `RECORD_CREATE_TIME`) USING BTREE,
+  INDEX `UPDATE_DATE`(`RECORD_UPDATE_DATE`, `RECORD_UPDATE_TIME`) USING BTREE,
+  INDEX `INDEX_01`(`STR_ID`, `JAN_ID`, `SHELF_ID`, `SHELF_STEP`, `SHELF_ROW`) USING BTREE
+) ENGINE = InnoDB AUTO_INCREMENT = 38661516 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci COMMENT = 'P003(棚番情報送付データ)' ROW_FORMAT = Dynamic;
+
+-- ----------------------------
+-- Triggers structure for table 00_import_count
+-- ----------------------------
+DROP TRIGGER IF EXISTS `00_import_count_CR_Date_Time`;
+delimiter ;;
+CREATE TRIGGER `00_import_count_CR_Date_Time` BEFORE INSERT ON `00_import_count` FOR EACH ROW SET NEW.record_create_date = CURRENT_DATE, NEW.record_create_time = CURRENT_TIME, NEW.record_update_date = CURRENT_DATE, NEW.record_update_time = CURRENT_TIME
+;;
+delimiter ;
+
+-- ----------------------------
+-- Triggers structure for table 00_import_count
+-- ----------------------------
+DROP TRIGGER IF EXISTS `00_import_count_UP_Date_Time`;
+delimiter ;;
+CREATE TRIGGER `00_import_count_UP_Date_Time` BEFORE UPDATE ON `00_import_count` FOR EACH ROW SET NEW.record_update_date = CURRENT_DATE, NEW.record_update_time = CURRENT_TIME
+;;
+delimiter ;
+
+-- ----------------------------
+-- Triggers structure for table 01_ghplum
+-- ----------------------------
+DROP TRIGGER IF EXISTS `GHPLUM_CR_Date_Time`;
+delimiter ;;
+CREATE TRIGGER `GHPLUM_CR_Date_Time` BEFORE INSERT ON `01_ghplum` FOR EACH ROW SET NEW.record_create_date = CURRENT_DATE, NEW.record_create_time = CURRENT_TIME, NEW.record_update_date = CURRENT_DATE, NEW.record_update_time = CURRENT_TIME
+;;
+delimiter ;
+
+-- ----------------------------
+-- Triggers structure for table 01_ghplum
+-- ----------------------------
+DROP TRIGGER IF EXISTS `GHPLUM_UP_Date_Time`;
+delimiter ;;
+CREATE TRIGGER `GHPLUM_UP_Date_Time` BEFORE UPDATE ON `01_ghplum` FOR EACH ROW SET NEW.record_update_date = CURRENT_DATE, NEW.record_update_time = CURRENT_TIME
+;;
+delimiter ;
+
+-- ----------------------------
+-- Triggers structure for table 02_ghdiscountm
+-- ----------------------------
+DROP TRIGGER IF EXISTS `GHDISCOUNTM_CR_Date_Time`;
+delimiter ;;
+CREATE TRIGGER `GHDISCOUNTM_CR_Date_Time` BEFORE INSERT ON `02_ghdiscountm` FOR EACH ROW SET NEW.record_create_date = CURRENT_DATE, NEW.record_create_time = CURRENT_TIME, NEW.record_update_date = CURRENT_DATE, NEW.record_update_time = CURRENT_TIME
+;;
+delimiter ;
+
+-- ----------------------------
+-- Triggers structure for table 02_ghdiscountm
+-- ----------------------------
+DROP TRIGGER IF EXISTS `GHDISCOUNTM_UP_Date_Time`;
+delimiter ;;
+CREATE TRIGGER `GHDISCOUNTM_UP_Date_Time` BEFORE UPDATE ON `02_ghdiscountm` FOR EACH ROW SET NEW.record_update_date = CURRENT_DATE, NEW.record_update_time = CURRENT_TIME
+;;
+delimiter ;
+
+-- ----------------------------
+-- Triggers structure for table 03_ghbundlem
+-- ----------------------------
+DROP TRIGGER IF EXISTS `GHBUNDLEM_CR_Date_Time`;
+delimiter ;;
+CREATE TRIGGER `GHBUNDLEM_CR_Date_Time` BEFORE INSERT ON `03_ghbundlem` FOR EACH ROW SET NEW.record_create_date = CURRENT_DATE, NEW.record_create_time = CURRENT_TIME, NEW.record_update_date = CURRENT_DATE, NEW.record_update_time = CURRENT_TIME
+;;
+delimiter ;
+
+-- ----------------------------
+-- Triggers structure for table 03_ghbundlem
+-- ----------------------------
+DROP TRIGGER IF EXISTS `GHBUNDLEM_UP_Date_Time`;
+delimiter ;;
+CREATE TRIGGER `GHBUNDLEM_UP_Date_Time` BEFORE UPDATE ON `03_ghbundlem` FOR EACH ROW SET NEW.record_update_date = CURRENT_DATE, NEW.record_update_time = CURRENT_TIME
+;;
+delimiter ;
+
+-- ----------------------------
+-- Triggers structure for table 04_gheventm
+-- ----------------------------
+DROP TRIGGER IF EXISTS `GHEVENTM_CR_Date_Time`;
+delimiter ;;
+CREATE TRIGGER `GHEVENTM_CR_Date_Time` BEFORE INSERT ON `04_gheventm` FOR EACH ROW SET NEW.record_create_date = CURRENT_DATE, NEW.record_create_time = CURRENT_TIME, NEW.record_update_date = CURRENT_DATE, NEW.record_update_time = CURRENT_TIME
+;;
+delimiter ;
+
+-- ----------------------------
+-- Triggers structure for table 04_gheventm
+-- ----------------------------
+DROP TRIGGER IF EXISTS `GHEVENTM_UP_Date_Time`;
+delimiter ;;
+CREATE TRIGGER `GHEVENTM_UP_Date_Time` BEFORE UPDATE ON `04_gheventm` FOR EACH ROW SET NEW.record_update_date = CURRENT_DATE, NEW.record_update_time = CURRENT_TIME
+;;
+delimiter ;
+
+-- ----------------------------
+-- Triggers structure for table 06_p001
+-- ----------------------------
+DROP TRIGGER IF EXISTS `P001_CR_Date_Time`;
+delimiter ;;
+CREATE TRIGGER `P001_CR_Date_Time` BEFORE INSERT ON `06_p001` FOR EACH ROW SET NEW.record_create_date = CURRENT_DATE, NEW.record_create_time = CURRENT_TIME, NEW.record_update_date = CURRENT_DATE, NEW.record_update_time = CURRENT_TIME
+;;
+delimiter ;
+
+-- ----------------------------
+-- Triggers structure for table 06_p001
+-- ----------------------------
+DROP TRIGGER IF EXISTS `P001_UP_Date_Time`;
+delimiter ;;
+CREATE TRIGGER `P001_UP_Date_Time` BEFORE UPDATE ON `06_p001` FOR EACH ROW SET NEW.record_update_date = CURRENT_DATE, NEW.record_update_time = CURRENT_TIME
+;;
+delimiter ;
+
+-- ----------------------------
+-- Triggers structure for table 06_p001_01
+-- ----------------------------
+DROP TRIGGER IF EXISTS `P001_01_CR_Date_Time`;
+delimiter ;;
+CREATE TRIGGER `P001_01_CR_Date_Time` BEFORE INSERT ON `06_p001_01` FOR EACH ROW SET NEW.record_create_date = CURRENT_DATE, NEW.record_create_time = CURRENT_TIME, NEW.record_update_date = CURRENT_DATE, NEW.record_update_time = CURRENT_TIME
+;;
+delimiter ;
+
+-- ----------------------------
+-- Triggers structure for table 06_p001_01
+-- ----------------------------
+DROP TRIGGER IF EXISTS `P001_01_UP_Date_Time`;
+delimiter ;;
+CREATE TRIGGER `P001_01_UP_Date_Time` BEFORE UPDATE ON `06_p001_01` FOR EACH ROW SET NEW.record_update_date = CURRENT_DATE, NEW.record_update_time = CURRENT_TIME
+;;
+delimiter ;
+
+-- ----------------------------
+-- Triggers structure for table 06_p001_02
+-- ----------------------------
+DROP TRIGGER IF EXISTS `P001_02_CR_Date_Time`;
+delimiter ;;
+CREATE TRIGGER `P001_02_CR_Date_Time` BEFORE INSERT ON `06_p001_02` FOR EACH ROW SET NEW.record_create_date = CURRENT_DATE, NEW.record_create_time = CURRENT_TIME, NEW.record_update_date = CURRENT_DATE, NEW.record_update_time = CURRENT_TIME
+;;
+delimiter ;
+
+-- ----------------------------
+-- Triggers structure for table 06_p001_02
+-- ----------------------------
+DROP TRIGGER IF EXISTS `P001_02_UP_Date_Time`;
+delimiter ;;
+CREATE TRIGGER `P001_02_UP_Date_Time` BEFORE UPDATE ON `06_p001_02` FOR EACH ROW SET NEW.record_update_date = CURRENT_DATE, NEW.record_update_time = CURRENT_TIME
+;;
+delimiter ;
+
+-- ----------------------------
+-- Triggers structure for table 07_p003
+-- ----------------------------
+DROP TRIGGER IF EXISTS `P003_CR_Date_Time`;
+delimiter ;;
+CREATE TRIGGER `P003_CR_Date_Time` BEFORE INSERT ON `07_p003` FOR EACH ROW SET NEW.record_create_date = CURRENT_DATE, NEW.record_create_time = CURRENT_TIME, NEW.record_update_date = CURRENT_DATE, NEW.record_update_time = CURRENT_TIME
+;;
+delimiter ;
+
+-- ----------------------------
+-- Triggers structure for table 07_p003
+-- ----------------------------
+DROP TRIGGER IF EXISTS `P003_UP_Date_Time`;
+delimiter ;;
+CREATE TRIGGER `P003_UP_Date_Time` BEFORE UPDATE ON `07_p003` FOR EACH ROW SET NEW.record_update_date = CURRENT_DATE, NEW.record_update_time = CURRENT_TIME
+;;
+delimiter ;
+
+SET FOREIGN_KEY_CHECKS = 1;

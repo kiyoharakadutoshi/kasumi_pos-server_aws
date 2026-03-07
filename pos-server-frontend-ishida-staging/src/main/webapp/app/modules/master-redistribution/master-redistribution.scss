@@ -1,0 +1,27 @@
+@import '../../styles/styles';
+
+.master-redistribution{
+  margin-left: 24px;
+
+  &__search{
+    background-color: $white;
+    border-radius: 15px;
+    padding:8px;
+
+    .btn-primary{
+      user-select: none;
+    }
+  }
+
+  &__table{
+    margin-top: 16px;
+
+    .table-scroll{
+      height: calc(100vh - 220px);
+
+      .tooltip-number-input-text{
+        border-radius: 10px;
+      }
+    }
+  }
+}

@@ -1,0 +1,80 @@
+{
+  "touchMenu": {
+    "productCode": "商品コード",
+    "PLU": "PLUコード",
+    "presetLayoutCode": "プリセットレイアウトコード",
+    "textHeaderSideBar": "店舖選択",
+    "standardPrice": "定番売価",
+    "changedPrice": "変更売価",
+    "currentPrice": "現在売価",
+    "button": {
+      "create": "新規",
+      "update": "編集",
+      "search": "F12:検索",
+      "print": "F07:印刷",
+      "delete": "F08:削除",
+      "confirm": "F09:確定",
+      "copy": "コピー",
+      "selectAll": "全選択",
+      "unSelectAll": "全解除",
+      "searchNormal": "検索",
+      "storeCode": "店舗コード"
+    },
+    "table": {
+      "store": "店舗",
+      "presetLayoutCode": "プリセットレイアウトコード",
+      "presetLayoutName": "名称",
+      "applyDate": "予約日"
+    },
+    "modal": {
+      "store": "店舗",
+      "register": "登録",
+      "update": "更新"
+    }
+  },
+  "detailMenu": {
+    "title": "プリセット設定",
+    "store": "店舗",
+    "presetLayoutName": "名称",
+    "presetLayoutCode": "プリセットレイアウトコード",
+    "apply": "適用",
+    "emptyTab": "非表示",
+    "cancel": "キャンセル",
+    "presetTab": {
+      "title": "タブ編集",
+      "name": "タブ名称",
+      "empty": "非表示",
+      "newTab": "新しいタブ",
+      "color": "タブの色",
+      "settingTitle": "表示設定",
+      "cashRegisterDisplay": "レジ画面表示",
+      "customerDisplay": "客用画面表示",
+      "cashMachineDisplay": "レジ画面表示"
+    },
+    "buttonTab": {
+      "title": "ボタン編集",
+      "name": "ボタンタイプ",
+      "product": "商品",
+      "category": "品種",
+      "function": "機能",
+      "productPLU": "商品コード／PLUコード",
+      "changePriceTitle": "定価売価",
+      "ChangePriceButton": "売価変更",
+      "buttonName": "ボタン名称",
+      "disablePreset": "非表示",
+      "buttonColor": "ボタンの色",
+      "buttonSize": "ボタンサイス",
+      "height": "縦",
+      "width": "横",
+      "image": "イメージ画像",
+      "categoryCode": "品種コード",
+      "reference": "参照",
+      "remove": "削除",
+      "functionTitle": "機能コード",
+      "noImage": "画像を使用しない",
+      "amount": "金額",
+      "disableButton": "非表示",
+      "decideButton": "決定"
+    }
+  }
+}

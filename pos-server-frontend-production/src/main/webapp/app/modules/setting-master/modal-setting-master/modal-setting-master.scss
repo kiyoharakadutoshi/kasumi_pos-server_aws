@@ -1,0 +1,236 @@
+@import "../../../styles/styles.scss";
+
+.body-modal-machine {
+  display: flex;
+  justify-content: space-between;
+  font-family: 'Noto Sans JP', sans-serif;
+
+  .left-modal-body {
+    max-height: calc(100vh - 270px);
+    overflow-y: auto;
+    overflow-x: hidden;
+    display: flex;
+    flex-direction: column;
+    margin-right: 250px;
+
+    .row-store-name {
+      .dropdown-container {
+        &__disabled {
+          .dropdown-container {
+            &__dropdown-title {
+              width: 396px;
+            }
+          }
+        }
+      }
+    }
+
+    .dropdown-container {
+      &__dropdown-title {
+        width: 393px;
+
+      }
+
+      &__dropdown-button {
+        width: 450px;
+      }
+    }
+
+    .input-container {
+      .wrap-input-text {
+        &.input-text-disable {
+          .wrap-label-text {
+            width: 396px;
+            justify-content: start;
+          }
+
+          .input-text {
+            width: 453px;
+          }
+        }
+
+        .wrap-label-text {
+          padding: 12px 20px;
+          width: 393px;
+          justify-content: start;
+        }
+
+        .input-text {
+          width: 450px;
+        }
+      }
+    }
+
+    .row-store-name,
+    .row-code,
+    .row-type-code,
+    .row-type-node,
+    .row-button-layout,
+    .row-function-layout,
+    .row-keyboard-layout,
+    .row-receipt-message,
+    .row-ipaddress,
+    .row-mac-address,
+    .row-payment-type,
+    .row-startup-time,
+    .row-customer-count,
+    .row-morning-discount,
+    .row-mega-discount,
+    .row-pos-modal,
+    .row-cash-machine-modal,
+    .row-scanner-model,
+    .row-update-date,
+    .row-update-employee {
+      display: flex;
+      justify-content: space-between;
+    }
+
+    .row-store-name,
+    .row-code,
+    .row-type-node,
+    .row-button-layout,
+    .row-function-layout,
+    .row-keyboard-layout,
+    .row-receipt-message,
+    .row-ipaddress,
+    .row-startup-time,
+    .row-customer-count,
+    .row-morning-discount,
+    .row-mega-discount,
+    .row-update-date,
+    .row-update-employee {
+      margin-top: 5px;
+    }
+
+    .right-item {
+      margin-right: 5px;
+    }
+
+    .time-picker {
+      display: flex;
+      height: 50px;
+      font-size: 24px;
+      align-items: center;
+      border: 3px solid $violetB0B9D7;
+      border-radius: 15px;
+      cursor: pointer;
+      position: relative;
+
+      &:hover {
+        border-color: $blue001440;
+
+        .input-text {
+          background-color: $white;
+        }
+      }
+
+      &:focus-within {
+        border-color: $blue001440;
+      }
+
+      &__text-title {
+        width: 390px;
+      }
+    }
+
+    .row-mega-discount {
+      margin-top: 10px;
+    }
+
+    .left-item-update-employee {
+      margin-top: 5px;
+    }
+
+    .required-asterisk {
+      color: $redFA5151;
+      font-weight: normal;
+      margin-left: 2px;
+    }
+
+    .row-update-date,
+    .row-update-employee {
+      .left-item,
+      .right-item-update-date,
+      .left-item-update-employee,
+      .right-item-update-employee {
+        flex: 1;
+      }
+
+      .left-item,
+      .left-item-update-employee {
+        text-align: left;
+      }
+
+      .right-item-update-date,
+      .right-item-update-employee {
+        text-align: right;
+        margin-right: 80px;
+      }
+    }
+
+    .row-customer-count,
+    .row-morning-discount,
+    .row-mega-discount {
+      .left-item-customer-count,
+      .right-item-customer-count,
+      .left-item-morning-discount,
+      .right-item-morning-discount,
+      .left-item-mega-discount,
+      .right-item-mega-discount {
+        flex: 1;
+      }
+
+      .left-item-customer-count,
+      .left-item-morning-discount,
+      .left-item-mega-discount {
+        text-align: left;
+      }
+
+      .right-item-customer-count,
+      .right-item-morning-discount,
+      .right-item-mega-discount {
+        text-align: right;
+        margin-right: 70px;
+      }
+    }
+  }
+
+  .right-modal-body {
+    max-height: calc(100vh - 270px);
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+
+    .row-right-note-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: start;
+      flex: 1;
+      margin-bottom: 50px;
+    }
+
+    .row-right-note-center {
+      display: flex;
+      justify-content: space-between;
+      align-items: start;
+      flex: 1;
+      margin-bottom: 50px;
+    }
+
+    .row-right-note-bottom {
+      display: flex;
+      justify-content: space-between;
+      align-items: start;
+      flex: 1;
+    }
+
+    .right-node {
+      font-weight: $medium-weight;
+      line-height: 1em;
+      margin-right: 10px;
+      color: $blue0f192f;
+    }
+  }
+}
+

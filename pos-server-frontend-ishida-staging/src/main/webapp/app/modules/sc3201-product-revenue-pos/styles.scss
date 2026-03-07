@@ -1,0 +1,124 @@
+@import '../../styles/styles';
+@import '../../styles/variable';
+
+.product-revenue-pos {
+  --input-height: 50px;
+
+  &__search {
+    display: flex;
+    background-color: #ffffff;
+    border-radius: 15px;
+
+    &-box {
+      .report-type-date {
+        width: 350px;
+      }
+
+      .date-time {
+        width: 522px;
+        .date-picker {
+          .start-date {
+            width: 300px;
+          }
+          .end-date {
+            width: 165px;
+          }
+        }
+      }
+
+      display: flex;
+      background-color: #ffffff;
+      // flex-direction: column;
+      flex-wrap: wrap;
+      gap: 16px;
+      padding: 8px;
+      border-radius: 15px;
+
+      &:first-child {
+        display: grid;
+        grid-template-columns: auto auto auto max-content;
+        width: 1920px;
+      }
+
+      &.search-area {
+        display: flex;
+        align-items: end;
+      }
+    }
+
+    &-item {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      // width: calc(25% - 16px);
+
+      &.end-item {
+        .btn-primary {
+          margin-left: auto;
+        }
+        width: 100%;
+        grid-column: 3 / -1;
+        flex-grow: 1;
+        .input-number-container {
+          min-width: 300px;
+          width: 59%;
+        }
+
+        .product-name {
+          width: 100%;
+        }
+      }
+
+      .wrap-input-text-mark .wrap-label .label {
+        min-width: 132px;
+      }
+
+      .label-radio {
+        color: $blue001440;
+        font-weight: 500;
+        width: 110px;
+      }
+
+      .date-picker-revenue {
+        width: 100%;
+      }
+
+      .unit-option {
+        width: 350px;
+      }
+
+      .select-revenue,
+      .input-number-container {
+        width: 522px;
+      }
+
+      .register-number {
+        .dropdown-container {
+          &__dropdown-button {
+            width: 498px;
+          }
+        }
+      }
+
+      .item-count {
+        width: 260px;
+      }
+
+      .product-name {
+        height: 100%;
+        background-color: #d9dce1;
+        padding: 0 16px;
+        border-radius: 16px;
+      }
+    }
+  }
+
+  &__list {
+    width: 100%;
+    padding-top: 16px;
+  }
+
+  & .table-data .table-scroll {
+    height: calc(100vh - 364px);
+  }
+}

@@ -1,0 +1,16 @@
+@import '../../../styles/styles';
+
+.bottom-button-setting-master {
+  height: 68px;
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  @include center(space-between);
+  gap: 16px;
+  padding: 8px 24px 8px 44px;
+  background-color: $blueB0B9D7;
+  border-top-left-radius: 50px;
+  margin-left: calc(367px + 16px);
+  @include center(flex-end, $spacing: 16px);
+}
