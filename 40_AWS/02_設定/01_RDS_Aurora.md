@@ -1,7 +1,7 @@
 # RDS Aurora MySQL 8.0 詳細設定
 
 > **取得日時**: 2026-03-08  
-> **取得元**: AWS CloudShell 実測値（`aws rds describe-db-clusters` / `describe-db-instances` / `describe-db-cluster-parameters`）  
+> **取得元**: AWS CloudShell 実測値  
 > **リージョン**: ap-northeast-1（東京）  
 > **AWSアカウントID**: 332802448674
 
@@ -18,10 +18,10 @@
 | **クラスター ARN** | `arn:aws:rds:ap-northeast-1:332802448674:cluster:ksm-posprd-db-cluster` |
 | **ステータス** | available |
 | **エンジン** | aurora-mysql |
-| **エンジンバージョン** | **8.0.mysql_aurora.3.08.2** |
+| **エンジンバージョン** | 8.0.mysql_aurora.3.08.2 |
 | **マスターユーザー** | admin |
 | **ポート** | 3306 |
-| **Multi-AZ** | **true** |
+| **Multi-AZ** | true |
 | **Writeエンドポイント** | `ksm-posprd-db-cluster.cluster-cxekgmegw02x.ap-northeast-1.rds.amazonaws.com` |
 | **Readerエンドポイント** | `ksm-posprd-db-cluster.cluster-ro-cxekgmegw02x.ap-northeast-1.rds.amazonaws.com` |
 | **VPC** | `vpc-0e2d2d27b6860b7fc` |
@@ -36,7 +36,7 @@
 | インスタンスID | ロール | PromotionTier | 備考 |
 |---|---|---|---|
 | `ksm-posprd-db-instance-1` | **Writer（プライマリ）** | 1 | |
-| `ksm-posprd-db-instance-2` | Reader（レプリカ） | 1 | ⚠️ Tier同値のため昇格順不定 |
+| `ksm-posprd-db-instance-2` | Reader（レプリカ） | 1 | ⚠️ Tier同値のため昇格順序不定 |
 
 ### レプリカクラスター
 
@@ -70,9 +70,6 @@
 | `rds:ksm-posprd-db-cluster-2026-03-07-15-05` | メイン | 2026-03-07 15:05 | available | 6 GB | SSE-KMS |
 | `rds:ksm-posprd-db-cluster-replica-2026-03-07-15-12` | レプリカ | 2026-03-07 15:12 | available | 0 GB | SSE-KMS |
 
-> スナップショット ARN:  
-> `arn:aws:rds:ap-northeast-1:332802448674:cluster-snapshot:rds:ksm-posprd-db-cluster-2026-03-07-15-05`
-
 ---
 
 ## 3. 暗号化設定
@@ -86,16 +83,30 @@
 
 ---
 
-## 4. ネットワーク・セキュリティグループ
+## 4. S3連携 / IAMロール設定
+
+| 項目 | 値 |
+|---|---|
+| **DBからS3へのIAMロール** | `arn:aws:iam::332802448674:role/ksm-posprd-iam-role-db-cluster` |
+| **パラメーター名** | `aws_default_s3_role` |
+| **適用方法** | immediate（設定済み・有効） |
+
+> DBクラスターがS3にデータをエクスポート/インポートする際に使用するIAMロール。  
+> Lambda・Step Functions経由でのマスターデータ連携（oc/sg/sh系）において参照される。  
+> このロールを変更・削除するとS3連携が停止するため注意。
+
+---
+
+## 5. ネットワーク・セキュリティグループ
 
 ### SG一覧
 
-| SG名 | SG ID | 管理 | 説明 |
-|---|---|---|---|
-| `ksm-posprd-vpc-sg-db` | `sg-05b58b81225f5bd93` | CloudFormation (`ksm-posprd-sg`) | RDS用メインSG |
-| `rds-lambda-1` | `sg-02ceb596ed711a66c` | AWS自動生成 | Lambda→RDS接続用 |
+| SG名 | SG ID | 管理 |
+|---|---|---|
+| `ksm-posprd-vpc-sg-db` | `sg-05b58b81225f5bd93` | CloudFormation（`ksm-posprd-sg`スタック） |
+| `rds-lambda-1` | `sg-02ceb596ed711a66c` | AWS自動生成（Lambda統合時） |
 
-### `ksm-posprd-vpc-sg-db` インバウンドルール（実測）
+### `ksm-posprd-vpc-sg-db` インバウンドルール
 
 | プロトコル | ポート | 送信元 | 説明 |
 |---|---|---|---|
@@ -106,66 +117,74 @@
 
 アウトバウンド: `0.0.0.0/0` 全許可
 
-### `rds-lambda-1` インバウンドルール（実測）
+### `rds-lambda-1` インバウンドルール
 
 | プロトコル | ポート | 送信元 SG | 説明 |
 |---|---|---|---|
 | TCP | 3306 | `sg-0f89711a1252355d4` | Lambda関数SG |
 
-アウトバウンド: ルールなし（Lambda→RDS方向のみ）
-
-### CloudFormation スタック
-```
-スタック名: ksm-posprd-sg
-スタックARN: arn:aws:cloudformation:ap-northeast-1:332802448674:stack/ksm-posprd-sg/d9522750-4db3-11f0-94a8-0a786b8590c1
-```
-
 ---
 
-## 5. パラメーターグループ設定
+## 6. パラメーターグループ設定
 
 **グループ名**: `ksm-posprd-db-cluster-pg`
 
-### ユーザー設定パラメーター（`Source: user`）
+### ユーザー設定パラメーター（`Source: user`、実測値）
 
-| パラメーター | 値 | 適用方法 |
-|---|---|---|
-| `time_zone` | `Asia/Tokyo` | immediate（再起動不要） |
+| パラメーター | 値 | 適用方法 | 説明 |
+|---|---|---|---|
+| `time_zone` | `Asia/Tokyo` | immediate | DB サーバーのタイムゾーン（JST固定） |
+| `activate_all_roles_on_login` | `1` | immediate | ログイン時に付与済みロールを全自動有効化 |
+| `aws_default_s3_role` | `arn:aws:iam::332802448674:role/ksm-posprd-iam-role-db-cluster` | immediate | DBからS3操作時に使用するIAMロール |
 
-### 主要パラメーター（実測値）
+> ⚠️ `aws_default_s3_role` はマスターデータのS3連携に直結するため、変更不可。
 
-| パラメーター | 値 | Source | IsModifiable | 説明 |
-|---|---|---|---|---|
-| `thread_handling` | `thread-pools` | system | false | Auroraスレッドプール方式（固定） |
-| `sync_binlog` | `1` | system | false | コミット毎にbinlog fsync（安全設定・固定） |
-| `relay_log_recovery` | `1` | system | false | 起動時自動リレーログ復旧（固定） |
-| `skip_name_resolve` | `1` | system | false | ホスト名解決スキップ（固定）→IPで接続必須 |
-| `skip-replica-start` | `1` | system | false | 起動時にレプリカスレッド自動開始しない（固定） |
-| `read_only` | `0` | system | true | 書き込み許可（プライマリ） |
-| `sql_mode` | `0` | system | true | SQL厳格モード無効 |
-| `read_buffer_size` | `262144` (256 KB) | system | true | シーケンシャルスキャンバッファ |
-| `read_rnd_buffer_size` | `524288` (512 KB) | system | true | ランダム読み取りバッファ |
-| `thread_stack` | `262144` (256 KB) | engine-default | true | スレッドスタックサイズ |
-| `temptable_max_mmap` | `1073741824` (1 GB) | engine-default | true | TempTable mmapメモリ上限 |
-| `temptable_use_mmap` | `1` | engine-default | true | TempTable mmap利用有効 |
-| `server_audit_logs_upload` | `0` | engine-default | true | CloudWatch Logs監査ログ送信: **無効** |
-| `slow_query_log_file` | `/rdsdbdata/log/slowquery/mysql-slowquery.log` | system | false | スロークエリログパス |
-| `relay-log` | `/rdsdbdata/log/relaylog/relaylog` | system | false | リレーログパス |
-| `tmpdir` | `/rdsdbdata/tmp/` | system | false | 一時ファイルディレクトリ |
-| `socket` | `/tmp/mysql.sock` | system | false | UNIXソケットパス |
-| `secure_file_priv` | `/tmp` | system | false | LOAD DATA制限ディレクトリ |
+### 主要システムパラメーター（実測値）
+
+| パラメーター | 値 | IsModifiable | 説明 |
+|---|---|---|---|
+| `thread_handling` | `thread-pools` | false | Auroraスレッドプール方式（固定） |
+| `sync_binlog` | `1` | false | コミット毎にbinlog fsync（安全設定・固定） |
+| `relay_log_recovery` | `1` | false | 起動時自動リレーログ復旧（固定） |
+| `skip_name_resolve` | `1` | false | ホスト名解決スキップ（IPで接続必須） |
+| `skip-replica-start` | `1` | false | 起動時レプリカスレッド自動開始しない |
+| `read_only` | `0` | true | 書き込み許可（プライマリ） |
+| `sql_mode` | `0` | true | SQL厳格モード無効 |
+| `read_buffer_size` | `262144` (256 KB) | true | シーケンシャルスキャンバッファ |
+| `read_rnd_buffer_size` | `524288` (512 KB) | true | ランダム読み取りバッファ |
+| `thread_stack` | `262144` (256 KB) | true | スレッドスタックサイズ |
+| `temptable_max_mmap` | `1073741824` (1 GB) | true | TempTable mmapメモリ上限 |
+| `temptable_use_mmap` | `1` | true | TempTable mmap利用有効 |
+| `server_audit_logs_upload` | `0` | true | CloudWatch Logs監査ログ送信: **無効** |
 
 ### メモリ依存パラメーター（インスタンスクラス連動）
 
-| パラメーター | 計算式 | 説明 |
-|---|---|---|
-| `table_definition_cache` | `LEAST({DBInstanceClassMemory/393040}, 20000)` | テーブル定義キャッシュ数 |
-| `table_open_cache` | `LEAST({DBInstanceClassMemory/1179121}, 6000)` | オープンテーブルキャッシュ数 |
-| `thread_cache_size` | `{DBInstanceClassMemory/1005785088}` | スレッドキャッシュ数 |
+| パラメーター | 計算式 |
+|---|---|
+| `table_definition_cache` | `LEAST({DBInstanceClassMemory/393040}, 20000)` |
+| `table_open_cache` | `LEAST({DBInstanceClassMemory/1179121}, 6000)` |
+| `thread_cache_size` | `{DBInstanceClassMemory/1005785088}` |
 
 ---
 
-## 6. 接続情報
+## 7. ログファイル
+
+**インスタンス**: `ksm-posprd-db-instance-1`
+
+| ログ種別 | パス | サイクル | サイズ目安 |
+|---|---|---|---|
+| エラーログ（実行中） | `error/mysql-error-running.log.YYYY-MM-DD.HH` | 1時間毎にローテーション | 70–110 KB/h |
+| エラーログ（カレント） | `error/mysql-error.log` | 常時書き込み | 12 KB |
+| externalログ | `external/mysql-external.log` | 随時 | **35 MB**（大容量） |
+| インスタンスログ | `instance/instance.log` | 随時 | 0 KB（現在空） |
+| スロークエリログ | `/rdsdbdata/log/slowquery/mysql-slowquery.log` | 随時 | パラメーター設定次第 |
+
+> **externalログ（35 MB）注意**: Aurora内部の外部接続ログ。定期的な確認を推奨。  
+> エラーログは直近6日分（2026-03-03〜08）が1時間毎に存在していることを確認済み。
+
+---
+
+## 8. 接続情報
 
 ```
 接続方法: AWS Secrets Manager から認証情報を取得
@@ -182,13 +201,13 @@ Writeエンドポイント:
 Readerエンドポイント:
   ksm-posprd-db-cluster.cluster-ro-cxekgmegw02x.ap-northeast-1.rds.amazonaws.com:3306
 
-VPN経由（USMH側 POSネットワーク）:
-  172.21.10.0/24 → TCP 3306 許可済み（sg-05b58b81225f5bd93 に定義）
+USMH側 POSネットワーク（VPN経由）:
+  172.21.10.0/24 → TCP 3306 許可済み
 ```
 
 ---
 
-## 7. タグ設定
+## 9. タグ設定
 
 | キー | 値 |
 |---|---|
@@ -198,44 +217,49 @@ VPN経由（USMH側 POSネットワーク）:
 
 ---
 
-## 8. ⚠️ リスク・改善推奨事項
+## 10. ⚠️ リスク・改善推奨事項
 
 | 優先度 | 項目 | 現状 | 推奨対応 |
 |---|---|---|---|
-| 🔴 高 | バックアップ保持期間 | **1日** | 最低7日、理想35日に変更（コスト微増） |
-| 🔴 高 | AWS Backup 未設定 | `BackupPlansList: []` | 月次手動スナップショット or AWS Backupルール作成 |
-| 🟡 中 | PromotionTier 同値 | 両インスタンスTier=1 | instance-2をTier=2に変更し昇格順序を明示 |
-| 🟡 中 | 監査ログ未送信 | `server_audit_logs_upload=0` | CloudWatch Logs送信有効化を検討 |
+| 🔴 高 | バックアップ保持期間 | **1日** | 最低7日、理想35日に変更 |
+| 🔴 高 | AWS Backup 未設定 | `BackupPlansList: []` | 月次スナップショット自動保持ルールを作成 |
+| 🟡 中 | PromotionTier 同値 | 両インスタンスTier=1 | instance-2をTier=2に変更 |
+| 🟡 中 | 監査ログ未送信 | `server_audit_logs_upload=0` | CloudWatch Logs送信の有効化を検討 |
+| 🟡 中 | externalログ肥大化 | 35 MB | 内容確認・ローテーション設定を検討 |
 | 🟢 低 | sql_mode=0 | 厳格モード無効 | アプリ要件確認後 STRICT_TRANS_TABLES 検討 |
 
 ---
 
-## 9. 状態確認コマンド
+## 11. 状態確認コマンド
 
 ```bash
 REGION="ap-northeast-1"
+CLUSTER="ksm-posprd-db-cluster"
+INSTANCE="ksm-posprd-db-instance-1"
 
-# クラスター状態確認
-aws --no-cli-pager rds describe-db-clusters \
-  --region $REGION \
-  --db-cluster-identifier ksm-posprd-db-cluster \
+# クラスター状態
+aws --no-cli-pager rds describe-db-clusters --region $REGION \
+  --db-cluster-identifier $CLUSTER \
   --query 'DBClusters[0].{Status:Status,MultiAZ:MultiAZ,Writer:DBClusterMembers[?IsClusterWriter==`true`].DBInstanceIdentifier|[0],LatestRestore:LatestRestorableTime}'
 
-# インスタンス状態確認
-aws --no-cli-pager rds describe-db-instances \
-  --region $REGION \
-  --filters "Name=db-cluster-id,Values=ksm-posprd-db-cluster" \
+# インスタンス状態
+aws --no-cli-pager rds describe-db-instances --region $REGION \
+  --filters "Name=db-cluster-id,Values=$CLUSTER" \
   --query 'DBInstances[*].{ID:DBInstanceIdentifier,Status:DBInstanceStatus,Class:DBInstanceClass,AZ:AvailabilityZone}'
 
-# 直近スナップショット確認
-aws --no-cli-pager rds describe-db-cluster-snapshots \
-  --region $REGION \
-  --db-cluster-identifier ksm-posprd-db-cluster \
-  --query 'sort_by(DBClusterSnapshots, &SnapshotCreateTime)[-3:].{ID:DBClusterSnapshotIdentifier,Time:SnapshotCreateTime,Status:Status,Size:AllocatedStorage}'
+# ユーザー設定パラメーター一覧
+aws --no-cli-pager rds describe-db-cluster-parameters --region $REGION \
+  --db-cluster-parameter-group-name ksm-posprd-db-cluster-pg \
+  --source user \
+  --query 'Parameters[*].{Name:ParameterName,Value:ParameterValue}'
 
-# Point-in-time 復元可能範囲確認
-aws --no-cli-pager rds describe-db-clusters \
-  --region $REGION \
-  --db-cluster-identifier ksm-posprd-db-cluster \
-  --query 'DBClusters[0].{Earliest:EarliestRestorableTime,Latest:LatestRestorableTime}'
+# スナップショット一覧
+aws --no-cli-pager rds describe-db-cluster-snapshots --region $REGION \
+  --db-cluster-identifier $CLUSTER \
+  --query 'sort_by(DBClusterSnapshots,&SnapshotCreateTime)[-5:].{ID:DBClusterSnapshotIdentifier,Time:SnapshotCreateTime,Status:Status,SizeGB:AllocatedStorage}'
+
+# ログファイル一覧
+aws --no-cli-pager rds describe-db-log-files --region $REGION \
+  --db-instance-identifier $INSTANCE \
+  --query 'DescribeDBLogFiles[-10:].{File:LogFileName,SizeKB:Size,LastWritten:LastWritten}'
 ```
