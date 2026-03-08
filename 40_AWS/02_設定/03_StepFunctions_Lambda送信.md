@@ -238,7 +238,7 @@ import org.apache.commons.net.ftp.FTPClient;
 |---|---|---|
 | **平文FTP通信** | ファイルデータ・パスワードが暗号化されない | ✅ **仕様通り・合意済み**（ISHIDAファイルをFTPで店舗に送る設計） |
 | **FTPパスワードのDB平文保存** | `store_list.SftpPassword` がAurora MySQLに平文保存（コード上に暗号化処理なし） | 🟡 DBへの不正アクセス時に店舗FTP認証情報が漏洩するリスクあり |
-| **AwsTargetAccessKey/SecretKeyのDB保存** | `store_list` テーブルにIAMアクセスキーが保存されているがSELECTされていない（戻り値に含めず） | ✅ **現状は未使用**。ただしカラムが存在するため将来的な利用・誤参照に注意 |
+| **AwsTargetAccessKey/SecretKeyのDB保存** | `store_list` に保存されているが本物のIAMキーではない（AKIA始まりでない）。コードでも未使用 | ✅ **リスクなし**（本番DB実測で確定） |
 
 ---
 
@@ -256,8 +256,8 @@ import org.apache.commons.net.ftp.FTPClient;
 | `SftpPassword` | — | FTPパスワード | ✅ 戻り値・**平文保存**（暗号化処理なし） |
 | `SftpRemotePath` | — | FTPリモートパス | ✅ 戻り値（取得のみ・現状未使用） |
 | `AwsTargetBucket` | — | AWS S3バケット名 | ⚠️ SELECTされるが戻り値に含めず・**未使用** |
-| `AwsTargetAccessKey` | — | IAMアクセスキー | ⚠️ SELECTされるが戻り値に含めず・**未使用** |
-| `AwsTargetSecretKey` | — | IAMシークレットキー | ⚠️ SELECTされるが戻り値に含めず・**未使用** |
+| `AwsTargetAccessKey` | — | 何らかのキー（用途不明） | ✅ **本物のIAMキーでない**（AKIA始まりでない）・コードでも未使用 |
+| `AwsTargetSecretKey` | — | 何らかのシークレット（用途不明） | ✅ **本物のIAMキーでない**・コードでも未使用 |
 
 > **AwsTargetAccessKey / AwsTargetSecretKey について**  
 > SQLで SELECT されているが、`getStoreInformation()` の戻り値 `data` に `put()` されていない。  
