@@ -527,3 +527,408 @@ Transfer Family 内訳（UsageType別）:
 | S3 | メインバケット prd-ignica-ksm に全ファイル集約 |
 | StepFunctions | 7本（OC/SG/SH/送信）。SQSはSG専用FIFOキュー2本 |
 | 送信経路 | Transfer Familyは受信専用。送信はLambda→Apache Commons Net FTPClientで直接FTP |
+
+---
+
+## [11] Secrets Manager DB接続先詳細確認（prd/Replica_Kasumi_RO / Batch / Mail）
+
+**投入日時**: 2026-03-08 18:46 JST（UTC: 2026-03-08T09:46:58Z）  
+**目的**: Secrets Manager の各シークレットが Writer / Reader どちらを向いているか確認
+
+### コマンド
+
+```bash
+REGION="ap-northeast-1"
+
+echo "=====prd/Replica_Kasumi_RO の中身=====" && \
+aws --no-cli-pager secretsmanager get-secret-value \
+  --region $REGION \
+  --secret-id "prd/Replica_Kasumi_RO" \
+  --query 'SecretString' --output text | python3 -m json.tool
+
+echo "=====prd/Batch_Kasumi の中身=====" && \
+aws --no-cli-pager secretsmanager get-secret-value \
+  --region $REGION \
+  --secret-id "prd/Batch_Kasumi" \
+  --query 'SecretString' --output text | python3 -m json.tool
+
+echo "=====Mail_Kasumi の中身=====" && \
+aws --no-cli-pager secretsmanager get-secret-value \
+  --region $REGION \
+  --secret-id "prd/Mail_Kasumi" \
+  --query 'SecretString' --output text | python3 -m json.tool
+```
+
+### 受信内容
+
+```json
+// prd/Replica_Kasumi_RO
+{
+    "HOST": "ksm-posprd-db-cluster.cluster-ro-cxekgmegw02x.ap-northeast-1.rds.amazonaws.com",
+    "PORT": "3306",
+    "DB_NAME": "Replica_Kasumi",
+    "USER_NAME": "admin"
+}
+// → Readerエンドポイント ✅
+
+// prd/Batch_Kasumi
+{
+    "HOST": "ksm-posprd-db-cluster.cluster-cxekgmegw02x.ap-northeast-1.rds.amazonaws.com",
+    "PORT": "3306",
+    "DB_NAME": "Batch_Kasumi",
+    "USER_NAME": "admin"
+}
+// → Writerエンドポイント
+
+// prd/Mail_Kasumi
+{
+    "HOST": "ksm-posprd-db-cluster.cluster-cxekgmegw02x.ap-northeast-1.rds.amazonaws.com",
+    "PORT": "3306",
+    "DB_NAME": "Mail_Kasumi",
+    "USER_NAME": "admin"
+}
+// → Writerエンドポイント
+```
+
+**確認結果**: `prd/Replica_Kasumi` シークレットが Writerエンドポイント接続であることを確認。  
+`create-file-end-for-night` Lambda は `prd/Replica_Kasumi`（Writer）を参照 → Reader変更の対象。
+
+---
+
+## [12] Lambda create-file-end-for-night DB調査
+
+**投入日時**: 2026-03-08 19:08〜19:10 JST（UTC: 2026-03-08T10:08〜10:10Z）  
+**目的**: create-file-end-for-nightのDB接続先（環境変数）とCloudWatchログ内容を確認
+
+### コマンド
+
+```bash
+REGION="ap-northeast-1"
+
+# Lambda環境変数確認
+aws --no-cli-pager lambda get-function-configuration \
+  --region $REGION \
+  --function-name ksm-posprd-lmd-function-create-file-end-for-night \
+  --query 'Environment.Variables' --output table
+
+# 最新ログストリーム取得
+STREAM=$(aws --no-cli-pager logs describe-log-streams \
+  --region $REGION \
+  --log-group-name "/aws/lambda/ksm-posprd-lmd-function-create-file-end-for-night" \
+  --order-by LastEventTime --descending --max-items 1 \
+  --query 'logStreams[0].logStreamName' --output text | head -1)
+
+echo "最新ストリーム: $STREAM"
+
+# ログ全文取得
+aws --no-cli-pager logs get-log-events \
+  --region $REGION \
+  --log-group-name "/aws/lambda/ksm-posprd-lmd-function-create-file-end-for-night" \
+  --log-stream-name "$STREAM" \
+  --limit 100 \
+  --query 'events[*].message' --output text
+```
+
+### 受信内容
+
+```
+# 環境変数
+| DB_BATCH          | DB_KASUMI            |
+| prd/Batch_Kasumi  | prd/Replica_Kasumi   |
+
+# 最新ストリーム
+2026/03/07/[$LATEST]93e7aaf6a7b448df807064e6fff55255
+
+# ログ（2026-03-07実行分）
+INIT_START Runtime Version: java:17.v66
+START RequestId: 525dfa7b-205b-44ed-b7c8-9ecefde192e9 Version: $LATEST
+✅ Connected to DB!
+Parent directory: /tmp/0343
+  fileEnd: /tmp/0343/SG_night_export_trigger_2026-03-07T20:30:00Z.ENDEXPORT
+  ✅ Uploaded: pos-original/sg/csv/0343/SG_night_export_trigger_2026-03-07T20:30:00Z.ENDEXPORT
+Parent directory: /tmp/0253
+  ✅ Uploaded: pos-original/sg/csv/0253/SG_night_export_trigger_2026-03-07T20:30:00Z.ENDEXPORT
+Parent directory: /tmp/0218
+  ✅ Uploaded: pos-original/sg/csv/0218/SG_night_export_trigger_2026-03-07T20:30:00Z.ENDEXPORT
+END RequestId: 525dfa7b-205b-44ed-b7c8-9ecefde192e9
+REPORT Duration: 11755.12 ms  Billed: 12133 ms  Memory: 512 MB  Used: 186 MB  Init: 377.25 ms
+```
+
+**確認結果**:  
+- `DB_KASUMI=prd/Replica_Kasumi`（Writerエンドポイント）→ **Reader変更の対象**  
+- `DB_BATCH=prd/Batch_Kasumi`（Writerエンドポイント）→ 書き込みあり、変更不要  
+- 3店舗（0343/0253/0218）のENDEXPORTファイルをS3にアップロードする処理のみ（SELECT Onlyで読み込みアクセス）
+
+---
+
+## [13] Transfer Family 実態全体確認
+
+**投入日時**: 2026-03-08 21:19 JST（UTC: 2026-03-08T12:19:13Z）  
+**目的**: Transfer Family の全サーバー状態・ユーザー・CloudWatchメトリクス・VPN状態を一括確認
+
+### コマンド（スクリプト形式）
+
+```bash
+#!/bin/bash
+REGION="ap-northeast-1"
+echo "====== Transfer Family 実態確認 $(date '+%Y-%m-%d %H:%M:%S') ======"
+
+# [1] サーバー一覧
+aws transfer list-servers --region $REGION \
+  --query 'Servers[*].{ServerId:ServerId,State:State,EndpointType:EndpointType,Domain:Domain}' \
+  --output table
+
+# [2] 各サーバー詳細 + ユーザー
+for SID in $(aws transfer list-servers --region $REGION --query 'Servers[*].ServerId' --output text); do
+  aws transfer describe-server --region $REGION --server-id $SID \
+    --query 'Server.{ID:ServerId,State:State,EndpointType:EndpointType}' --output table
+  aws transfer list-users --region $REGION --server-id $SID \
+    --query 'Users[*].{UserName:UserName,HomeDir:HomeDirectory}' --output table
+done
+
+# [3] CloudWatch 転送メトリクス（過去30日）
+for SID in ...; do
+  for METRIC in BytesIn BytesOut FilesIn FilesOut; do
+    aws cloudwatch get-metric-statistics ...
+  done
+done
+
+# [4] VPN状態
+aws ec2 describe-vpn-connections --region $REGION \
+  --vpn-connection-ids vpn-0ea9b7895f78e4c7e \
+  --query 'VpnConnections[0].{State:State,T1:VgwTelemetry[0].Status,T2:VgwTelemetry[1].Status}' \
+  --output table
+```
+
+### 受信内容（主要結果）
+
+```
+サーバー一覧:
+  s-2a4905e8210f48248  ONLINE  VPC   SFTP  (OC系)
+  s-bd974a35aa994c838  ONLINE  VPC   SFTP  (SG系)
+  s-5546031218784c4ba  ONLINE  VPC   SFTP  (SH系)
+
+CloudWatchメトリクス（過去30日）:
+  OC系: FilesIn=304, BytesIn=2.01GB (6.7MB/件、10件/日)
+  SG系: FilesIn=3,007, BytesIn=25MB (8KB/件、100件/日)
+  SH系: FilesIn=60, BytesIn=2.22GB (38MB/件、2件/日)
+
+VPN:
+  State=available, T1=UP, T2=DOWN（冗長性なし）
+```
+
+**確認結果**: SH系のファイル件数は少ないが1ファイルが大きい（38MB）。VPN T2はDOWN。
+
+---
+
+## [14] sent-txt-file Lambda 設定確認
+
+**投入日時**: 2026-03-08 21:48 JST（UTC: 2026-03-08T12:48:27Z）  
+**目的**: USMH向け送信処理の実装方式（Lambda設定）確認
+
+### コマンド
+
+```bash
+aws lambda get-function-configuration \
+  --region ap-northeast-1 \
+  --function-name ksm-posprd-lmd-function-sent-txt-file \
+  --query '{Handler:Handler,Runtime:Runtime,Env:Environment.Variables,Timeout:Timeout}' \
+  --output json
+```
+
+### 受信内容
+
+```json
+{
+    "Handler": "com.luvina.pos.provider.SentFileHandler::handleRequest",
+    "Runtime": "java17",
+    "Env": null,
+    "Timeout": 900
+}
+```
+
+**確認結果**: Javaハンドラー確認。環境変数なし（DBからFTP接続先を取得する実装）。  
+ソースコード確認により Apache Commons Net FTPClient で直接FTP送信することを後続調査で確認。
+
+---
+
+## [15] SSM Port Forwarding 経由 MySQL store_list 確認
+
+**投入日時**: 2026-03-08 21:57〜21:59 JST（UTC: 2026-03-08T12:57〜12:59Z）  
+**目的**: store_list テーブルの実データを確認（AwsTargetAccessKey がIAM漏洩か否か）
+
+### コマンド
+
+```bash
+# EC2 Bastion確認
+aws ec2 describe-instances --region ap-northeast-1 \
+  --filters "Name=private-ip-address,Values=10.238.2.39" \
+  --query 'Reservations[0].Instances[0].{ID:InstanceId,State:State.Name}' --output table
+
+# SSM Port Forwarding でRDSにトンネル
+aws ssm start-session --region ap-northeast-1 --target i-0a395d670d7a3eda3 \
+  --document-name AWS-StartPortForwardingSessionToRemoteHost \
+  --parameters '{"host":["ksm-posprd-db-cluster.cluster-cxekgmegw02x.ap-northeast-1.rds.amazonaws.com"],
+                 "portNumber":["3306"],"localPortNumber":["3307"]}' &
+
+sleep 3
+
+# Secrets取得
+SECRET=$(aws secretsmanager get-secret-value --region ap-northeast-1 \
+  --secret-id prd/Replica_Kasumi --query SecretString --output text)
+DB_USER=$(echo $SECRET | python3 -c "import sys,json; print(json.load(sys.stdin)['USER_NAME'])")
+DB_PASS=$(echo $SECRET | python3 -c "import sys,json; print(json.load(sys.stdin)['PASSWORD'])")
+DB_NAME=$(echo $SECRET | python3 -c "import sys,json; print(json.load(sys.stdin)['DB_NAME'])")
+
+# 集計クエリ
+mysql -h 127.0.0.1 -P 3307 -u "$DB_USER" -p"$DB_PASS" "$DB_NAME" \
+  -e "SELECT COUNT(*) AS total_stores,
+             SUM(CASE WHEN AwsTargetAccessKey IS NOT NULL AND AwsTargetAccessKey != '' THEN 1 ELSE 0 END) AS has_aws_key,
+             SUM(CASE WHEN SftpPassword IS NOT NULL AND SftpPassword != '' THEN 1 ELSE 0 END) AS has_ftp_password,
+             SUM(CASE WHEN SyncFlag = '1' THEN 1 ELSE 0 END) AS sync_enabled
+      FROM store_list;"
+
+# 詳細クエリ（先頭マスク）
+mysql -h 127.0.0.1 -P 3307 -u "$DB_USER" -p"$DB_PASS" "$DB_NAME" \
+  -e "SELECT StoreCode, SyncFlag,
+             LEFT(SftpPassword,3) AS FtpPass_先頭3字,
+             LEFT(AwsTargetAccessKey,8) AS AwsKey_先頭8字,
+             LEFT(AwsTargetSecretKey,4) AS AwsSecret_先頭4字,
+             AwsTargetBucket
+      FROM store_list;"
+```
+
+### 受信内容
+
+```
+# EC2 確認
+| i-0a395d670d7a3eda3 | running |
+
+# SSM Session開始
+SessionId: kiyohara-cz5gh2xra6cdior765flkdeb5i
+Port 3307 opened
+
+# 集計クエリ結果
++--------------+-------------+------------------+--------------+
+| total_stores | has_aws_key | has_ftp_password | sync_enabled |
++--------------+-------------+------------------+--------------+
+|            4 |           4 |                4 |            3 |
++--------------+-------------+------------------+--------------+
+
+# 詳細クエリ結果
++-----------+----------+--------------------+-------------------+----------------------+-----------------+
+| StoreCode | SyncFlag | FtpPass_先頭3字    | AwsKey_先頭8字    | AwsSecret_先頭4字    | AwsTargetBucket |
++-----------+----------+--------------------+-------------------+----------------------+-----------------+
+|       218 | 1        | ish                | ODab3pQU          | lCU0                 | HLgxShIsn6      |
+|       253 | 1        | ish                | ODab3pQU          | lCU0                 | HLgxShIsn6      |
+|       343 | 1        | ish                | ODab3pQU          | lCU0                 | HLgxShIsn6      |
+|      9176 | 0        | Luv                | ODab3pQU          | lCU0                 | HLgxShIsn6      |
++-----------+----------+--------------------+-------------------+----------------------+-----------------+
+```
+
+**確認結果**:  
+- 本番3店舗（218/253/343）、テスト店舗1件（9176 SyncFlag=0）  
+- AwsTargetAccessKey先頭8字 `ODab3pQU` → **IAM実キーの形式（AKIA...）ではない** → IAM漏洩リスクなし ✅  
+- SftpPassword は平文保存（`ish`=isida系パスワード）→ 中リスク（暗号化対応検討）  
+- AwsTargetBucket `HLgxShIsn6` → 本物のS3バケット名ではなく内部管理コード
+
+---
+
+## [16] Transfer Family ユーザー・S3イベント通知・EventBridgeルール確認
+
+**投入日時**: 2026-03-08（本日）  
+**目的**: Transfer Family OFFLINE時のS3着信フロー（ケースA/B判定）調査
+
+### コマンド
+
+```bash
+REGION="ap-northeast-1"
+ACCOUNT="332802448674"
+
+echo "=== [1] OC系ユーザー（ホームディレクトリ・S3パス） ==="
+aws transfer list-users --region $REGION --server-id s-2a4905e8210f48248 \
+  --query 'Users[*].[UserName,HomeDirectory,HomeDirectoryType]' --output table
+
+echo "=== [2] SH系ユーザー ==="
+aws transfer list-users --region $REGION --server-id s-5546031218784c4ba \
+  --query 'Users[*].[UserName,HomeDirectory,HomeDirectoryType]' --output table
+
+echo "=== [3] S3バケットのイベント通知設定（S3→Lambda/SQSトリガーがあるか） ==="
+aws s3api get-bucket-notification-configuration \
+  --region $REGION --bucket prd-ignica-ksm
+
+echo "=== [4] EventBridgeルール一覧（名前のみ） ==="
+aws events list-rules --region $REGION \
+  --query 'Rules[*].Name' --output table
+
+echo "=== [5] EventBridgeルール詳細（oc/sh/receive/import/tf含むもの） ==="
+aws events list-rules --region $REGION --output json \
+  --query 'Rules[?contains(Name,`oc`) || contains(Name,`sh`) || contains(Name,`receive`) || contains(Name,`import`) || contains(Name,`tf`)].{Name:Name,State:State,EventPattern:EventPattern}'
+```
+
+### 受信内容
+
+```
+# [1] OC系ユーザー
+| ksm-posprd-tf-user-oc | None | LOGICAL |
+→ HomeDirectory=None（LOGICALマッピング）→ ユーザーのホームパスはマッピングテーブルで定義
+
+# [2] SH系ユーザー
+| ksm-posprd-tf-user-sh | /prd-ignica-ksm/pos-original/sh/receive | PATH |
+→ SH系はPATHタイプ: S3パス = prd-ignica-ksm/pos-original/sh/receive/
+
+# [3] S3イベント通知設定
+{
+    "EventBridgeConfiguration": {}
+}
+→ S3→LambdaトリガーなしEvmentBridge連携のみ（空設定でEBに転送）
+
+# [4] EventBridgeルール一覧
+  ksm-posprd-eb-rule-check-price
+  ksm-posprd-eb-rule-copy-backup-sg
+  ksm-posprd-eb-rule-create-txt-file-sg
+  ksm-posprd-eb-rule-itemmaster-import-monitoring
+  ksm-posprd-eb-rule-night-export-sg
+  ksm-posprd-eb-rule-p001-import-monitoring
+  ksm-posprd-eb-rule-receive-pos-master-oc    ← OC系トリガー
+  ksm-posprd-eb-rule-receive-pos-master-sg
+  ksm-posprd-eb-rule-receive-pos-master-sh    ← SH系トリガー
+  ksm-posprd-eb-rule-receive-splited-pos-master-oc
+
+# [5] EventBridgeルール詳細（抜粋）
+  ksm-posprd-eb-rule-receive-pos-master-oc:
+    EventPattern: {
+      "source": ["aws.s3"],
+      "detail-type": ["Object Created"],
+      "detail": {
+        "bucket": {"name": ["prd-ignica-ksm"]},
+        "object": {"key": [{"wildcard": "pos-original/oc/receive/*.end"},
+                           {"wildcard": "pos-original/oc/receive/*.END"}]}
+      }
+    }
+
+  ksm-posprd-eb-rule-receive-pos-master-sh:
+    EventPattern: {
+      "source": ["aws.s3"],
+      "detail-type": ["Object Created"],
+      "detail": {
+        "bucket": {"name": ["prd-ignica-ksm"]},
+        "object": {"key": [{"wildcard": "pos-original/sh/receive/*.end"},
+                           {"wildcard": "pos-original/sh/receive/*.END"}]}
+      }
+    }
+```
+
+**確認結果（ケースA/B判定）**:
+
+| 項目 | 結果 |
+|---|---|
+| S3直接トリガー（Lambda/SQS） | **なし**（EventBridgeのみ） |
+| EventBridgeトリガー | S3 Object Created イベントで自動起動 ✅ |
+| OC系トリガーパス | `pos-original/oc/receive/*.end` または `*.END` |
+| SH系トリガーパス | `pos-original/sh/receive/*.end` または `*.END` |
+| OC系ユーザーホームディレクトリ | LOGICALマッピング（別途定義） |
+| SH系ユーザーホームディレクトリ | PATH: `/prd-ignica-ksm/pos-original/sh/receive/` |
+
+**→ 結論**: ベンダーはSFTP経由でファイルを送る。Transfer Family OFFLINE中はSFTP接続が拒否され S3にファイルが届かない（**ケースA**が主シナリオ）。  
+ただしEventBridge設定により、S3にファイルが置かれた場合は Step Functions が自動起動する仕組みも整っている（ケースB対応済み）。
