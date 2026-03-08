@@ -195,8 +195,8 @@
 | AmazonInspectorLambdaManagedRule | Lambda API Call (CloudTrail) |
 | AmazonInspectorLambdaTagManagedRule | Lambdaタグ変更 |
 
-> ⚠️ `copy-backup-sg`（ENABLED）がSTGアカウント（750735758916）のLambdaを向いている。SGバックアップZIPが届くたびにSTG側Lambdaが呼ばれている可能性あり。要確認・修正。  
-> ⚠️ `check-price`（DISABLED）も同様にSTGアカウント向き。有効化前に修正必要。  
+> ℹ️ `copy-backup-sg` のSTGアカウント向けは**意図的な設計**。PRDのSGバックアップZIPをSTG(SPIKE)環境にコピーしてレポート検証に使う用途。PRD本番コード（prd-lastest）には含まれないdevelop専用モジュール。  
+> ℹ️ `check-price` のSTGアカウント向けは**意図的な設計（かつDISABLED）**。ESL売価とPOS売価の不一致チェック機能。ソース内にTODOコメントあり、STG専用実装・PRD未対応。  
 > ⚠️ `night-export-sg` と `itemmaster-import-monitoring` は同じ cron(30 20) で時刻が重複。
 
 ### Step Functions（7本）
