@@ -237,4 +237,29 @@ import org.apache.commons.net.ftp.FTPClient;
 | リスク | 内容 | 評価 |
 |---|---|---|
 | **平文FTP通信** | ファイルデータ・パスワードが暗号化されない | ✅ **仕様通り・合意済み**（ISHIDAファイルをFTPで店舗に送る設計） |
-| **FTP認証情報のDB保存** | FTPパスワードがAurora MySQLに格納されDBから直接取得 | 🟡 DBへの不正アクセス時に接続先FTP認証情報が漏洩するリスクあり |
+| **FTPパスワードのDB平文保存** | `store_list.SftpPassword` がAurora MySQLに平文保存（コード上に暗号化処理なし） | 🟡 DBへの不正アクセス時に店舗FTP認証情報が漏洩するリスクあり |
+| **AwsTargetAccessKey/SecretKeyのDB保存** | `store_list` テーブルにIAMアクセスキーが保存されているがSELECTされていない（戻り値に含めず） | ✅ **現状は未使用**。ただしカラムが存在するため将来的な利用・誤参照に注意 |
+
+---
+
+## 10. store_list テーブル構造（DBから判明）
+
+`get-sync-store` Lambda が参照する `store_list` テーブルのカラム:
+
+| カラム名 | 型 | 内容 | 使用状況 |
+|---|---|---|---|
+| `StoreCode` | — | 店舗コード | ✅ WHERE条件・戻り値 |
+| `SyncFlag` | — | 同期フラグ（'1'=有効） | ✅ WHERE条件・戻り値 |
+| `SftpHost` | — | FTP送信先ホスト | ✅ 戻り値（FTP接続に使用） |
+| `SftpPort` | — | FTP送信先ポート | ✅ 戻り値（FTP接続に使用） |
+| `SftpUserName` | — | FTPユーザー名 | ✅ 戻り値（FTP接続に使用） |
+| `SftpPassword` | — | FTPパスワード | ✅ 戻り値・**平文保存**（暗号化処理なし） |
+| `SftpRemotePath` | — | FTPリモートパス | ✅ 戻り値（取得のみ・現状未使用） |
+| `AwsTargetBucket` | — | AWS S3バケット名 | ⚠️ SELECTされるが戻り値に含めず・**未使用** |
+| `AwsTargetAccessKey` | — | IAMアクセスキー | ⚠️ SELECTされるが戻り値に含めず・**未使用** |
+| `AwsTargetSecretKey` | — | IAMシークレットキー | ⚠️ SELECTされるが戻り値に含めず・**未使用** |
+
+> **AwsTargetAccessKey / AwsTargetSecretKey について**  
+> SQLで SELECT されているが、`getStoreInformation()` の戻り値 `data` に `put()` されていない。  
+> 現状は外部に渡されておらず**実質未使用**。ただしDBカラムとして存在しているため、  
+> 実際に値が格納されているかどうかは本番DBで確認が必要。
