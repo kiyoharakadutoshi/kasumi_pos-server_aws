@@ -836,7 +836,7 @@ Port 3307 opened
 
 ## [16] Transfer Family ユーザー・S3イベント通知・EventBridgeルール確認
 
-**投入日時**: 2026-03-08（本日）  
+**投入日時**: 2026-03-09 00:01 JST（UTC: 2026-03-08T15:01Z）  
 **目的**: Transfer Family OFFLINE時のS3着信フロー（ケースA/B判定）調査
 
 ### コマンド
@@ -932,3 +932,16 @@ aws events list-rules --region $REGION --output json \
 
 **→ 結論**: ベンダーはSFTP経由でファイルを送る。Transfer Family OFFLINE中はSFTP接続が拒否され S3にファイルが届かない（**ケースA**が主シナリオ）。  
 ただしEventBridge設定により、S3にファイルが置かれた場合は Step Functions が自動起動する仕組みも整っている（ケースB対応済み）。
+
+---
+
+## チャット別セクション索引
+
+| チャット名 | 実施日時（JST） | 対応セクション |
+|---|---|---|
+| 【3/8終了】カスミPOS AWS構成の設定と復旧スクリプト作成 | 2026-03-08（終日） | [1]〜[10] |
+| 【3/8終了】カスミPOS AWS構成の設定と復旧スクリプト作成（続） | 2026-03-08 18:46〜21:59 | [11]〜[15] |
+| AWS構成資料の作成 / 【3/8終了】AWS構成資料のテーブル定義と取込順序 | 2026-03-09 00:01 | [16] |
+
+> ※ チャット「AWS構成資料の作成」では OC Import Lambda のテーブル名・EventBridgeルール詳細（[16]）を調査。  
+> ※ 「テーブル定義と取込順序」チャットはその内容を引き継ぎ、Replica_Kasumi_CHK.sql の確認と取込順序確定（01_GHPLUM→02_GHDISCOUNTM→03_GHBUNDLEM→04_GHEVENTM→05_GMMDSEM）を行った（CloudShellコマンドなし、SQL解析のみ）。
