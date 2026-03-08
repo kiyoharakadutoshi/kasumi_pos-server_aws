@@ -935,6 +935,80 @@ aws events list-rules --region $REGION --output json \
 
 ---
 
+---
+
+## [17] LUVINA社内 → AWS 接続方法調査
+
+**投入日時**: 2026-03-08（終日）JST  
+**目的**: LUVINA開発端末からAWS環境への接続方式を確認  
+**備考**: AWS CloudShellではなくローカルコンテナ内でGitHub上のPPTXを解析して調査
+
+### コマンド
+
+```bash
+# [1] リポジトリクローン
+cd /home/claude
+git clone https://<PAT>@github.com/kiyoharakadutoshi/kasumi_pos-server.git
+
+# [2] ネットワーク・VPN関連ファイル検索
+find /home/claude/kasumi_pos-server -type f \
+  | xargs grep -li "luvina\|vpn\|openvpn\|bastion\|internal\|社内\|tunnel"
+
+# [3] 40_AWS ディレクトリ構造確認
+find "/home/claude/kasumi_pos-server/40_AWS/01_構成資料" -type f
+
+# [4] PPTXからテキスト抽出（markitdown）
+pip install "markitdown[pptx]" --break-system-packages -q
+python -m markitdown "/home/claude/kasumi_pos-server/40_AWS/01_構成資料/カスミPOS_AWS構成資料.pptx"
+```
+
+### 受信内容（主要結果）
+
+```
+# [2] 検索結果
+→ PPTX・Kotlinソースファイル等がヒット。インフラ構成はPPTXに集約されていることを確認。
+
+# [3] ディレクトリ構造
+/home/claude/kasumi_pos-server/40_AWS/01_構成資料/カスミPOS_AWS構成資料.pptx
+
+# [4] PPTX抽出（スライド13: 9-1. 外部連携 — USMH閉域網とLUVINA AWS環境の接続構成）
+AWS Client VPN（端末→AWS接続）
+
+LUVINA開発端末
+  ↓ AWS Client VPN
+STG: 10.239.2.4
+PRD: 10.238.2.39（Bastion）
+
+# スライド8（EC2インスタンス・セキュリティグループ）
+sg-ec2-bastion: Bastion (UDP 1194 / OpenVPN)
+```
+
+**確認結果**:
+
+| 項目 | 内容 |
+|---|---|
+| 接続方式 | AWS Client VPN（OpenVPNベース） |
+| プロトコル/ポート | UDP 1194 |
+| 本番接続先 | Bastion EC2（10.238.2.39 / t3.xlarge / AZ: 1a） |
+| STG接続先 | 10.239.2.4 |
+| セキュリティグループ | sg-ec2-bastion |
+| VPN後の接続先 | RDS Aurora MySQL 8.0（TCP 3306）等の内部リソース |
+
+```
+接続フロー（本番）:
+LUVINA開発端末
+    │  AWS Client VPN (OpenVPN, UDP 1194)
+    ▼
+Bastion EC2 (10.238.2.39) ← sg-ec2-bastion
+    │  SSH / 踏み台経由
+    ▼
+RDS Aurora MySQL 8.0 (TCP 3306) / Lambda / Transfer Family 等
+```
+
+**参照資料**: `40_AWS/01_構成資料/カスミPOS_AWS構成資料.pptx` スライド8, 13
+
+---
+
 ## チャット別セクション索引
 
 | チャット名 | 実施日時（JST） | 対応セクション |
@@ -942,6 +1016,6 @@ aws events list-rules --region $REGION --output json \
 | 【3/8終了】カスミPOS AWS構成の設定と復旧スクリプト作成 | 2026-03-08（終日） | [1]〜[10] |
 | 【3/8終了】カスミPOS AWS構成の設定と復旧スクリプト作成（続） | 2026-03-08 18:46〜21:59 | [11]〜[15] |
 | AWS構成資料の作成 / 【3/8終了】AWS構成資料のテーブル定義と取込順序 | 2026-03-09 00:01 | [16] |
+| 【3/8終了】LUVINAのAWS接続方法の確認 | 2026-03-08（終日） | [17] |
 
-> ※ チャット「AWS構成資料の作成」では OC Import Lambda のテーブル名・EventBridgeルール詳細（[16]）を調査。  
-> ※ 「テーブル定義と取込順序」チャットはその内容を引き継ぎ、Replica_Kasumi_CHK.sql の確認と取込順序確定（01_GHPLUM→02_GHDISCOUNTM→03_GHBUNDLEM→04_GHEVENTM→05_GMMDSEM）を行った（CloudShellコマンドなし、SQL解析のみ）。
+> ※ [17] はAWS CloudShellではなく、ローカルコンテナ内でPPTXを解析して調査した内容。
