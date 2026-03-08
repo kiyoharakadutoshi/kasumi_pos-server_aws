@@ -214,9 +214,27 @@ RDS障害が発生すると...
 > バックアップ保持期間が1日（現状）では、障害時のデータ損失リスクが高い。  
 > → バックアップ保持期間を7〜35日に延長することが急務（別途修正依頼書あり）
 
-### プロトコル確認事項
+### プロトコル確認結果（ソースコード確定）
 
-| 項目 | 現状 | 確認方法 |
+```java
+// FtpService.java より
+import org.apache.commons.net.ftp.FTPClient;
+// → Apache Commons Net FTPClient = 平文FTP（SFTPではない）
+```
+
+| 項目 | 確定値 |
+|---|---|
+| プロトコル | **FTP（平文）** ← SFTP ではない |
+| ライブラリ | Apache Commons Net `FTPClient` |
+| 転送モード | パッシブモード（`enterLocalPassiveMode()`） |
+| ファイル形式 | バイナリ（`FTP.BINARY_FILE_TYPE`） |
+| 送信先ディレクトリ | `/{storeCode}/Recv`（storeCode = DB店舗コードに "0" を前置） |
+| S3バックアップパス | `pos-master/ishida/backup/{storeCode}/`（csv → backup 置換） |
+| ディレクトリ自動作成 | あり（送信先の `/{storeCode}/Recv` を自動mkdir） |
+
+### セキュリティ評価
+
+| リスク | 内容 | 評価 |
 |---|---|---|
-| FTP or SFTP | **未確定**（引数名は `ftp_access_info` だが `SftpHost` と記載） | `SentFileHandler.java` ソースコードを確認 |
-| 送信ポート番号 | DBの `SftpPort` 列の値次第 | DB内の実際の値を確認 |
+| **平文FTP通信** | ファイルデータ・パスワードが暗号化されない | 🟡 VPN内通信のため外部露出は限定的。カスミ様と許容可否を確認 |
+| **FTP認証情報のDB保存** | FTPパスワードがAurora MySQLに格納されDBから直接取得 | 🟡 DBへの不正アクセス時に接続先FTP認証情報が漏洩するリスクあり |
