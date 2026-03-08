@@ -165,3 +165,58 @@ aws stepfunctions list-executions \
    → /pos/log/sent/error/ でエラー詳細を確認
    → 送信先ディレクトリのパーミッション・空き容量を確認
 ```
+
+---
+
+## 9. sent-txt-file Lambda 実測値（2026-03-08）
+
+| 項目 | 実測値 |
+|---|---|
+| **Handler** | `com.luvina.pos.provider.SentFileHandler::handleRequest` |
+| **Runtime** | java17 |
+| **環境変数** | **なし（null）** |
+| **Timeout** | **900秒（15分）= Lambda最大値** |
+
+### 環境変数なし の意味
+
+> **SFTPの接続先情報（Host/Port/User/Password）はすべてAurora MySQL DBから動的取得。**  
+> Lambda自体にハードコードされた接続先はなく、`get-sync-store` Lambda がDBから取得した値を  
+> Step Functions 経由で受け取る設計。
+
+```
+【送信時のデータフロー】
+Aurora MySQL
+  └─ 店舗ごとのSFTP接続情報テーブル
+        │ get-sync-store Lambda が取得
+        ▼
+Step Functions ステート変数
+  └─ SftpHost / SftpPort / SftpUserName / SftpPassword
+        │ sent-txt-file Lambda の引数として渡す
+        ▼
+Lambda が SFTP直接接続して送信
+```
+
+### タイムアウト900秒 の意味
+
+Lambda の最大タイムアウト値（上限）に設定されている。  
+SH系ファイルが最大38MB/件のため、大容量ファイルの転送時間を考慮していると推定。
+
+### リスク: DB停止 → 送信も停止
+
+```
+RDS障害が発生すると...
+  ├─ 受信処理（OC/SG/SH Lambda）: DB書き込みエラーで停止
+  └─ 送信処理（sent-txt-file）  : get-sync-storeがDB接続失敗 → 送信停止
+           ↑ DatabaseConnectionException → FailState
+```
+
+> **RDS単一障害点**: DBが落ちると受信・送信の両方が完全停止する。  
+> バックアップ保持期間が1日（現状）では、障害時のデータ損失リスクが高い。  
+> → バックアップ保持期間を7〜35日に延長することが急務（別途修正依頼書あり）
+
+### プロトコル確認事項
+
+| 項目 | 現状 | 確認方法 |
+|---|---|---|
+| FTP or SFTP | **未確定**（引数名は `ftp_access_info` だが `SftpHost` と記載） | `SentFileHandler.java` ソースコードを確認 |
+| 送信ポート番号 | DBの `SftpPort` 列の値次第 | DB内の実際の値を確認 |
