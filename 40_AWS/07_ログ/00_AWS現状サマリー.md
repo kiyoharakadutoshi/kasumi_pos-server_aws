@@ -62,25 +62,43 @@
 
 ## 4. Lambda
 
-**最終調査**: 2026-03-08 → ログ [4][12][14]
+**最終調査**: 2026-03-08 → ログ [4][12][14][18]
 
-| 関数名（ksm-posprd-lmd-function-） | Runtime | Memory | Timeout | 用途 |
-|---|---|---|---|---|
-| oc-import-data | Java17 | 2048MB | 900s | OC系取込 |
-| sg-import-data | Java17 | 2048MB | 900s | SG系取込 |
-| sh-import-data | Java17 | 2048MB | 900s | SH系取込 |
-| sent-txt-file | Java17 | 512MB | 900s | USMH向けFTP送信 |
-| create-file-end-for-night | Java17 | 512MB | 300s | SG夜間トリガー生成 |
-| get-sync-store | Java17 | 128MB | 300s | 店舗情報取得 |
-| *(その他計15関数)* | Java17/Python | 128〜512MB | 300s | 補助処理 |
+### 全関数一覧（21本）
 
-**Secrets Manager 参照先（主要）**:
+| 関数名 | Runtime | Memory | Timeout | DB参照（Secrets） | 用途 |
+|---|---|---|---|---|---|
+| ksm-posprd-lmd-function-oc-import-data | java17 | 2048MB | 900s | Replica_Kasumi(W), Batch_Kasumi | OC系取込 |
+| ksm-posprd-lmd-function-sg-import-data | java17 | 2048MB | 900s | Replica_Kasumi(W), Batch_Kasumi | SG系取込 |
+| ksm-posprd-lmd-import-pos-master-sh | java17 | 1024MB | 900s | Replica_Kasumi(W), Batch_Kasumi | SH系取込 |
+| ksm-posprd-lmd-function-sent-txt-file | java17 | 1024MB | 900s | なし（DBから取得） | USMH向けFTP送信 |
+| ksm-posprd-lmd-function-create-file-end | java17 | 1024MB | 900s | なし | ファイル終端生成 |
+| ksm-posprd-lmd-function-create-file-end-for-night | java17 | 512MB | 900s | Replica_Kasumi(W)⚠️, Batch_Kasumi | SG夜間トリガーファイル生成 |
+| ksm-posprd-lmd-function-split-csv | java17 | 1024MB | 900s | Replica_Kasumi_RO | CSV分割 |
+| ksm-posprd-lmd-function-split-txt-by-sent-time | java17 | 1024MB | 900s | なし（SF_ARN参照） | 送信時刻別TXT分割 |
+| ksm-posprd-lmd-function-unzip-file | java17 | 1024MB | 900s | なし | ZIP解凍 |
+| ksm-posprd-lmd-function-backup-file | java17 | 1024MB | 900s | なし | ファイルバックアップ |
+| ksm-posprd-lmd-function-get-sync-store | java17 | 1024MB | 900s | Replica_Kasumi_RO | 店舗同期情報取得 |
+| ksm-posprd-lmd-function-sent-email | java17 | 1024MB | 900s | なし（SNS/MAIL_CONFIG） | エラーメール送信 |
+| ksm-posprd-lmd-function-p001-import-monitoring | java17 | 512MB | 900s | Replica_Kasumi_RO | P001取込監視 |
+| ksm-posprd-lmd-function-itemmaster-import-monitoring | java17 | 512MB | 900s | Replica_Kasumi_RO | アイテムマスタ取込監視 |
+| ksm-posprd-lmd-trigger-sqs-export-sg | python3.13 | 128MB | 300s | なし（SQS URL） | SG SQSエクスポートトリガー |
+| ksm-posprd-lmd-trigger-sqs-import-sg | python3.13 | 128MB | 300s | なし（SQS URL） | SG SQS取込トリガー |
+| ksm-posprd-lmd-zipfile-polling | python3.13 | 128MB | 300s | なし（SF_ARN） | ZIPファイルポーリング |
+| ksm-posstg-lmd-export-polling | python3.13 | 128MB | 300s | なし（SF_ARN） | ⚠️STG関数がPRDに混在 |
+| delete-name-tags-ap-northeast-1-a66d-3eig7 | python3.11 | 128MB | 900s | — | AWS管理（削除不可） |
+| aws-quicksetup-lifecycle-LA-74sd4 | python3.11 | 128MB | 900s | — | AWS管理（削除不可） |
+| baseline-overrides-a66d-3eig7 | python3.11 | 128MB | 300s | — | AWS管理（削除不可） |
 
-| Lambda | Secret ID | 接続先 |
+### Secrets Manager 参照先まとめ
+
+| Secret ID | 接続先 | 参照Lambda |
 |---|---|---|
-| create-file-end-for-night | prd/Replica_Kasumi | Writerエンドポイント（Reader変更対象） |
-| create-file-end-for-night | prd/Batch_Kasumi | Writerエンドポイント |
-| sent-txt-file | なし（DBからFTP接続先を取得） | — |
+| prd/Replica_Kasumi | **Writer** ⚠️ | oc-import-data / sg-import-data / import-pos-master-sh / create-file-end-for-night |
+| prd/Replica_Kasumi_RO | Reader ✅ | split-csv / p001-import-monitoring / itemmaster-import-monitoring / get-sync-store |
+| prd/Batch_Kasumi | Writer | oc-import-data / sg-import-data / import-pos-master-sh / create-file-end-for-night |
+
+> ⚠️ `prd/Replica_Kasumi` はWriter参照。上記4関数はReader変更の検討対象。
 
 ---
 
@@ -147,19 +165,38 @@
 
 ## 8. EventBridge・Step Functions・SQS
 
-**最終調査**: 2026-03-08 → ログ [8][16]
+**最終調査**: 2026-03-08 → ログ [8][16][19]
 
-### EventBridgeルール（主要）
+### EventBridgeルール（全16件）
 
-| ルール名 | トリガー条件 |
+#### ksm-posprd系（10件）
+
+| ルール名（ksm-posprd-eb-rule-） | 状態 | 種別 | トリガー条件 |
+|---|---|---|---|
+| receive-pos-master-oc | ENABLED | S3 | pos-original/oc/receive/*.end\|*.END |
+| receive-pos-master-sg | ENABLED | S3 | pos-original/sg/receive/*.zip\|*.ZIP |
+| receive-pos-master-sh | ENABLED | S3 | pos-original/sh/receive/*.end\|*.END |
+| receive-splited-pos-master-oc | ENABLED | S3 | pos-original/oc/csv/{0253,0218,0343}/*/*.ENDIMPORT |
+| create-txt-file-sg | ENABLED | S3 | pos-original/sg/csv/*/*.ENDEXPORT |
+| copy-backup-sg | ENABLED | S3 | pos-original/sg/backup/*/*.zip |
+| night-export-sg | ENABLED | cron | cron(30 20 * * ? *) = JST 05:30毎日 |
+| itemmaster-import-monitoring | ENABLED | cron | cron(30 20 * * ? *) = JST 05:30毎日 |
+| p001-import-monitoring | ENABLED | cron | cron(00 15 * * ? *) = JST 00:00毎日 |
+| check-price | **DISABLED** | S3 | pos-master/ishida/backup/*/*ESLDATA.TXT（未稼働） |
+
+#### DO-NOT-DELETE系 / Amazon Inspector管理（6件・削除不可）
+
+| ルール名 | 監視対象 |
 |---|---|
-| receive-pos-master-oc | S3: pos-original/oc/receive/*.end|*.END |
-| receive-pos-master-sg | S3: SG系トリガー |
-| receive-pos-master-sh | S3: pos-original/sh/receive/*.end|*.END |
-| receive-splited-pos-master-oc | S3: OC分割ファイル |
-| night-export-sg | cron（SG夜間エクスポート） |
-| p001-import-monitoring | cron(00 15 * * ? *) / JST 00:00 |
-| itemmaster-import-monitoring | cron(30 20 * * ? *) / JST 05:30 |
+| AmazonInspectorEc2ManagedRule | EC2 State-change |
+| AmazonInspectorEc2TagManagedRule | EC2タグ変更 |
+| AmazonInspectorEcrManagedRule | ECR/ECSイベント |
+| AmazonInspectorLambdaCodeManagedRule | CodeGuru Securityスキャン |
+| AmazonInspectorLambdaManagedRule | Lambda API Call (CloudTrail) |
+| AmazonInspectorLambdaTagManagedRule | Lambdaタグ変更 |
+
+> ⚠️ `night-export-sg` と `itemmaster-import-monitoring` は同じ cron(30 20) で時刻が重複。  
+> ⚠️ 各ルールのターゲット（呼び出し先Lambda/SF）は未調査 → [19]-2 で補完予定。
 
 ### Step Functions（7本）
 

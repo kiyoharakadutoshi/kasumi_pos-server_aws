@@ -1009,6 +1009,150 @@ RDS Aurora MySQL 8.0 (TCP 3306) / Lambda / Transfer Family 等
 
 ---
 
+## [18] Lambda 全関数詳細調査（一覧・環境変数）
+
+**投入日時**: 2026-03-08（本チャット）  
+**目的**: Lambda 全21関数の Runtime/Memory/Timeout と Secrets Manager 参照先（環境変数）を全件確認
+
+### コマンド
+
+```bash
+REGION="ap-northeast-1"
+
+# 全関数一覧（名前・Runtime・Memory・Timeout）
+aws lambda list-functions --region $REGION \
+  --query 'Functions[*].{Name:FunctionName,Runtime:Runtime,Memory:MemorySize,Timeout:Timeout}' \
+  --output table
+
+# 全関数の環境変数
+for FNAME in $(aws lambda list-functions --region $REGION \
+  --query 'Functions[*].FunctionName' --output text); do
+  echo "===== $FNAME ====="
+  aws lambda get-function-configuration --region $REGION \
+    --function-name $FNAME \
+    --query 'Environment.Variables' --output json 2>/dev/null || echo "(env: none)"
+done
+```
+
+### 受信内容
+
+```
+# 全関数一覧
+| Memory |  Name                                                  | Runtime     | Timeout |
+|  1024  |  ksm-posprd-lmd-function-create-file-end               |  java17     |  900    |
+|  1024  |  ksm-posprd-lmd-function-split-csv                     |  java17     |  900    |
+|   512  |  ksm-posprd-lmd-function-create-file-end-for-night     |  java17     |  900    |
+|  2048  |  ksm-posprd-lmd-function-sg-import-data                |  java17     |  900    |
+|   128  |  ksm-posstg-lmd-export-polling                         |  python3.13 |  300    |
+|   512  |  ksm-posprd-lmd-function-p001-import-monitoring        |  java17     |  900    |
+|  1024  |  ksm-posprd-lmd-function-split-txt-by-sent-time        |  java17     |  900    |
+|   128  |  ksm-posprd-lmd-trigger-sqs-export-sg                  |  python3.13 |  300    |
+|   512  |  ksm-posprd-lmd-function-itemmaster-import-monitoring  |  java17     |  900    |
+|   128  |  ksm-posprd-lmd-zipfile-polling                        |  python3.13 |  300    |
+|  1024  |  ksm-posprd-lmd-function-backup-file                   |  java17     |  900    |
+|   128  |  delete-name-tags-ap-northeast-1-a66d-3eig7            |  python3.11 |  900    |
+|  1024  |  ksm-posprd-lmd-import-pos-master-sh                   |  java17     |  900    |
+|  2048  |  ksm-posprd-lmd-function-oc-import-data                |  java17     |  900    |
+|  1024  |  ksm-posprd-lmd-function-get-sync-store                |  java17     |  900    |
+|  1024  |  ksm-posprd-lmd-function-sent-email                    |  java17     |  900    |
+|  1024  |  ksm-posprd-lmd-function-sent-txt-file                 |  java17     |  900    |
+|  1024  |  ksm-posprd-lmd-function-unzip-file                    |  java17     |  900    |
+|   128  |  aws-quicksetup-lifecycle-LA-74sd4                     |  python3.11 |  900    |
+|   128  |  baseline-overrides-a66d-3eig7                         |  python3.11 |  300    |
+|   128  |  ksm-posprd-lmd-trigger-sqs-import-sg                  |  python3.13 |  300    |
+
+# 環境変数
+ksm-posprd-lmd-function-create-file-end         : null
+ksm-posprd-lmd-function-split-csv               : DB_KASUMI=prd/Replica_Kasumi_RO
+ksm-posprd-lmd-function-create-file-end-for-night: DB_BATCH=prd/Batch_Kasumi, DB_KASUMI=prd/Replica_Kasumi
+ksm-posprd-lmd-function-sg-import-data          : DB_BATCH=prd/Batch_Kasumi, DB_KASUMI=prd/Replica_Kasumi
+ksm-posstg-lmd-export-polling                   : SF_ARN=...ksm-posprd-sf-sm-create-txt-file-sg
+ksm-posprd-lmd-function-p001-import-monitoring  : DB_KASUMI=prd/Replica_Kasumi_RO, DATA_SOURCE=oc
+ksm-posprd-lmd-function-split-txt-by-sent-time  : ROLE_ARN=...iam-role-sf, TARGET_ARN=...sf-sm-sent-txt-file, FIRST_NAME_SCHEDULE=ksm-posprd-eb-rule-sent-
+ksm-posprd-lmd-trigger-sqs-export-sg            : QUEUE_URL=...ksm-posprd-sqs-export-queue-sg.fifo
+ksm-posprd-lmd-function-itemmaster-import-monitoring: DB_KASUMI=prd/Replica_Kasumi_RO
+ksm-posprd-lmd-zipfile-polling                  : SF_ARN=...sf-sm-receive-and-import-pos-master-sg
+ksm-posprd-lmd-function-backup-file             : null
+delete-name-tags-ap-northeast-1-a66d-3eig7      : REGION=ap-northeast-1  ← AWS管理Lambda
+ksm-posprd-lmd-import-pos-master-sh             : DB_BATCH=prd/Batch_Kasumi, DB_KASUMI=prd/Replica_Kasumi
+ksm-posprd-lmd-function-oc-import-data          : DB_BATCH=prd/Batch_Kasumi, DB_KASUMI=prd/Replica_Kasumi
+ksm-posprd-lmd-function-get-sync-store          : DB_KASUMI=prd/Replica_Kasumi_RO
+ksm-posprd-lmd-function-sent-email              : SNS_TOPIC_ARN=...ksm-posprd-sns-topic-app-logs, MAIL_CONFIG={...to:pos-app-log-test@luvina.net}
+ksm-posprd-lmd-function-sent-txt-file           : null
+ksm-posprd-lmd-function-unzip-file              : null
+aws-quicksetup-lifecycle-LA-74sd4               : REGION=ap-northeast-1  ← AWS管理Lambda
+baseline-overrides-a66d-3eig7                   : REGION=ap-northeast-1  ← AWS管理Lambda
+ksm-posprd-lmd-trigger-sqs-import-sg            : QUEUE_URL=...ksm-posprd-sqs-store-code-queue-sg.fifo
+```
+
+**確認結果**:
+
+- AWS管理Lambda（削除不可）: `delete-name-tags-*` / `aws-quicksetup-lifecycle-*` / `baseline-overrides-*` の3本
+- STG混在: `ksm-posstg-lmd-export-polling` が PRD アカウントに存在 ⚠️
+- `prd/Replica_Kasumi`（Writer）参照: create-file-end-for-night / sg-import-data / import-pos-master-sh / oc-import-data の4本 → Reader変更検討対象
+- `prd/Replica_Kasumi_RO`（Reader）参照: split-csv / p001-import-monitoring / itemmaster-import-monitoring / get-sync-store の4本
+
+---
+
+## [19] EventBridge 全ルール詳細調査
+
+**投入日時**: 2026-03-08（本チャット）  
+**目的**: EventBridge 全ルールのトリガー条件（スケジュール/S3パターン）を全件確認  
+**備考**: ターゲット取得の for ループはコピペエラーで失敗。ルール一覧・条件は取得済み。ターゲットは別途補完予定。
+
+### コマンド
+
+```bash
+REGION="ap-northeast-1"
+
+# 全ルール（名前・状態・スケジュール・イベントパターン）
+aws events list-rules --region $REGION --output json \
+  --query 'Rules[*].{Name:Name,State:State,Schedule:ScheduleExpression,EventPattern:EventPattern}'
+
+# 各ルールのターゲット ← for ループのコピペエラーで失敗
+for RULE in $(aws events list-rules --region $REGION \
+  --query 'Rules[*].Name' --output text); do
+  echo "===== $RULE ====="
+  aws events list-targets-by-rule --region $REGION \
+    --rule $RULE \
+    --query 'Targets[*].{Id:Id,Arn:Arn}' --output table
+done
+```
+
+### 受信内容
+
+```
+# ksm-posprd系ルール（10件）
+ルール名                                  | 状態     | トリガー種別 | 条件
+------------------------------------------|----------|--------------|-----
+check-price                               | DISABLED | S3           | pos-master/ishida/backup/*/*ESLDATA.TXT / pos-master/ishida/csv/*/*063000ESLDATA.TXT
+copy-backup-sg                            | ENABLED  | S3           | pos-original/sg/backup/*/*.zip
+create-txt-file-sg                        | ENABLED  | S3           | pos-original/sg/csv/*/*.ENDEXPORT
+itemmaster-import-monitoring              | ENABLED  | cron         | cron(30 20 * * ? *) = JST 05:30毎日
+night-export-sg                           | ENABLED  | cron         | cron(30 20 * * ? *) = JST 05:30毎日
+p001-import-monitoring                    | ENABLED  | cron         | cron(00 15 * * ? *) = JST 00:00毎日
+receive-pos-master-oc                     | ENABLED  | S3           | pos-original/oc/receive/*.end|*.END
+receive-pos-master-sg                     | ENABLED  | S3           | pos-original/sg/receive/*.zip|*.ZIP
+receive-pos-master-sh                     | ENABLED  | S3           | pos-original/sh/receive/*.end|*.END
+receive-splited-pos-master-oc             | ENABLED  | S3           | pos-original/oc/csv/{0253,0218,0343}/*/*.ENDIMPORT
+
+# DO-NOT-DELETE系（Amazon Inspector管理・6件）
+DO-NOT-DELETE-AmazonInspectorEc2ManagedRule         : EC2 State-change通知
+DO-NOT-DELETE-AmazonInspectorEc2TagManagedRule      : EC2タグ変更
+DO-NOT-DELETE-AmazonInspectorEcrManagedRule         : ECR/ECSイベント
+DO-NOT-DELETE-AmazonInspectorLambdaCodeManagedRule  : CodeGuru Securityスキャン
+DO-NOT-DELETE-AmazonInspectorLambdaManagedRule      : Lambda API Call (CloudTrail)
+DO-NOT-DELETE-AmazonInspectorLambdaTagManagedRule   : Lambdaタグ変更
+```
+
+**確認結果**:
+- 合計16ルール（ksm-posprd系10件 + Inspector管理6件）
+- `check-price` のみ **DISABLED**（ESL価格チェック、未稼働）
+- `itemmaster-import-monitoring` と `night-export-sg` は **同じcron(30 20)**（JST 05:30）でスケジュールが重複
+- ターゲット（何のLambda/SFを呼ぶか）は次回調査で補完予定 → [19]-2
+
+---
+
 ## チャット別セクション索引
 
 | チャット名 | 実施日時（JST） | 対応セクション |
@@ -1017,5 +1161,7 @@ RDS Aurora MySQL 8.0 (TCP 3306) / Lambda / Transfer Family 等
 | 【3/8終了】カスミPOS AWS構成の設定と復旧スクリプト作成（続） | 2026-03-08 18:46〜21:59 | [11]〜[15] |
 | AWS構成資料の作成 / 【3/8終了】AWS構成資料のテーブル定義と取込順序 | 2026-03-09 00:01 | [16] |
 | 【3/8終了】LUVINAのAWS接続方法の確認 | 2026-03-08（終日） | [17] |
+| AWS構成資料のテーブル定義と取込順序（本チャット） | 2026-03-08（本チャット） | [18][19] |
 
-> ※ [17] はAWS CloudShellではなく、ローカルコンテナ内でPPTXを解析して調査した内容。
+> ※ [17] はAWS CloudShellではなく、ローカルコンテナ内でPPTXを解析して調査した内容。  
+> ※ [19] はターゲット取得のfor文がコピペエラーで失敗。ルール一覧・条件のみ取得済み。ターゲットは [19]-2 で補完予定。
