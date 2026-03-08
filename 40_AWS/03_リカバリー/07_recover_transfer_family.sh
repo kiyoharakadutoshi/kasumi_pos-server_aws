@@ -168,8 +168,14 @@ cmd_check_s3() {
 
     for PREFIX in oc sg sh; do
         echo ""
-        info "--- s3://${BUCKET_MAIN}/${PREFIX}/ （最新10件）---"
-        aws s3 ls "s3://${BUCKET_MAIN}/${PREFIX}/" \
+        # SH系の実際のS3パスは /pos-original/sh/receive/ （HomeDirより）
+        if [ "$PREFIX" = "sh" ]; then
+            S3_PATH="s3://${BUCKET_MAIN}/pos-original/sh/receive/"
+        else
+            S3_PATH="s3://${BUCKET_MAIN}/${PREFIX}/"
+        fi
+        info "--- ${S3_PATH} （最新10件）---"
+        aws s3 ls "$S3_PATH" \
             --region "$REGION" 2>/dev/null \
             | sort -k1,2 -r | head -10 \
             || warn "  ファイルなし or バケットアクセス不可"
