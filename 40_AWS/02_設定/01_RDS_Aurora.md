@@ -21,7 +21,7 @@
 | **エンジンバージョン** | 8.0.mysql_aurora.3.08.2 |
 | **マスターユーザー** | admin |
 | **ポート** | 3306 |
-| **Multi-AZ** | true |
+| **Multi-AZ** | false |
 | **Writeエンドポイント** | `ksm-posprd-db-cluster.cluster-cxekgmegw02x.ap-northeast-1.rds.amazonaws.com` |
 | **Readerエンドポイント** | `ksm-posprd-db-cluster.cluster-ro-cxekgmegw02x.ap-northeast-1.rds.amazonaws.com` |
 | **VPC** | `vpc-0e2d2d27b6860b7fc` |
@@ -47,7 +47,7 @@
 | **クラスター ARN** | `arn:aws:rds:ap-northeast-1:332802448674:cluster:ksm-posprd-db-cluster-replica` |
 | **エンジンバージョン** | 8.0.mysql_aurora.3.08.2 |
 | **クラスター作成日** | 2025-06-20 09:43:22 UTC |
-| **接続Secrets** | `prd/Replica_Kasumi` |
+| **接続Secrets** | `prd/Replica_Kasumi`（⚠️ 名称は「レプリカ」だがWriterエンドポイント接続） |
 
 ---
 
@@ -189,11 +189,17 @@
 ```
 接続方法: AWS Secrets Manager から認証情報を取得
 
-シークレット名                  エンドポイント種別
-────────────────────────────────────────────────────────────
+シークレット名                  エンドポイント種別          主な利用Lambda
+────────────────────────────────────────────────────────────────────────────
 ksm-posprd-sm-db             Writeエンドポイント（プライマリ書き込み）
 ksm-posprd-sm-db-replica     Readerエンドポイント（読み取り専用）
-prd/Replica_Kasumi           レプリカクラスター
+prd/Replica_Kasumi           Writeエンドポイント ※          sg/oc/sh-import-data, create-file-end-for-night(⚠️要変更)
+prd/Replica_Kasumi_RO        Readerエンドポイント            split-csv, p001-import-monitoring,
+                                                             itemmaster-import-monitoring, get-sync-store
+prd/Batch_Kasumi             Writeエンドポイント             バッチ履歴書き込み用（全importerで使用）
+
+※ 注意: prd/Replica_Kasumi は「Replica_Kasumi」がAurora MySQLのDBスキーマ名（データベース名）であり、
+         「レプリカ接続」の意味ではない。実際はWriterエンドポイントに接続。
 
 Writeエンドポイント:
   ksm-posprd-db-cluster.cluster-cxekgmegw02x.ap-northeast-1.rds.amazonaws.com:3306
@@ -201,9 +207,25 @@ Writeエンドポイント:
 Readerエンドポイント:
   ksm-posprd-db-cluster.cluster-ro-cxekgmegw02x.ap-northeast-1.rds.amazonaws.com:3306
 
-USMH側 POSネットワーク（VPN経由）:
+USMHサイド POSネットワーク（VPN経由）:
   172.21.10.0/24 → TCP 3306 許可済み
 ```
+
+### Lambda DB接続 Writer/Reader 使い分け（2026-03-08 調査確定）
+
+| Lambda関数名 | DB操作 | シークレット | 評価 |
+|---|---|---|---|
+| `sg-import-data` | WRITE | `prd/Replica_Kasumi` + `prd/Batch_Kasumi` | ✅ |
+| `oc-import-data` | WRITE | `prd/Replica_Kasumi` + `prd/Batch_Kasumi` | ✅ |
+| `import-pos-master-sh` | WRITE | `prd/Replica_Kasumi` + `prd/Batch_Kasumi` | ✅ |
+| `create-file-end-for-night` | **SELECT のみ** | `prd/Replica_Kasumi`（Writer） | ⚠️ `prd/Replica_Kasumi_RO` に変更推奨 |
+| `split-csv` | SELECT | `prd/Replica_Kasumi_RO` | ✅ |
+| `p001-import-monitoring` | SELECT | `prd/Replica_Kasumi_RO` | ✅ |
+| `itemmaster-import-monitoring` | SELECT | `prd/Replica_Kasumi_RO` | ✅ |
+| `get-sync-store` | SELECT | `prd/Replica_Kasumi_RO` | ✅ |
+
+> **Read IOPS = 0 だった理由**: 読み取り系LambdaはDB接続→SELECT→即時切断のパターン。
+> 常時接続でないため CloudWatch の Read IOPS に反映されなかった（Lambdaは使っている）。
 
 ---
 
