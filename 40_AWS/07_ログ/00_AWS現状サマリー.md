@@ -171,18 +171,18 @@
 
 #### ksm-posprd系（10件）
 
-| ルール名（ksm-posprd-eb-rule-） | 状態 | 種別 | トリガー条件 |
-|---|---|---|---|
-| receive-pos-master-oc | ENABLED | S3 | pos-original/oc/receive/*.end\|*.END |
-| receive-pos-master-sg | ENABLED | S3 | pos-original/sg/receive/*.zip\|*.ZIP |
-| receive-pos-master-sh | ENABLED | S3 | pos-original/sh/receive/*.end\|*.END |
-| receive-splited-pos-master-oc | ENABLED | S3 | pos-original/oc/csv/{0253,0218,0343}/*/*.ENDIMPORT |
-| create-txt-file-sg | ENABLED | S3 | pos-original/sg/csv/*/*.ENDEXPORT |
-| copy-backup-sg | ENABLED | S3 | pos-original/sg/backup/*/*.zip |
-| night-export-sg | ENABLED | cron | cron(30 20 * * ? *) = JST 05:30毎日 |
-| itemmaster-import-monitoring | ENABLED | cron | cron(30 20 * * ? *) = JST 05:30毎日 |
-| p001-import-monitoring | ENABLED | cron | cron(00 15 * * ? *) = JST 00:00毎日 |
-| check-price | **DISABLED** | S3 | pos-master/ishida/backup/*/*ESLDATA.TXT（未稼働） |
+| ルール名（ksm-posprd-eb-rule-） | 状態 | 種別 | トリガー条件 | ターゲット | アカウント |
+|---|---|---|---|---|---|
+| receive-pos-master-oc | ENABLED | S3 | pos-original/oc/receive/*.end\|*.END | SF: receive-pos-master-oc | PRD ✅ |
+| receive-pos-master-sg | ENABLED | S3 | pos-original/sg/receive/*.zip\|*.ZIP | Lambda: trigger-sqs-import-sg | PRD ✅ |
+| receive-pos-master-sh | ENABLED | S3 | pos-original/sh/receive/*.end\|*.END | SF: import-pos-master-sh | PRD ✅ |
+| receive-splited-pos-master-oc | ENABLED | S3 | pos-original/oc/csv/{0253,0218,0343}/*/*.ENDIMPORT | SF: import-pos-master-oc | PRD ✅ |
+| create-txt-file-sg | ENABLED | S3 | pos-original/sg/csv/*/*.ENDEXPORT | Lambda: trigger-sqs-export-sg | PRD ✅ |
+| copy-backup-sg | ENABLED | S3 | pos-original/sg/backup/*/*.zip | Lambda: **ksm-posstg**-lmd-function-copy-backup-sg | **STG ⚠️** |
+| night-export-sg | ENABLED | cron | cron(30 20 * * ? *) = JST 05:30毎日 | Lambda: create-file-end-for-night | PRD ✅ |
+| itemmaster-import-monitoring | ENABLED | cron | cron(30 20 * * ? *) = JST 05:30毎日 | Lambda: itemmaster-import-monitoring | PRD ✅ |
+| p001-import-monitoring | ENABLED | cron | cron(00 15 * * ? *) = JST 00:00毎日 | Lambda: p001-import-monitoring | PRD ✅ |
+| check-price | **DISABLED** | S3 | pos-master/ishida/backup/*/*ESLDATA.TXT | Lambda: **ksm-posstg**-lmd-function-check-price | **STG ⚠️** |
 
 #### DO-NOT-DELETE系 / Amazon Inspector管理（6件・削除不可）
 
@@ -195,8 +195,9 @@
 | AmazonInspectorLambdaManagedRule | Lambda API Call (CloudTrail) |
 | AmazonInspectorLambdaTagManagedRule | Lambdaタグ変更 |
 
-> ⚠️ `night-export-sg` と `itemmaster-import-monitoring` は同じ cron(30 20) で時刻が重複。  
-> ⚠️ 各ルールのターゲット（呼び出し先Lambda/SF）は未調査 → [19]-2 で補完予定。
+> ⚠️ `copy-backup-sg`（ENABLED）がSTGアカウント（750735758916）のLambdaを向いている。SGバックアップZIPが届くたびにSTG側Lambdaが呼ばれている可能性あり。要確認・修正。  
+> ⚠️ `check-price`（DISABLED）も同様にSTGアカウント向き。有効化前に修正必要。  
+> ⚠️ `night-export-sg` と `itemmaster-import-monitoring` は同じ cron(30 20) で時刻が重複。
 
 ### Step Functions（7本）
 

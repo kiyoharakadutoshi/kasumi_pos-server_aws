@@ -1153,6 +1153,58 @@ DO-NOT-DELETE-AmazonInspectorLambdaTagManagedRule   : Lambdaタグ変更
 
 ---
 
+## [19]-2 EventBridge ターゲット補完調査
+
+**投入日時**: 2026-03-08（本チャット、[19]の続き）  
+**目的**: [19] で失敗したターゲット取得を補完
+
+### コマンド
+
+```bash
+REGION="ap-northeast-1"
+RULES="ksm-posprd-eb-rule-check-price ksm-posprd-eb-rule-copy-backup-sg ksm-posprd-eb-rule-create-txt-file-sg ksm-posprd-eb-rule-itemmaster-import-monitoring ksm-posprd-eb-rule-night-export-sg ksm-posprd-eb-rule-p001-import-monitoring ksm-posprd-eb-rule-receive-pos-master-oc ksm-posprd-eb-rule-receive-pos-master-sg ksm-posprd-eb-rule-receive-pos-master-sh ksm-posprd-eb-rule-receive-splited-pos-master-oc"
+for RULE in $RULES; do
+  echo "===== $RULE ====="
+  aws events list-targets-by-rule --region $REGION --rule "$RULE" \
+    --query 'Targets[*].{Id:Id,Arn:Arn}' --output table
+done
+```
+
+### 受信内容
+
+```
+check-price                  → arn:aws:lambda:ap-northeast-1:750735758916:function:ksm-posstg-lmd-function-check-price
+copy-backup-sg               → arn:aws:lambda:ap-northeast-1:750735758916:function:ksm-posstg-lmd-function-copy-backup-sg
+create-txt-file-sg           → arn:aws:lambda:ap-northeast-1:332802448674:function:ksm-posprd-lmd-trigger-sqs-export-sg
+itemmaster-import-monitoring → arn:aws:lambda:ap-northeast-1:332802448674:function:ksm-posprd-lmd-function-itemmaster-import-monitoring
+night-export-sg              → arn:aws:lambda:ap-northeast-1:332802448674:function:ksm-posprd-lmd-function-create-file-end-for-night
+p001-import-monitoring       → arn:aws:lambda:ap-northeast-1:332802448674:function:ksm-posprd-lmd-function-p001-import-monitoring
+receive-pos-master-oc        → arn:aws:states:ap-northeast-1:332802448674:stateMachine:ksm-posprd-sf-sm-receive-pos-master-oc
+receive-pos-master-sg        → arn:aws:lambda:ap-northeast-1:332802448674:function:ksm-posprd-lmd-trigger-sqs-import-sg
+receive-pos-master-sh        → arn:aws:states:ap-northeast-1:332802448674:stateMachine:ksm-posprd-sf-sm-import-pos-master-sh
+receive-splited-pos-master-oc→ arn:aws:states:ap-northeast-1:332802448674:stateMachine:ksm-posprd-sf-sm-import-pos-master-oc
+```
+
+**確認結果**:
+
+| ルール名 | ターゲット種別 | ターゲット名 | AWSアカウント |
+|---|---|---|---|
+| check-price | Lambda | ksm-posstg-lmd-function-check-price | **750735758916（STG）** ⚠️ |
+| copy-backup-sg | Lambda | ksm-posstg-lmd-function-copy-backup-sg | **750735758916（STG）** ⚠️ |
+| create-txt-file-sg | Lambda | ksm-posprd-lmd-trigger-sqs-export-sg | 332802448674（PRD）✅ |
+| itemmaster-import-monitoring | Lambda | ksm-posprd-lmd-function-itemmaster-import-monitoring | 332802448674（PRD）✅ |
+| night-export-sg | Lambda | ksm-posprd-lmd-function-create-file-end-for-night | 332802448674（PRD）✅ |
+| p001-import-monitoring | Lambda | ksm-posprd-lmd-function-p001-import-monitoring | 332802448674（PRD）✅ |
+| receive-pos-master-oc | Step Functions | ksm-posprd-sf-sm-receive-pos-master-oc | 332802448674（PRD）✅ |
+| receive-pos-master-sg | Lambda | ksm-posprd-lmd-trigger-sqs-import-sg | 332802448674（PRD）✅ |
+| receive-pos-master-sh | Step Functions | ksm-posprd-sf-sm-import-pos-master-sh | 332802448674（PRD）✅ |
+| receive-splited-pos-master-oc | Step Functions | ksm-posprd-sf-sm-import-pos-master-oc | 332802448674（PRD）✅ |
+
+> ⚠️ **重大**: `check-price` と `copy-backup-sg` の2ルールがSTGアカウント（750735758916）のLambdaを向いている。  
+> `check-price` はDISABLEDのため現在は無害だが、`copy-backup-sg` は **ENABLED** → S3にSGバックアップZIPが届くたびにSTGアカウントのLambdaが呼ばれている可能性あり。要確認・修正。
+
+---
+
 ## チャット別セクション索引
 
 | チャット名 | 実施日時（JST） | 対応セクション |
@@ -1161,7 +1213,7 @@ DO-NOT-DELETE-AmazonInspectorLambdaTagManagedRule   : Lambdaタグ変更
 | 【3/8終了】カスミPOS AWS構成の設定と復旧スクリプト作成（続） | 2026-03-08 18:46〜21:59 | [11]〜[15] |
 | AWS構成資料の作成 / 【3/8終了】AWS構成資料のテーブル定義と取込順序 | 2026-03-09 00:01 | [16] |
 | 【3/8終了】LUVINAのAWS接続方法の確認 | 2026-03-08（終日） | [17] |
-| AWS構成資料のテーブル定義と取込順序（本チャット） | 2026-03-08（本チャット） | [18][19] |
+| AWS構成資料のテーブル定義と取込順序（本チャット） | 2026-03-08（本チャット） | [18][19][19]-2 |
 
 > ※ [17] はAWS CloudShellではなく、ローカルコンテナ内でPPTXを解析して調査した内容。  
-> ※ [19] はターゲット取得のfor文がコピペエラーで失敗。ルール一覧・条件のみ取得済み。ターゲットは [19]-2 で補完予定。
+> ※ [19] はターゲット取得のfor文がコピペエラーで失敗。[19]-2 で補完完了。
