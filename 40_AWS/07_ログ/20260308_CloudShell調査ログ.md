@@ -1153,6 +1153,137 @@ DO-NOT-DELETE-AmazonInspectorLambdaTagManagedRule   : Lambdaタグ変更
 
 ---
 
+## [19]-2 EventBridge ターゲット補完調査
+
+**投入日時**: 2026-03-08（本チャット、[19]の続き）  
+**目的**: [19] で失敗したターゲット取得を補完
+
+### コマンド
+
+```bash
+REGION="ap-northeast-1"
+RULES="ksm-posprd-eb-rule-check-price ksm-posprd-eb-rule-copy-backup-sg ksm-posprd-eb-rule-create-txt-file-sg ksm-posprd-eb-rule-itemmaster-import-monitoring ksm-posprd-eb-rule-night-export-sg ksm-posprd-eb-rule-p001-import-monitoring ksm-posprd-eb-rule-receive-pos-master-oc ksm-posprd-eb-rule-receive-pos-master-sg ksm-posprd-eb-rule-receive-pos-master-sh ksm-posprd-eb-rule-receive-splited-pos-master-oc"
+for RULE in $RULES; do
+  echo "===== $RULE ====="
+  aws events list-targets-by-rule --region $REGION --rule "$RULE" \
+    --query 'Targets[*].{Id:Id,Arn:Arn}' --output table
+done
+```
+
+### 受信内容
+
+```
+check-price                  → arn:aws:lambda:ap-northeast-1:750735758916:function:ksm-posstg-lmd-function-check-price
+copy-backup-sg               → arn:aws:lambda:ap-northeast-1:750735758916:function:ksm-posstg-lmd-function-copy-backup-sg
+create-txt-file-sg           → arn:aws:lambda:ap-northeast-1:332802448674:function:ksm-posprd-lmd-trigger-sqs-export-sg
+itemmaster-import-monitoring → arn:aws:lambda:ap-northeast-1:332802448674:function:ksm-posprd-lmd-function-itemmaster-import-monitoring
+night-export-sg              → arn:aws:lambda:ap-northeast-1:332802448674:function:ksm-posprd-lmd-function-create-file-end-for-night
+p001-import-monitoring       → arn:aws:lambda:ap-northeast-1:332802448674:function:ksm-posprd-lmd-function-p001-import-monitoring
+receive-pos-master-oc        → arn:aws:states:ap-northeast-1:332802448674:stateMachine:ksm-posprd-sf-sm-receive-pos-master-oc
+receive-pos-master-sg        → arn:aws:lambda:ap-northeast-1:332802448674:function:ksm-posprd-lmd-trigger-sqs-import-sg
+receive-pos-master-sh        → arn:aws:states:ap-northeast-1:332802448674:stateMachine:ksm-posprd-sf-sm-import-pos-master-sh
+receive-splited-pos-master-oc→ arn:aws:states:ap-northeast-1:332802448674:stateMachine:ksm-posprd-sf-sm-import-pos-master-oc
+```
+
+**確認結果**:
+
+| ルール名 | ターゲット種別 | ターゲット名 | AWSアカウント |
+|---|---|---|---|
+| check-price | Lambda | ksm-posstg-lmd-function-check-price | **750735758916（STG）** ⚠️ |
+| copy-backup-sg | Lambda | ksm-posstg-lmd-function-copy-backup-sg | **750735758916（STG）** ⚠️ |
+| create-txt-file-sg | Lambda | ksm-posprd-lmd-trigger-sqs-export-sg | 332802448674（PRD）✅ |
+| itemmaster-import-monitoring | Lambda | ksm-posprd-lmd-function-itemmaster-import-monitoring | 332802448674（PRD）✅ |
+| night-export-sg | Lambda | ksm-posprd-lmd-function-create-file-end-for-night | 332802448674（PRD）✅ |
+| p001-import-monitoring | Lambda | ksm-posprd-lmd-function-p001-import-monitoring | 332802448674（PRD）✅ |
+| receive-pos-master-oc | Step Functions | ksm-posprd-sf-sm-receive-pos-master-oc | 332802448674（PRD）✅ |
+| receive-pos-master-sg | Lambda | ksm-posprd-lmd-trigger-sqs-import-sg | 332802448674（PRD）✅ |
+| receive-pos-master-sh | Step Functions | ksm-posprd-sf-sm-import-pos-master-sh | 332802448674（PRD）✅ |
+| receive-splited-pos-master-oc | Step Functions | ksm-posprd-sf-sm-import-pos-master-oc | 332802448674（PRD）✅ |
+
+> ⚠️ `copy-backup-sg`（ENABLED）がSTGアカウント（750735758916）のLambdaを向いている。SGバックアップZIPが届くたびにSTG側Lambdaが呼ばれている可能性あり。要確認・修正。  
+> ⚠️ `check-price`（DISABLED）も同様にSTGアカウント向き。有効化前に修正必要。  
+> ⚠️ `check-price` は **意図的な設計**（ソースコードにTODOコメントあり、STGのみ動作するよう明示）。  
+> ⚠️ `copy-backup-sg` も **意図的な設計**（PRDのSGバックアップZIPをSTG環境にコピーして検証する用途）。ソースログに "STG:" "SPIKE:" と記載。
+
+---
+
+## [20] copy-backup-sg / check-price ソースコード解析（kasumi_pos-server-batch-isida）
+
+**投入日時**: 2026-03-08（本チャット）  
+**環境**: ローカルコンテナ（git clone + ソース読解）  
+**目的**: STGアカウントを向く2ルールの処理内容を確認
+
+### コマンド
+
+```bash
+cd /home/claude
+git clone https://<PAT>@github.com/kiyoharakadutoshi/kasumi_pos-server-batch-isida.git --depth=1
+
+# copy-backup-sg のハンドラー確認
+cat kasumi_pos-server-batch-isida/pos-server-batch-ishida-develop/\
+copy-file-for-auto-report-handler/src/main/java/com/luvina/pos/provider/S3CopyFileHandler.java
+
+# check-price のハンドラー確認
+cat kasumi_pos-server-batch-isida/pos-server-batch-ishida-develop/\
+daily-report-monitoring-handler/src/main/java/com/luvina/pos/provider/DailyReportMonitoringHandler.java
+
+# prd版モジュール一覧（両ハンドラーがprdに含まれているか確認）
+ls kasumi_pos-server-batch-isida/pos-server-batch-ishida-prd-ksm-posprd-lastest/
+```
+
+### 確認結果
+
+#### ① copy-backup-sg → `S3CopyFileHandler`（copy-file-for-auto-report-handler）
+
+**処理内容**:
+```
+トリガー: pos-original/sg/backup/*/*.zip が S3に着信
+処理:
+  1. イベントから sourceBucket / sourceKey を取得
+  2. 環境変数 DEST_BUCKET / DEST_PREFIX を取得
+  3. S3ClientManager.copyFile() でファイルをコピー
+  4. ログに "STG: s3://{sourceBucket}/{sourceKey}" → "SPIKE: s3://{destBucket}/{destKey}" を出力
+```
+
+**目的**: PRDで受信したSGバックアップZIPを、STG環境（SPIKE）にコピーして自動レポートの検証を行うための処理。
+
+**重要**: `pos-server-batch-ishida-prd-ksm-posprd-lastest` に `copy-file-for-auto-report-handler` は**存在しない** → develop専用モジュール。PRD本番コードには含まれていない。
+
+---
+
+#### ② check-price → `DailyReportMonitoringHandler`（daily-report-monitoring-handler）
+
+**処理内容**:
+```
+トリガー: pos-master/ishida/backup/*/*ESLDATA.TXT が S3に着信（DISABLED）
+処理:
+  1. ESLDATA.TXTをS3からMySQLの一時テーブル(82_ESLDATA_TMP_*)にLOAD DATA
+  2. ストアドプロシージャ report_get_item_price_by_time / report_get_all_item_price_by_time を呼び出し
+  3. ESL売価（ESLDATA）とPOS売価（ItemPrice_TMP）を突合
+  4. 不一致商品（NGプロダクト）を 52_ESL_NG テーブルに INSERT
+  5. NGがある場合 → EventBridge Scheduler でワンショットスケジュールを作成し後続処理を起動
+```
+
+**目的**: ESL（電子棚札）の表示価格とPOSシステムの売価が一致しているか日次で検証する処理。
+
+**重要**:
+- ソースコード内に `//TODO product is "rate(1 minute)"` `//TODO staging only send mail 1 time, product remove` の明示的TODOコメントあり → **STG専用実装、PRD未対応**
+- `pos-server-batch-ishida-prd-ksm-posprd-lastest` に `daily-report-monitoring-handler` は**存在しない** → develop専用。
+- ルール自体も **DISABLED** → 現在は完全に未稼働。
+
+---
+
+**結論**:
+
+| ルール | 設計意図 | PRD本番コード | 現状 |
+|---|---|---|---|
+| copy-backup-sg | PRD→STGへSGバックアップZIPをコピーして検証用途に使う | なし（develop専用） | ENABLED・動作中 |
+| check-price | ESL売価とPOS売価の不一致チェック（日次） | なし（develop専用） | DISABLED・未稼働 |
+
+→ いずれも **意図的な設計**。STGへのコピーはPRDの実データを使ってSTGで動作検証するための仕組み。
+
+---
+
 ## チャット別セクション索引
 
 | チャット名 | 実施日時（JST） | 対応セクション |
@@ -1161,7 +1292,7 @@ DO-NOT-DELETE-AmazonInspectorLambdaTagManagedRule   : Lambdaタグ変更
 | 【3/8終了】カスミPOS AWS構成の設定と復旧スクリプト作成（続） | 2026-03-08 18:46〜21:59 | [11]〜[15] |
 | AWS構成資料の作成 / 【3/8終了】AWS構成資料のテーブル定義と取込順序 | 2026-03-09 00:01 | [16] |
 | 【3/8終了】LUVINAのAWS接続方法の確認 | 2026-03-08（終日） | [17] |
-| AWS構成資料のテーブル定義と取込順序（本チャット） | 2026-03-08（本チャット） | [18][19] |
+| AWS構成資料のテーブル定義と取込順序（本チャット） | 2026-03-08（本チャット） | [18][19][19]-2[20] |
 
 > ※ [17] はAWS CloudShellではなく、ローカルコンテナ内でPPTXを解析して調査した内容。  
-> ※ [19] はターゲット取得のfor文がコピペエラーで失敗。ルール一覧・条件のみ取得済み。ターゲットは [19]-2 で補完予定。
+> ※ [19] はターゲット取得のfor文がコピペエラーで失敗。[19]-2 で補完完了。
