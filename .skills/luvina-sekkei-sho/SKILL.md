@@ -2,7 +2,8 @@
 name: luvina-sekkei-sho
 description: >
   LuvinaソフトウェアのWordフォーマット設計書（改修指示書・仕様書・設計書）を作成するスキル。
-  Luvina固有のデザイン（赤ヘッダー C8102E、BIZ UDPゴシックフォント、メタ情報テーブル、改廃履歴、コードdiffテーブル、テスト手順表）を忠実に再現する。
+  Luvina固有のデザイン（赤ヘッダー C8102E、BIZ UDPゴシックフォント、メタ情報テーブル、改廃履歴、
+  コードdiffテーブル、テスト手順表 with CloudShellコマンド）を忠実に再現する。
   以下のキーワードや状況で**必ず**このスキルを使用すること：
   - 「設計書」「改修指示書」「仕様書」「指示書」「作業指示」をWordで作成する
   - 「Luvinaフォーマット」「Luvinaの設計書テンプレート」
@@ -54,6 +55,11 @@ sections: [{
 | メタテーブル左列背景 | `F5F5F5` |
 | フッター文字・薄グレー | `666666` |
 | ヘッダー右テキスト（グレー） | `888888` |
+| 削減・OK・変更後（グリーン） | `E2EFDA` |
+| 注意・中リスク（イエロー） | `FFF2CC` |
+| 警告・高リスク・変更前（レッドピンク） | `F2DCDB` |
+| コードブロック背景 | `F8F8F8` |
+| CloudShellコマンド背景 | `F0F4F8` |
 
 ---
 
@@ -80,7 +86,8 @@ styles: {
     {
       id: "Heading1", name: "Heading 1", basedOn: "Normal", next: "Normal", quickFormat: true,
       run: { font: "BIZ UDPゴシック", size: 32, bold: true },  // 16pt
-      paragraph: { spacing: { before: 300, after: 120 }, outlineLevel: 0 }
+      // ★ pageBreakBefore: true で見出し1の前に必ず改ページ
+      paragraph: { spacing: { before: 300, after: 120 }, outlineLevel: 0, pageBreakBefore: true }
     },
     {
       id: "Heading2", name: "Heading 2", basedOn: "Normal", next: "Normal", quickFormat: true,
@@ -130,7 +137,7 @@ const header = new Header({
 
 ## フッター
 
-- 中央: `Luvina Software JSC.  |  Confidential  |  p. [ページ番号]`
+- 中央: `Luvina Software JSC.  |  Confidential  |  p.`
 - グレー `666666`、16pt
 - 上罫線: `CCCCCC`、sz=4
 
@@ -143,7 +150,6 @@ const footer = new Footer({
       spacing: { before: 80 },
       children: [
         new TextRun({ text: "Luvina Software JSC.  |  Confidential  |  p.", color: "666666", size: 16, font: "BIZ UDPゴシック" }),
-        new TextRun({ children: [new PageNumber(PageNumberFormat.DECIMAL)], color: "666666", size: 16, font: "BIZ UDPゴシック" })
       ]
     })
   ]
@@ -154,16 +160,13 @@ const footer = new Footer({
 
 ## ドキュメント構成（標準レイアウト）
 
-### 1. タイトルページ要素
+### 1. ページ構成ルール
 
-```
-[タイトル行]          ← Style: Title, 28pt, 中央, スペース区切り文字列（例: 「改　修　指　示　書」）
-[サブタイトル行]      ← Style: Subtitle, 12pt, 中央（例: 「2026/03/03 定例打合せ 改修内容」）
-[空行 × 数行]
-[メタ情報テーブル]    ← 2列, 幅6000 DXA, 中央, 詳細後述
-[空行]
-[改廃履歴テーブル]   ← 4列, 詳細後述
-```
+| ページ | 内容 |
+|--------|------|
+| 1ページ目 | タイトル（Title）・サブタイトル（Subtitle）・メタ情報テーブル |
+| **2ページ目（独立）** | ■ 改廃履歴（`pageBreakBefore: true` で強制改ページ） |
+| 3ページ目〜 | 本文各セクション（Heading1 の `pageBreakBefore: true` で各セクション前に自動改ページ） |
 
 ### 2. メタ情報テーブル（表紙）
 
@@ -173,11 +176,10 @@ const footer = new Footer({
 - 全セル罫線: `CCCCCC`
 - セルマージン: top/bottom 60, left/right 100
 
-**標準行**: プロジェクト / 対象企業 / 作成日 / 作成者 / バージョン / 承認者
+**標準行**: プロジェクト / 依頼番号 / 対象サービス / 作成日 / 作成者 / バージョン / 優先度 / 承認者
 
 ```javascript
 function makeMetaTable(rows) {
-  // rows: [{label: "プロジェクト", value: "KASUMI ギフトカード..."}, ...]
   const border = { style: BorderStyle.SINGLE, size: 4, color: "CCCCCC" };
   const borders = { top: border, bottom: border, left: border, right: border };
   const cellMargins = { top: 60, bottom: 60, left: 100, right: 100 };
@@ -185,8 +187,7 @@ function makeMetaTable(rows) {
   return new Table({
     width: { size: 6000, type: WidthType.DXA },
     alignment: AlignmentType.CENTER,
-    rows: rows.map(r => new TableRow({
-      children: [
+    rows: rows.map(r => new TableRow({ cantSplit: true, children: [
         new TableCell({
           width: { size: 2000, type: WidthType.DXA }, borders,
           shading: { fill: "F5F5F5", type: ShadingType.CLEAR },
@@ -204,37 +205,56 @@ function makeMetaTable(rows) {
 }
 ```
 
-### 3. 改廃履歴テーブル
+### 3. 改廃履歴テーブル（2ページ目・独立）
 
-列構成: `版 | 改訂日 | 改訂者 | 改訂内容`  
-列幅(DXA): `800 | 1600 | 2000 | 4600` (計 9000 DXA = コンテンツ幅)  
+**重要**: 改廃履歴の見出し段落に `pageBreakBefore: true` を設定して2ページ目に独立させる。
+
+```javascript
+new Paragraph({
+  pageBreakBefore: true,          // ← 2ページ目に独立
+  heading: HeadingLevel.HEADING_2,
+  children: [new TextRun({ text: "■ 改廃履歴", ... })]
+}),
+revHistTable([...])
+```
+
+列構成: `版 | 改訂日 | 改訂者 | 改訂内容`
+列幅(DXA): `800 | 1600 | 2000 | 4600` (計 9000 DXA = コンテンツ幅)
 ヘッダー行背景: `F5F5F5`
 
 ### 4. 本文セクション構造
 
 ```
-# 1. 概要                    ← Heading 1
+# 1. 概要・背景               ← Heading 1（pageBreakBeforeで自動改ページ）
   [概要テキスト]
   [改修一覧テーブル]         ← 列: No. / 改修タイトル / 概要 / 工数 / リスク
 
-# No.XX タイトル             ← Heading 1
+# No.XX タイトル              ← Heading 1
 
-## ■ 対象ファイル            ← Heading 2（箇条書きリスト）
+## ■ 対象ファイル・リソース   ← Heading 2
 
-## ■ 改修内容               ← Heading 2（箇条書きリスト）
-
-## ■ [コードセクション名]   ← Heading 2 または Heading 3
+## ■ 変更前 (Before) / 変更後 (After)  ← Heading 2
 
   [コード差分テーブル]       ← 2列並置: ▼ 変更前 (Before) | ▲ 変更後 (After)
 
-## ■ テスト手順・報告        ← Heading 2
+## ■ テスト手順・報告          ← Heading 2
 
-  [テスト表]                 ← 列: No. / テスト手順 / 期待結果 / 結果（OK/NG）
+  [テスト表]                 ← 列: No. / テスト手順+CloudShellコマンド / 期待結果+確認ポイント / 結果
 
   → 全テスト完了後、結果欄を記入して Thanh Nguyên へ提出すること。
 
-# 2. 報告方法                ← Heading 1
-  [箇条書き]
+# 2. 注意事項・リスク          ← Heading 1
+# 3. 報告方法                  ← Heading 1
+```
+
+---
+
+## テーブル共通ルール
+
+**重要**: すべての `TableRow` に `cantSplit: true` を設定して、セルの途中での改ページを防止する。
+
+```javascript
+new TableRow({ cantSplit: true, children: [...] })
 ```
 
 ---
@@ -244,68 +264,137 @@ function makeMetaTable(rows) {
 - 2列均等: 各 4500 DXA（合計 9000 DXA）
 - ヘッダー行: `▼ 変更前 (Before)` / `▲ 変更後 (After)` を背景 `F5F5F5`
 - コードは等幅フォント（`Consolas`）で表示、グレー罫線
+- 変更前セル背景: `F2DCDB`（レッド）、変更後セル背景: `E2EFDA`（グリーン）
 
 ```javascript
-function makeCodeDiffTable(beforeCode, afterCode) {
+function makeCodeDiffTable(beforeLines, afterLines, beforeFill="F2DCDB", afterFill="E2EFDA") {
   const border = { style: BorderStyle.SINGLE, size: 4, color: "CCCCCC" };
   const borders = { top: border, bottom: border, left: border, right: border };
   const margins = { top: 80, bottom: 80, left: 120, right: 120 };
   const colWidth = 4500;
 
-  const headerRow = new TableRow({
-    children: [
-      new TableCell({
-        width: { size: colWidth, type: WidthType.DXA }, borders,
-        shading: { fill: "F5F5F5", type: ShadingType.CLEAR }, margins,
-        children: [new Paragraph({ children: [new TextRun({ text: "▼ 変更前 (Before)", bold: true, font: "BIZ UDPゴシック", size: 20 })] })]
-      }),
-      new TableCell({
-        width: { size: colWidth, type: WidthType.DXA }, borders,
-        shading: { fill: "F5F5F5", type: ShadingType.CLEAR }, margins,
-        children: [new Paragraph({ children: [new TextRun({ text: "▲ 変更後 (After)", bold: true, font: "BIZ UDPゴシック", size: 20 })] })]
-      })
-    ]
+  const mkH = (text) => new TableCell({
+    width: { size: colWidth, type: WidthType.DXA }, borders,
+    shading: { fill: "F5F5F5", type: ShadingType.CLEAR }, margins,
+    children: [new Paragraph({ children: [new TextRun({ text, bold: true, font: "BIZ UDPゴシック", size: 20 })] })]
   });
-
-  // コード行を複数パラグラフに分割
-  const makeCells = (code) => {
-    const lines = code.split("\n");
-    return new TableCell({
-      width: { size: colWidth, type: WidthType.DXA }, borders, margins,
-      children: lines.map(line => new Paragraph({
-        children: [new TextRun({ text: line, font: "Consolas", size: 18 })]
-      }))
-    });
-  };
-
-  const codeRow = new TableRow({
-    children: [ makeCells(beforeCode), makeCells(afterCode) ]
+  const mkCell = (lines, fill) => new TableCell({
+    width: { size: colWidth, type: WidthType.DXA }, borders,
+    shading: { fill, type: ShadingType.CLEAR }, margins,
+    children: lines.map(l => new Paragraph({
+      children: [new TextRun({ text: l, font: "Consolas", size: 18 })]
+    }))
   });
 
   return new Table({
-    width: { size: 9000, type: WidthType.DXA },
-    columnWidths: [colWidth, colWidth],
-    rows: [headerRow, codeRow]
+    width: { size: 9000, type: WidthType.DXA }, columnWidths: [colWidth, colWidth],
+    rows: [
+      new TableRow({ cantSplit: true, children: [mkH("▼ 変更前 (Before)"), mkH("▲ 変更後 (After)")] }),
+      new TableRow({ cantSplit: true, children: [mkCell(beforeLines, beforeFill), mkCell(afterLines, afterFill)] })
+    ]
   });
 }
 ```
 
 ---
 
-## テスト手順表
+## テスト手順表（CloudShellコマンド・確認ポイント付き）
 
-列構成: `No. | テスト手順・確認内容 | 期待結果 | 結果（OK/NG）`  
-列幅(DXA): `600 | 4800 | 2400 | 1200`（計 9000 DXA）  
-ヘッダー行背景: `D6E4F0`（薄水色）  
-結果列: 空欄（記入欄）
+**重要**: テスト表には以下の3要素を含めること。
+1. `step` - テスト手順の説明テキスト
+2. `command` - CloudShellにそのまま貼り付けて実行できるAWS CLIコマンド（`▶ CloudShellコマンド:` ラベル付き）
+3. `checkpoints` - レスポンスの何を確認するかの箇条書き（`✔ 確認ポイント:` ラベル付き）
+
+列構成: `No. | テスト手順・CloudShellコマンド | 期待結果・確認ポイント | 結果`
+列幅(DXA): `600 | 5400 | 2400 | 600`（計 9000 DXA）
+ヘッダー行背景: `D6E4F0`（薄水色）
+
+```javascript
+function testTable(rows) {
+  const DARK_BLUE = "1F4D78";
+  const makeStepCell = (r) => {
+    const children = [];
+    // テスト手順テキスト
+    children.push(new Paragraph({ spacing: { before: 40, after: 40 },
+      children: [new TextRun({ text: r.step, font: "BIZ UDPゴシック", size: 20 })] }));
+    // CloudShellコマンド（Consolasフォント・F0F4F8背景）
+    if (r.command) {
+      children.push(new Paragraph({ spacing: { before: 60, after: 0 },
+        children: [new TextRun({ text: "▶ CloudShellコマンド:", font: "BIZ UDPゴシック",
+          size: 18, bold: true, color: DARK_BLUE })] }));
+      r.command.split("\n").forEach(line => {
+        children.push(new Paragraph({ spacing: { before: 0, after: 0 },
+          shading: { fill: "F0F4F8", type: ShadingType.CLEAR },
+          children: [new TextRun({ text: line, font: "Consolas", size: 17, color: "333333" })] }));
+      });
+    }
+    return new TableCell({ width: { size: 5400, type: WidthType.DXA }, borders, margins: cm, children });
+  };
+  const makeCheckCell = (r) => {
+    const children = [];
+    if (r.expected) children.push(new Paragraph({ spacing: { before: 40, after: 40 },
+      children: [new TextRun({ text: r.expected, font: "BIZ UDPゴシック", size: 20 })] }));
+    if (r.checkpoints) {
+      children.push(new Paragraph({ spacing: { before: 60, after: 0 },
+        children: [new TextRun({ text: "✔ 確認ポイント:", font: "BIZ UDPゴシック",
+          size: 18, bold: true, color: DARK_BLUE })] }));
+      r.checkpoints.forEach(cp => children.push(new Paragraph({ spacing: { before: 0, after: 0 },
+        indent: { left: 200 },
+        children: [new TextRun({ text: "・" + cp, font: "BIZ UDPゴシック", size: 18 })] })));
+    }
+    return new TableCell({ width: { size: 2400, type: WidthType.DXA }, borders, margins: cm,
+      children: children.length ? children : [new Paragraph({ children: [new TextRun("")] })] });
+  };
+  return new Table({
+    width: { size: 9000, type: WidthType.DXA }, columnWidths: [600, 5400, 2400, 600],
+    rows: [
+      new TableRow({ cantSplit: true, children: [
+        tcH("No.", 600, "D6E4F0"),
+        tcH("テスト手順・CloudShellコマンド", 5400, "D6E4F0"),
+        tcH("期待結果・確認ポイント", 2400, "D6E4F0"),
+        tcH("結果", 600, "D6E4F0")
+      ]}),
+      ...rows.map((r, i) => new TableRow({ cantSplit: true, children: [
+        tc(String(i + 1), { w: 600 }),
+        makeStepCell(r),
+        makeCheckCell(r),
+        tc("", { w: 600 })
+      ]}))
+    ]
+  });
+}
+```
 
 ---
 
 ## 改修一覧テーブル（概要セクション）
 
-列構成: `No. | 改修タイトル | 概要 | 工数 | リスク`  
-列幅(DXA): `900 | 2500 | 3600 | 1000 | 1000`（計 9000 DXA）  
+列構成: `No. | 改修タイトル | 概要 | 工数 | リスク`
+列幅(DXA): `900 | 2500 | 3600 | 1000 | 1000`（計 9000 DXA）
 ヘッダー行背景: `F5F5F5`
+
+---
+
+## コードブロック（単一列）
+
+等幅フォント（Consolas）で複数行コマンドを表示する際に使用。背景 `F8F8F8`。
+
+```javascript
+function codeBlock(lines) {
+  return new Table({
+    width: { size: 9000, type: WidthType.DXA }, columnWidths: [9000],
+    rows: [new TableRow({ cantSplit: true, children: [
+      new TableCell({
+        width: { size: 9000, type: WidthType.DXA }, borders,
+        shading: { fill: "F8F8F8", type: ShadingType.CLEAR }, margins: cm2,
+        children: lines.map(l => new Paragraph({
+          children: [new TextRun({ text: l, font: "Consolas", size: 18 })]
+        }))
+      })
+    ]})]
+  });
+}
+```
 
 ---
 
