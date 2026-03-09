@@ -318,3 +318,23 @@ aws --no-cli-pager configservice describe-config-rules --query 'ConfigRules[*].C
 - ⚠️ STGのECRにweb-fe/web-beリポジトリ（PRDにない）→ 用途不明
 - ⚠️ PRDにあるセキュリティ系スタック3本がSTGにない（securityhub/iam-analyzer/cloudwatchlogs）
 
+
+### [2]-3 STG EC2アラーム ALARM調査・リセット
+
+**調査結果:**
+- フィルターパターン: `*fail*` / `*error*` 等を含む文字列を検知
+- ALARM原因: 2025-07-31 02:20 JST に `kiyohara_s3` ユーザーのSSHセッション終了時、PAMが出力する `res=failed`（正常動作）に誤反応
+- 実際の障害: **なし**（bastionは正常稼働・ログも正常流入中）
+- アラーム履歴が空: 保存期間（14日）超過のため
+
+**対応:**
+```
+aws cloudwatch set-alarm-state --alarm-name "ksm-posstg-cw-alarm-ec2-audit-log" --state-value OK
+aws cloudwatch set-alarm-state --alarm-name "ksm-posstg-cw-alarm-ec2-messages" --state-value OK
+```
+→ 両アラームOKに変更済み（2026-03-10）
+
+**Pending:**
+- フィルターパターンを `res=failed` 除外に修正する（根本対応）
+- 例: `[message="*ERROR*" || message="*Error*" || message="*error*"]` から `res=failed` を含む行を除外するパターンに変更
+

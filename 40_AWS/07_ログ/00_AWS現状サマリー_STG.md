@@ -290,11 +290,11 @@ PRDと同等。バケット名・Lambda名のプレフィックスが stg- / pos
 
 | 状態 | アラーム名 |
 |---|---|
-| 🚨 **ALARM** | ksm-posstg-cw-alarm-ec2-audit-log |
-| 🚨 **ALARM** | ksm-posstg-cw-alarm-ec2-messages |
+| ✅ OK（手動リセット済） | ksm-posstg-cw-alarm-ec2-audit-log |
+| ✅ OK（手動リセット済） | ksm-posstg-cw-alarm-ec2-messages |
 | OK | その他17本（RDS・EC2・Transfer系） |
 
-> **⚠️ 2本がALARM状態！** EC2（bastion）のaudit.logとmessagesログが途絶えているか、ログ出力が停止している可能性。要確認。
+> ✅ **2026-03-10 手動リセット済**。原因：2025-07-31のPAMセッション終了時 `res=failed` をフィルター `*fail*` が誤検知（False Positive）。bastionは正常稼働中。フィルターパターンの見直しはPending。
 
 **■ ロググループ（41本）保持期間まとめ**
 
