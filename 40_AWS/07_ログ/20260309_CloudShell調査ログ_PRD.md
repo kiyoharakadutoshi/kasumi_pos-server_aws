@@ -325,6 +325,39 @@ aws events list-rules --region ap-northeast-1 \
 
 ---
 
+---
+
+## [9] EventBridgeルール `night-export-sg` 詳細
+
+**コマンド:**
+```bash
+aws events describe-rule --region ap-northeast-1 \
+  --name ksm-posprd-eb-rule-night-export-sg --output json
+
+aws events list-targets-by-rule --region ap-northeast-1 \
+  --rule ksm-posprd-eb-rule-night-export-sg --output json
+```
+
+**受信内容:**
+```json
+{
+  "ScheduleExpression": "cron(30 20 * * ? *)",   // JST 05:30 毎日
+  "State": "ENABLED",
+  "Target": {
+    "Arn": "ksm-posprd-lmd-function-create-file-end-for-night",
+    "InputTemplate": {
+      "bucketName": "prd-ignica-ksm",
+      "path": "pos-original/sg/csv/",
+      "name": "SG_night_export_trigger_<timestamp>.ENDEXPORT"
+    }
+  }
+}
+```
+
+**確認結果:** STGと完全に同じ構成。PRD/STG両方で毎日JST05:30に夜間SGバッチが動作。
+
+---
+
 ## チャット別索引
 
 | 日時 | 内容 |
