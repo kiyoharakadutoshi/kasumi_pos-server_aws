@@ -364,3 +364,52 @@ aws events list-targets-by-rule --region ap-northeast-1 \
 |---|---|
 | 2026-03-09 AM | PRD/STG セキュリティ監査・ネットワーク構成図・VPN T2調査 |
 | 2026-03-09 PM [1][2] | Transfer Family PRD全サーバー詳細・S3マッピング確定 |
+
+---
+
+## [10] giftcard EC2 / SFTP設定 / Lambda命名問題 調査
+
+**コマンド群:** secretsmanager get-secret-value / ssm send-command / lambda get-function 等
+
+**確認結果:**
+
+### EC2 giftcard
+| 項目 | 内容 |
+|---|---|
+| インスタンスID | i-03d6bf91c19385cdf |
+| OS | **Windows Server 2022 Datacenter** |
+| アプリ配置 | `C:\gift\` |
+| SG | sg-0a9497c846d1be76f (ksm-posprd-vpc-sg-ec2-giftcard) |
+| Ingress | TCP80 ← Bastion/10.156.96.0/24、TCP3389(RDP) ← Bastion |
+| Egress | ALL(-1) → 0.0.0.0/0 ✅ NTT DATA CDS送信は通る |
+| CloudWatch Logs | **なし（監視ゼロ）** |
+| SSM | Online（AWS-QuickSetup-SSM-DefaultEC2MgmtRole） |
+
+### Secrets Manager: ksm-posprd-sm-sftp
+```json
+{"SFTP_PRIVATE_KEY":"test", "PASSWORD":"test"}
+```
+→ **本番SFTP秘密鍵が"test"のまま。実際の秘密鍵はC:\gift\内のローカルファイルに格納されている可能性大。**
+
+### Lambda: ksm-posstg-lmd-export-polling（PRDアカウントに存在）
+| 項目 | 内容 |
+|---|---|
+| アカウント | 332802448674（PRD本番） |
+| IAMロール | ksm-posprd-iam-role-lmd（PRDロール） |
+| SF_ARN | ksm-posprd-sf-sm-create-txt-file-sg（PRD本番SF） |
+| 最終更新 | 2025-08-21（リポジトリ統合前後） |
+| 動作確認 | 2026-03-09 JST 21:27 / 22:20〜22:22 に実際に動作中 |
+| 動作内容 | S3(.ENDEXPORT) → SQS → このLambda → Step Functions起動後に意図的エラー終了 |
+
+**結論:** 名前だけSTG、中身は完全にPRD本番。リポジトリ統合時のリネーム漏れ。動作は正常だが命名が紛らわしく運用混乱リスクあり。
+
+### ギフト決済フロー確定
+```
+EC2 giftcard (Windows/Spring Boot) cron 09:00
+  → Aurora MySQL (prd/Batch_Kasumi: Batch_Kasumiスキーマ)
+  → EBCDICファイル生成 (C:\gift\tmp\... / 6301900000_*）
+  → SftpService (JSch / SSH鍵認証 / C:\gift\内の秘密鍵ファイル)
+  → NAT GW (57.182.174.110) → インターネット
+  → NTT DATA CDS (210.144.93.17:22 TCP SFTP)
+```
+
