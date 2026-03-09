@@ -160,7 +160,7 @@ const body = [
   ]),
   new Paragraph({
     alignment: AlignmentType.CENTER,
-    spacing: { before: 1400, after: 0 },
+    spacing: { before: 800, after: 0 },
     children: [new ImageRun({ data: logo, transformation:{ width:90, height:45 }, type:'png' })]
   }),
 
