@@ -455,3 +455,25 @@ aws --no-cli-pager ecr delete-repository \
 - web-feが記録から漏れていた
 - giftcard: 10.239.2.193 は実在するEC2（NATアドレスではなかった）
 - STG ECR web-fe/web-beは空だが、web-fe/web-be EC2が稼働中
+
+### [2]-8 STG web-fe/web-be 詳細調査
+
+**判明事項: POSシステム Webアプリ（STG独自・CloudFormation管理なし）**
+
+アーキテクチャ:
+Internet → ALB(ksm-posstg-alb-web-fe, internet-facing) → web-fe:80
+         → ALB(ksm-posstg-alb-api-be, internet-facing) → web-be:80/8080 → RDS
+
+| リソース | 詳細 |
+|---|---|
+| web-fe IAM | posstg-role-ec2-web-fe / ECRFullAccess |
+| web-be IAM | posstg-role-ec2-web-be / S3FullAccess+SecretsManagerReadWrite+CWLogs+ECR |
+| ALB1 | ksm-posstg-alb-web-fe / internet-facing / active |
+| ALB2 | ksm-posstg-alb-api-be / internet-facing / active |
+| 起動日 | 2025-09-17（手動構築・CloudFormationなし） |
+| ECR | web-fe/web-beリポジトリは空（コンテナ未使用） |
+
+セキュリティ問題:
+- 🔴 web-be SG: ALL(-1)→0.0.0.0/0 / TCP:8080→0.0.0.0/0 全開放（改修依頼No.5）
+- 🔴 ALB×2: internet-facing（インターネット公開中）→ カスミに用途確認要
+- 🟡 web-be IAM: S3FullAccess・SecretsManagerReadWrite（権限過剰・要絞り込み）

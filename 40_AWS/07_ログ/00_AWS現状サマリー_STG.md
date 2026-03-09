@@ -376,3 +376,27 @@ PRDと同等。バケット名・Lambda名のプレフィックスが stg- / pos
 | ksm-posspk-sns-topic-app-logs-dev | SNS | Luvina開発環境残留物（サブスクライバー: Luvina社員のみ） | 削除未実施 |
 | ksm-posstg-ecr-web-fe | ECR | イメージ0件・未使用 | 削除未実施 |
 | ksm-posstg-ecr-web-be | ECR | イメージ0件・未使用 | 削除未実施 |
+
+## 25. web-fe / web-be 詳細（STG独自Webアプリ）
+
+**構成:**
+```
+Internet
+  → ALB: ksm-posstg-alb-web-fe (internet-facing)
+  → EC2: web-fe (10.239.2.253 / t3.medium / 2025-09-17起動)
+  → ALB: ksm-posstg-alb-api-be (internet-facing)
+  → EC2: web-be (10.239.2.195 / t3.medium / 2025-09-17起動)
+  → Aurora MySQL
+```
+
+**IAM:**
+- web-fe: ECRFullAccess（コンテナイメージ取得用）
+- web-be: S3FullAccess / SecretsManagerReadWrite / CloudWatchLogs / ECR
+
+**特記事項:**
+- CloudFormation管理なし（手動構築）
+- ECRリポジトリは空（コンテナ未デプロイ）
+- PRDに同等構成なし → STG限定の開発中機能と推定
+- 🔴 web-be SG: ALL(-1)→0.0.0.0/0 全開放（改修依頼No.5）
+- 🔴 ALB×2: internet-facing（用途・公開範囲をカスミに確認要）
+- 🟡 web-be IAM権限過剰（S3/SecretsManager Full）
