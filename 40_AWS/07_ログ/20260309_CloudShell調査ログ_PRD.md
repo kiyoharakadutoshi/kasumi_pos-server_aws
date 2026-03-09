@@ -269,6 +269,62 @@ SHARP(P003)
 
 ---
 
+---
+
+## [8] EventBridgeルール 全一覧
+
+**コマンド:**
+```bash
+aws events list-rules --region ap-northeast-1 \
+  --query 'Rules[*].{Name:Name,State:State}' --output table
+```
+
+**受信内容（PRD全ルール）:**
+
+| ルール名 | 状態 | 備考 |
+|---|---|---|
+| DO-NOT-DELETE-AmazonInspectorEc2ManagedRule | ENABLED | **Amazon Inspector自動作成** |
+| DO-NOT-DELETE-AmazonInspectorEc2TagManagedRule | ENABLED | 同上 |
+| DO-NOT-DELETE-AmazonInspectorEcrManagedRule | ENABLED | 同上 |
+| DO-NOT-DELETE-AmazonInspectorLambdaCodeManagedRule | ENABLED | 同上 |
+| DO-NOT-DELETE-AmazonInspectorLambdaManagedRule | ENABLED | 同上 |
+| DO-NOT-DELETE-AmazonInspectorLambdaTagManagedRule | ENABLED | 同上 |
+| ksm-posprd-eb-rule-check-price | DISABLED | ESL連携（停止中） |
+| ksm-posprd-eb-rule-copy-backup-sg | ENABLED | SG バックアップコピー |
+| ksm-posprd-eb-rule-create-txt-file-sg | ENABLED | SG TXTファイル生成 |
+| ksm-posprd-eb-rule-itemmaster-import-monitoring | ENABLED | アイテムマスター監視 |
+| **ksm-posprd-eb-rule-night-export-sg** | **ENABLED** | **夜間SG出力（STGにも存在）** |
+| ksm-posprd-eb-rule-p001-import-monitoring | ENABLED | P001監視 |
+| ksm-posprd-eb-rule-receive-pos-master-oc | ENABLED | OC受信トリガー |
+| ksm-posprd-eb-rule-receive-pos-master-sg | ENABLED | SG受信トリガー |
+| ksm-posprd-eb-rule-receive-pos-master-sh | ENABLED | SH受信トリガー |
+| ksm-posprd-eb-rule-receive-splited-pos-master-oc | ENABLED | OC分割インポート |
+
+**確認結果:**
+
+① **`night-export-sg` はPRDにも存在・ENABLED**
+　→ STGのみと思っていたが、PRDにも同名ルールがある。前回の調査漏れ（フィルタ条件に`night`が含まれていなかったため）
+
+② **Amazon Inspector が PRDで有効**
+　→ `DO-NOT-DELETE-AmazonInspector*` 系6本のルールが自動作成されている
+　→ EC2・ECR・Lambdaの脆弱性スキャンが動いている（STGには存在しない）
+
+③ **STGとPRDのルール差異（確定版）**
+
+| ルール | PRD | STG |
+|---|---|---|
+| `*-9233` 系（3本） | なし | あり（全DISABLED） |
+| `night-export-sg` | ENABLED | ENABLED |
+| `night-export-sg-9233` | なし | あり（DISABLED） |
+| `check-price` | DISABLED | ENABLED |
+| `DO-NOT-DELETE-AmazonInspector*` | あり（6本） | なし |
+
+**次の調査候補:**
+- `night-export-sg` のパターン・ターゲット確認（何をトリガーに何を起動するか）
+- STGの `-9233` ルールの削除要否確認
+
+---
+
 ## チャット別索引
 
 | 日時 | 内容 |
