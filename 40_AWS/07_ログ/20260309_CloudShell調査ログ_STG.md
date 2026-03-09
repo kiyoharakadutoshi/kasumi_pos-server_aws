@@ -95,6 +95,56 @@ done
 - sg-09de3d205a615797e の名前・ルール詳細は別途確認要
 - 各VPC EP に ENI が2つ（AZ-1a: 10.239.2.x / AZ-1c: 10.239.3.x）
 
+---
+
+## [3] Transfer Family セキュリティグループ確認
+
+**コマンド:**
+```bash
+aws ec2 describe-security-groups --region ap-northeast-1 \
+  --group-ids sg-06153ac3ff38765ab \
+  --query 'SecurityGroups[0].{Name:GroupName,Inbound:IpPermissions,Outbound:IpPermissionsEgress}' \
+  --output json
+```
+
+**受信内容:**
+```json
+{
+    "Name": "ksm-posstg-vpc-sg-ep-tf",
+    "Inbound": [
+        {
+            "IpProtocol": "tcp", "FromPort": 22, "ToPort": 22,
+            "UserIdGroupPairs": [
+                {
+                    "Description": "test for bastion",
+                    "UserId": "750735758916",
+                    "GroupId": "sg-01f1bbc2ae66a6591"
+                }
+            ],
+            "IpRanges": [
+                { "Description": "For SFTP Inbound", "CidrIp": "10.156.96.192/26" }
+            ]
+        }
+    ],
+    "Outbound": [ { "IpProtocol": "-1", "CidrIp": "0.0.0.0/0" } ]
+}
+```
+
+**確認結果:**
+
+| ルール | 内容 | 評価 |
+|---|---|---|
+| TCP 22 ← 10.156.96.192/26 | USMH閉域網からのSFTP受信 | ✅ 正常（PRDと同じ） |
+| TCP 22 ← sg-01f1bbc2ae66a6591（Bastion SG） | **Bastionからの接続を許可** | 🔴 **問題あり** |
+
+**⚠️ PRDとの重大な差異:**
+- STGのみ `"test for bastion"` という説明でBastionからTCP22が許可されている
+- PRDにはこのルールが存在しない
+- テスト目的で追加されたまま残存していると推測
+- Bastionに侵入された場合、Transfer FamilyへSFTP接続が可能になる
+
+---
+
 ## チャット別索引
 
 | 日時 | 内容 |
