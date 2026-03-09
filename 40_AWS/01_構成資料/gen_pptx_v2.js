@@ -121,10 +121,11 @@ function arrowV(s, x, y1, y2, color, label) {
     ["03", "STG環境 — セキュリティ現状と問題影響", "Môi trường STG — Trạng thái bảo mật & Tác động"],
     ["04", "PRD環境 — セキュリティ現状と問題影響", "Môi trường PRD — Trạng thái bảo mật & Tác động"],
     ["05", "外部連携データフロー全体図（OC / SG / SH）", "Sơ đồ luồng dữ liệu liên kết ngoài (OC / SG / SH)"],
-    ["06", "リスク一覧・対応ロードマップ", "Danh sách rủi ro & Lộ trình ứng phó"],
+    ["06", "本番環境・検証環境 差異一覧", "Danh sách sự khác biệt PRD / STG"],
+    ["07", "リスク一覧・対応ロードマップ", "Danh sách rủi ro & Lộ trình ứng phó"],
   ];
   items.forEach(([num, ja, vi], i) => {
-    const y = 1.80 + i * 0.90;
+    const y = 1.80 + i * 0.77;
     s.addShape(pres.shapes.RECTANGLE, { x: 0.50, y, w: 0.54, h: 0.54, fill: { color: C.RED } });
     s.addText(num, { x: 0.50, y, w: 0.54, h: 0.54, fontSize: 14, fontFace: "Arial Black", color: C.WHITE, bold: true, align: "center", valign: "middle", margin: 0 });
     s.addText(ja, { x: 1.20, y: y+0.02, w: 8.50, h: 0.25, fontSize: 14, fontFace: "Meiryo", color: C.TEXT_H, bold: true, margin: 0 });
@@ -592,14 +593,111 @@ function arrowV(s, x, y1, y2, color, label) {
 }
 
 // ─────────────────────────────────────
-// SLIDE 8: リスク一覧 + ロードマップ
+// SLIDE 8: 本番環境・検証環境 差異一覧
 // ─────────────────────────────────────
 {
   let s = pres.addSlide();
   s.background = { color: C.WHITE };
   addHeader(s);
-  addTitleBar(s, "06 対応ロードマップ / Lộ trình ứng phó", "2026年3月〜4月 / Tháng 3〜4 năm 2026");
+  addTitleBar(s,
+    "06  本番環境・検証環境 差異一覧",
+    "Danh sách sự khác biệt PRD / STG  |  AWSアカウント: PRD=332802448674 / STG=750735758916"
+  );
   addFooter(s, 8);
+
+  // ── 列ヘッダー定義 ──
+  const COL = { cat: 0.20, item: 1.50, prd: 4.10, stg: 7.00 };
+  const CW  = { cat: 1.28, item: 2.58, prd: 2.88, stg: 2.88 };
+  const yH  = 1.78;
+
+  // ヘッダー行
+  const hCols = [
+    { x: COL.cat, label: "カテゴリ",       bg: "2E4057" },
+    { x: COL.item, label: "項目",           bg: "2E4057" },
+    { x: COL.prd,  label: "🟦 PRD（本番）", bg: "1A3A6B" },
+    { x: COL.stg,  label: "🟧 STG（検証）", bg: "7B4000" },
+  ];
+  const hWs = [CW.cat, CW.item, CW.prd, CW.stg];
+  hCols.forEach(({ x, label, bg }, i) => {
+    s.addShape(pres.shapes.RECTANGLE, { x, y: yH, w: hWs[i], h: 0.28, fill: { color: bg } });
+    s.addText(label, { x, y: yH, w: hWs[i], h: 0.28, fontSize: 8.5, fontFace: "Meiryo", color: "FFFFFF", bold: true, align: "center", valign: "middle", margin: 0 });
+  });
+
+  // ── 差異データ ──
+  // [カテゴリ, 項目, PRD値, STG値, PRD色(背景), STG色(背景), 重要度]
+  // 重要度: 'ok'=正常差異, 'warn'=注意, 'crit'=問題
+  const rows = [
+    // 基本
+    ["基本情報", "AWSアカウント",      "332802448674",             "750735758916",             "E8F0FB", "FFF3E0", "ok"],
+    ["基本情報", "VPC CIDR",           "10.238.0.0/16",            "10.239.0.0/16",            "E8F0FB", "FFF3E0", "ok"],
+    ["基本情報", "S3バケット",         "prd-ignica-ksm",           "stg-ignica-ksm",           "E8F0FB", "FFF3E0", "ok"],
+    // EC2
+    ["EC2",     "Bastion IP",          "10.238.2.39",              "10.239.2.4",               "E8F0FB", "FFF3E0", "ok"],
+    ["EC2",     "giftcard IP",         "10.238.2.198 (t2.large)",  "10.239.2.193",             "E8F0FB", "FFF3E0", "ok"],
+    // セキュリティ監視
+    ["セキュリティ", "GuardDuty",      "✅ 有効",                  "🔴 無効",                  "E8F8E8", "FFE8E8", "crit"],
+    ["セキュリティ", "CloudTrail",     "✅ 有効",                  "🔴 無効",                  "E8F8E8", "FFE8E8", "crit"],
+    ["セキュリティ", "Security Hub",   "✅ 有効",                  "🔴 無効",                  "E8F8E8", "FFE8E8", "crit"],
+    ["セキュリティ", "MFA強制",        "⚠️ 未強制（両環境共通）",  "⚠️ 未強制（両環境共通）",  "FFF8E1", "FFF8E1", "warn"],
+    // SG
+    ["SG",      "Transfer Family SG",  "✅ USMH閉域網のみ",        "🔴 Bastion許可(テスト残骸)", "E8F8E8", "FFE8E8", "crit"],
+    ["SG",      "web-be SG",           "✅ 正常（該当リソースなし）","🔴 全通信許可(-1)",        "E8F8E8", "FFE8E8", "crit"],
+    // EventBridge
+    ["EventBridge", "-9233系ルール",   "✅ 存在しない",             "⚠️ DISABLED残骸3本あり",   "E8F8E8", "FFF8E1", "warn"],
+    ["EventBridge", "check-price",     "DISABLED",                 "⚠️ ENABLED",               "F5F5F5", "FFF8E1", "warn"],
+    ["EventBridge", "AmazonInspector系","✅ 6本あり",              "なし",                     "E8F8E8", "F5F5F5", "ok"],
+    ["EventBridge", "night-export-sg", "ENABLED (JST 05:30)",      "ENABLED (JST 05:30)",      "E8F8E8", "E8F8E8", "ok"],
+    // Lambda
+    ["Lambda",  "PRD命名誤りLambda",   "🔴 ksm-posstg-lmd-export-polling が存在", "正常",      "FFE8E8", "E8F8E8", "crit"],
+    ["Lambda",  "CWLogsカバレッジ",    "✅ ksm-posprd-lmd-* 全Lambda", "✅ 同様",             "E8F8E8", "E8F8E8", "ok"],
+    // VPN
+    ["VPN",     "Tunnel1 (T1)",        "✅ UP (35.79.95.18)",      "✅ UP",                    "E8F8E8", "E8F8E8", "ok"],
+    ["VPN",     "Tunnel2 (T2)",        "🔴 DOWN (2026-02-19～)",   "🔴 DOWN",                  "FFE8E8", "FFE8E8", "warn"],
+  ];
+
+  const rowH = 0.255;
+  let curCat = "";
+  rows.forEach((r, i) => {
+    const [cat, item, prd, stg, prdBg, stgBg] = r;
+    const y = yH + 0.28 + i * rowH;
+    const rowBg = i % 2 === 0 ? "FAFAFA" : "FFFFFF";
+
+    // カテゴリ（変わったときだけ表示）
+    const showCat = cat !== curCat;
+    if (showCat) curCat = cat;
+    s.addShape(pres.shapes.RECTANGLE, { x: COL.cat, y, w: CW.cat, h: rowH, fill: { color: showCat ? "E0E7EF" : rowBg }, line: { color: "DDDDDD", width: 0.3 } });
+    if (showCat) s.addText(cat, { x: COL.cat, y, w: CW.cat, h: rowH, fontSize: 7.5, fontFace: "Meiryo", color: "2E4057", bold: true, align: "center", valign: "middle", margin: 0 });
+
+    // 項目
+    s.addShape(pres.shapes.RECTANGLE, { x: COL.item, y, w: CW.item, h: rowH, fill: { color: rowBg }, line: { color: "DDDDDD", width: 0.3 } });
+    s.addText(item, { x: COL.item + 0.06, y, w: CW.item - 0.08, h: rowH, fontSize: 7.5, fontFace: "Meiryo", color: "333333", valign: "middle", margin: 0 });
+
+    // PRD値
+    s.addShape(pres.shapes.RECTANGLE, { x: COL.prd, y, w: CW.prd, h: rowH, fill: { color: prdBg }, line: { color: "DDDDDD", width: 0.3 } });
+    s.addText(prd, { x: COL.prd + 0.06, y, w: CW.prd - 0.08, h: rowH, fontSize: 7.0, fontFace: "Meiryo", color: "1A1A1A", valign: "middle", margin: 0 });
+
+    // STG値
+    s.addShape(pres.shapes.RECTANGLE, { x: COL.stg, y, w: CW.stg, h: rowH, fill: { color: stgBg }, line: { color: "DDDDDD", width: 0.3 } });
+    s.addText(stg, { x: COL.stg + 0.06, y, w: CW.stg - 0.08, h: rowH, fontSize: 7.0, fontFace: "Meiryo", color: "1A1A1A", valign: "middle", margin: 0 });
+  });
+
+  // 凡例
+  const legY = yH + 0.28 + rows.length * rowH + 0.06;
+  [["🔴 STGのみの問題・要対応", "FFE8E8"], ["⚠️ 両環境共通の課題", "FFF8E1"], ["✅ PRD正常 / STG問題", "E8F8E8"], ["　通常の環境差異", "F5F5F5"]].forEach(([lbl, bg], i) => {
+    s.addShape(pres.shapes.RECTANGLE, { x: 0.20 + i * 2.62, y: legY, w: 2.50, h: 0.22, fill: { color: bg }, line: { color: "BBBBBB", width: 0.5 } });
+    s.addText(lbl, { x: 0.22 + i * 2.62, y: legY, w: 2.46, h: 0.22, fontSize: 7, fontFace: "Meiryo", color: "333333", valign: "middle", margin: 0 });
+  });
+}
+
+// ─────────────────────────────────────
+// SLIDE 9: リスク一覧 + ロードマップ
+// ─────────────────────────────────────
+{
+  let s = pres.addSlide();
+  s.background = { color: C.WHITE };
+  addHeader(s);
+  addTitleBar(s, "07 対応ロードマップ / Lộ trình ứng phó", "2026年3月〜4月 / Tháng 3〜4 năm 2026");
+  addFooter(s, 9);
 
   const phases = [
     {
