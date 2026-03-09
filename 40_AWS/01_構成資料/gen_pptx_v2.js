@@ -582,7 +582,6 @@ function arrowV(s, x, y1, y2, color, label) {
     {
       label: "PHASE 1\n今週中", sub: "Tuần này", color: C.RED,
       items: [
-        "VPN PSK ローテーション\n→ 放置: VPN不正侵入",
         "MFA 全ユーザー強制\n→ 放置: アカウント乗っ取り",
         "web-be SG (-1) 削除\n→ 放置: 全ポート外部公開",
         "GuardDuty 有効化(STG)\n→ 放置: 攻撃に気づかない",
