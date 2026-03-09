@@ -78,7 +78,9 @@ AWSアカウント: 332802448674
 
 ---
 
-## 5. S3バケット（6本）
+## 5. S3バケット（9本）
+
+### プロジェクト管理バケット（6本）
 
 | バケット名 | 用途 |
 |---|---|
@@ -88,6 +90,16 @@ AWSアカウント: 332802448674
 | prd-ignica-com-lmd-jar | Lambda JARファイル |
 | prd-aeon-gift-card | ギフトカード |
 | prd-ignica-com-configrecord | 設定レコード |
+
+### AWSサービス自動生成バケット（3本）
+
+| バケット名 | 自動生成元 | 用途 |
+|---|---|---|
+| aws-cloudtrail-logs-332802448674-e91cb7f6 | CloudTrail 有効化時 | 操作ログ出力先（稼働中） |
+| aws-quicksetup-patchpolicy-332802448674-3eig7 | SSM Quick Setup | パッチポリシー設定用 |
+| aws-quicksetup-patchpolicy-access-log-332802448674-a66d-3eig7 | SSM Quick Setup | アクセスログ用（上記のペア） |
+
+> **【削除済】2026-03-10** `phongbt-auditor-production`（中身空・CloudTrail未使用バケット）を削除。Phong氏がCloudTrail設定試行時に作成し放置されていたもの。
 
 ---
 
@@ -238,7 +250,7 @@ EC2 giftcard (Windows Server 2022 / i-03d6bf91c19385cdf)
 | サービス | 状態 |
 |---|---|
 | GuardDuty | ✅ 有効 |
-| CloudTrail | ✅ 有効 |
+| CloudTrail | ✅ 有効（トレイル名: management-events / マルチリージョン / 出力先: aws-cloudtrail-logs-332802448674-e91cb7f6 / 2025-09-29〜稼働中） |
 | Security Hub | ✅ 有効 |
 | Inspector | ✅ 有効 **【PRD独自】** |
 | VPC Flow Logs | ⚠️ REJECTのみ |

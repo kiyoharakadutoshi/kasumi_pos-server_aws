@@ -170,7 +170,7 @@ PRDと同等。バケット名・Lambda名のプレフィックスが stg- / pos
 | サービス | 状態 | 備考 |
 |---|---|---|
 | GuardDuty | 🔴 **無効** | 【PRD/STG差異】PRDは有効 → 改修依頼 No.3 |
-| CloudTrail | 🔴 **無効** | 【PRD/STG差異】PRDは有効 → 改修依頼 No.4 |
+| CloudTrail | 🔴 **無効** | 【PRD/STG差異】PRDは有効（management-events / 2025-09-29〜稼働中）→ 改修依頼 No.4 |
 | Security Hub | 🔴 **無効** | 【PRD/STG差異】PRDは有効 |
 | Inspector | なし | 【PRD/STG差異】PRDにはあり |
 | VPC Flow Logs | 不明 | |
@@ -213,7 +213,7 @@ PRDと同等。バケット名・Lambda名のプレフィックスが stg- / pos
 | web-be SG | - | 🔴 ALL(-1)全通信許可 |
 | api-be ALB | ALBなし（PL制限済み） | internet-facing |
 | GuardDuty | ✅ 有効 | 🔴 無効 |
-| CloudTrail | ✅ 有効 | 🔴 無効 |
+| CloudTrail | ✅ 有効（management-events / マルチリージョン） | 🔴 無効 |
 | Security Hub | ✅ 有効 | 🔴 無効 |
 | Inspector | ✅ あり（6ルール） | なし |
 | Transfer Family SG | ✅ USMH閉域網のみ | 🔴 +Bastion残骸ルール |
