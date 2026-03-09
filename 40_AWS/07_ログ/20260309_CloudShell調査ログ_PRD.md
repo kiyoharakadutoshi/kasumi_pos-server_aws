@@ -146,6 +146,53 @@ Step Functions
 - ただし通信経路はUSMH閉域網（VPN）内のため、インターネット露出はなし
 - VPN T2がDOWNしているため、T1のみで冗長性なし
 
+---
+
+## [5] Transfer Family VPCエンドポイント プライベートIP
+
+**コマンド:**
+```bash
+for VPCE in vpce-00da0e948a06819d1 vpce-0c489e9240780e92b vpce-0bb018fa328a44d12; do
+  aws ec2 describe-network-interfaces --region ap-northeast-1 \
+    --filters "Name=description,Values=VPC Endpoint Interface $VPCE" \
+    --query 'NetworkInterfaces[*].{AZ:AvailabilityZone,IP:PrivateIpAddress}' \
+    --output table
+done
+```
+
+**受信内容:**
+
+| サーバー | VPCE ID | AZ-1a IP | AZ-1c IP |
+|---|---|---|---|
+| tf-server-**oc** | vpce-00da0e948a06819d1 | 10.238.2.221 | 10.238.3.138 |
+| tf-server-**sg** | vpce-0c489e9240780e92b | 10.238.2.234 | 10.238.3.215 |
+| tf-server-**sh** | vpce-0bb018fa328a44d12 | 10.238.2.184 | 10.238.3.139 |
+
+**確認結果:** 各Transfer Familyは2AZ冗長でプライベートIPが割り当てられている。外部システム（BIPROGY/VINX/SHARP）はUSMH閉域網VPN経由でこれらIPにSFTP接続。
+
+---
+
+## [6] S3バケット通知設定（受信トリガー確認）
+
+**コマンド:**
+```bash
+aws s3api get-bucket-notification-configuration \
+  --bucket prd-ignica-ksm --output json
+```
+
+**受信内容:**
+```json
+{ "EventBridgeConfiguration": {} }
+```
+
+**確認結果:**
+- S3はすべてのイベントを**EventBridgeに転送**する設定
+- Lambda/SQSへの直接通知ではない
+- `EventBridgeConfiguration: {}` = EventBridge転送が有効（空オブジェクトは「全イベント転送」を意味する）
+- **次の調査:** EventBridgeのルールでどのS3イベントがどのStep Functions/Lambdaを起動しているかを確認する必要あり
+
+---
+
 ## チャット別索引
 
 | 日時 | 内容 |
