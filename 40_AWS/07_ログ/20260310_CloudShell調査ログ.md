@@ -338,3 +338,20 @@ aws cloudwatch set-alarm-state --alarm-name "ksm-posstg-cw-alarm-ec2-messages" -
 - フィルターパターンを `res=failed` 除外に修正する（根本対応）
 - 例: `[message="*ERROR*" || message="*Error*" || message="*error*"]` から `res=failed` を含む行を除外するパターンに変更
 
+
+### [2]-4 PRD Lambda命名ミス調査
+
+**問題:**
+PRDアカウント（332802448674）に `ksm-posstg-lmd-export-polling` という関数名のLambdaが存在。
+
+**調査結果:**
+- SQSトリガー: `ksm-posprd-sqs-export-queue-sg.fifo`（PRDキュー） → ✅ 正常
+- SF_ARN: `ksm-posprd-sf-sm-create-txt-file-sg`（PRDのStep Functions） → ✅ 正常
+- IAMロール: `ksm-posprd-iam-role-lmd`（PRDロール） → ✅ 正常
+- 関数名のみ `ksm-posstg-` プレフィックスのまま → ❌ 命名ミス
+
+**結論:** 機能・接続先は全てPRD正常。2025-08-21デプロイ時の命名ミスのみ。
+
+**対応:** 当面放置（Lambdaは関数名変更不可のため再作成が必要。リスク>メリット）
+**Pending:** カスミ承認後、メンテナンスウィンドウで正式名称(ksm-posprd-lmd-export-polling)に再作成する。
+

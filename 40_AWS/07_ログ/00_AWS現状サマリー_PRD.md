@@ -463,3 +463,11 @@ AWS管理キー（実キーID付き）: lambda / secretsmanager / sns / ssm
 | Payment Cryptography | なし |
 | X-Ray | Defaultグループのみ（実質未設定） |
 
+
+## 28. 既知の命名ミス・技術的負債
+
+| リソース | 問題 | 影響 | 対応 |
+|---|---|---|---|
+| Lambda: `ksm-posstg-lmd-export-polling` | PRDアカウントにSTG名の関数が存在 | **機能的影響なし**（SQS/SF/IAMは全てPRD正規） | 当面放置。再作成はメンテナンス時 |
+| CWLogs: `/aws/lambda/ksm-posstg-lmd-export-polling` | PRDアカウントにSTG名のロググループが存在 | **機能的影響なし**（上記Lambdaのログ出力先） | Lambda再作成時に合わせて削除 |
+
