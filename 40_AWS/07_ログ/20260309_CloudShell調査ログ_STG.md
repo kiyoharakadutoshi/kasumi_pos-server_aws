@@ -222,6 +222,63 @@ aws events list-rules --region ap-northeast-1 \
 
 ---
 
+---
+
+## [7] EventBridgeルール `night-export-sg` 詳細
+
+**コマンド:**
+```bash
+aws events describe-rule --region ap-northeast-1 \
+  --name ksm-posstg-eb-rule-night-export-sg --output json
+
+aws events list-targets-by-rule --region ap-northeast-1 \
+  --rule ksm-posstg-eb-rule-night-export-sg --output json
+```
+
+**受信内容:**
+```json
+{
+  "ScheduleExpression": "cron(30 20 * * ? *)",   // JST 05:30 毎日
+  "State": "ENABLED",
+  "Target": {
+    "Arn": "ksm-posstg-lmd-function-create-file-end-for-night",
+    "InputTemplate": {
+      "bucketName": "stg-ignica-ksm",
+      "path": "pos-original/sg/csv/",
+      "name": "SG_night_export_trigger_<timestamp>.ENDEXPORT"
+    }
+  }
+}
+```
+
+**確認結果:**
+
+| 項目 | 内容 |
+|---|---|
+| 実行時刻 | **毎日 JST 05:30**（cron(30 20 * * ? *)） |
+| 起動Lambda | `ksm-posstg-lmd-function-create-file-end-for-night` |
+| 動作 | S3に `pos-original/sg/csv/SG_night_export_trigger_<timestamp>.ENDEXPORT` を作成 |
+| 連鎖トリガー | `.ENDEXPORT` → `eb-rule-create-txt-file-sg` → Step Functions: create-txt-file-sg |
+
+**仕組み:**
+```
+毎日 JST 05:30
+  → EventBridge(night-export-sg) cron起動
+  → Lambda(create-file-end-for-night)
+  → S3に .ENDEXPORT ファイルを作成
+  → EventBridge(create-txt-file-sg) がS3イベントで起動
+  → Step Functions(create-txt-file-sg) が実行
+  → SGデータのTXTファイル生成 → USMH向けFTP送信
+```
+
+**考察:**
+- 夜間バッチとしてSGマスターデータをUSMHに送信するための定時トリガー
+- `.ENDEXPORT` ファイルを「疑似フラグ」として作ることでS3イベント駆動フローを起動
+- ItemMasterの EventBridge(cron 05:30)と同じ時刻 → 同時実行の可能性あり
+- PRDにも同名ルールが存在するため、本番でも同様に毎朝動いている
+
+---
+
 ## チャット別索引
 
 | 日時 | 内容 |
