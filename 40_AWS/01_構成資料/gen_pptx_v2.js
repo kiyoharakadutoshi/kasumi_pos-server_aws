@@ -459,10 +459,10 @@ function arrowV(s, x, y1, y2, color, label) {
   addFooter(s, 7);
 
   // ─ 凡例 ─
-  const legendItems = [["OC系 (BIPROGY)", "4472C4"], ["SG系 (VINX)", "70AD47"], ["SH系 (SHARP)", "ED7D31"], ["夜間バッチ", "9966BB"], ["送信フロー", "C8102E"]];
+  const legendItems = [["OC系 (BIPROGY)", "4472C4"], ["SG系 (VINX)", "70AD47"], ["SH系 (SHARP)", "ED7D31"], ["夜間バッチ", "9966BB"], ["ギフト決済", "D4A017"], ["送信フロー", "C8102E"]];
   legendItems.forEach(([lbl, col], i) => {
-    s.addShape(pres.shapes.RECTANGLE, { x: 0.30 + i * 2.06, y: 1.72, w: 0.16, h: 0.16, fill: { color: col } });
-    s.addText(lbl, { x: 0.50 + i * 2.06, y: 1.70, w: 1.80, h: 0.20, fontSize: 7.5, fontFace: "Meiryo", color: C.TEXT_B, margin: 0 });
+    s.addShape(pres.shapes.RECTANGLE, { x: 0.30 + i * 1.72, y: 1.72, w: 0.14, h: 0.14, fill: { color: col } });
+    s.addText(lbl, { x: 0.48 + i * 1.72, y: 1.70, w: 1.55, h: 0.20, fontSize: 7, fontFace: "Meiryo", color: C.TEXT_B, margin: 0 });
   });
 
   // ─ ゾーンヘッダー ─
@@ -490,7 +490,7 @@ function arrowV(s, x, y1, y2, color, label) {
   }
 
   // ── OC系（行1: y=2.46）──
-  const yOC = 2.46; const hR = 0.44; const COC = "4472C4";
+  const yOC = 2.46; const hR = 0.40; const COC = "4472C4";
   fb(s, 0.22, yOC, 1.66, hR, "BIPROGY\n(OpenCentral)", "EBF3FB", COC, COC, 7);
   arr(s, 1.88, yOC+hR/2, 2.02, COC);
   fb(s, 2.02, yOC, 1.66, hR, "tf-server-oc\n10.238.2.221/3.138", "E8F5E9", COC, COC, 7);
@@ -503,8 +503,8 @@ function arrowV(s, x, y1, y2, color, label) {
   arr(s, 9.08, yOC+hR/2, 9.22, COC);
   fb(s, 9.22, yOC, 1.36, hR, "Aurora\nMySQL\n✅", "EBF3FB", COC, COC, 7);
 
-  // ── SH系（行2: y=3.02）──
-  const ySH = 3.02; const CSH = "ED7D31";
+  // ── SH系（行2: y=2.96）──
+  const ySH = 2.96; const CSH = "ED7D31";
   fb(s, 0.22, ySH, 1.66, hR, "SHARP\n(P003)", "FFF3E0", CSH, CSH, 7);
   arr(s, 1.88, ySH+hR/2, 2.02, CSH);
   fb(s, 2.02, ySH, 1.66, hR, "tf-server-sh\n10.238.2.184/3.139", "E8F5E9", CSH, CSH, 7);
@@ -518,7 +518,7 @@ function arrowV(s, x, y1, y2, color, label) {
   fb(s, 9.22, ySH, 1.36, hR, "Aurora\nMySQL\n✅", "FFF3E0", CSH, CSH, 7);
 
   // ── SG系（行3〜4: 受信＋送信）──
-  const ySG1 = 3.58; const CSG = "70AD47";
+  const ySG1 = 3.46; const CSG = "70AD47";
   fb(s, 0.22, ySG1, 1.66, hR, "VINX\n(POS Server)", "F1F8E9", CSG, CSG, 7);
   arr(s, 1.88, ySG1+hR/2, 2.02, CSG);
   fb(s, 2.02, ySG1, 1.66, hR, "tf-server-sg\n10.238.2.234/3.215", "E8F5E9", CSG, CSG, 7);
@@ -529,10 +529,10 @@ function arrowV(s, x, y1, y2, color, label) {
   arr(s, 7.28, ySG1+hR/2, 7.42, CSG);
   fb(s, 7.42, ySG1, 1.66, hR, "S3:\nsg/csv/\n*/*.ENDEXPORT", "F1F8E9", CSG, CSG, 7);
   // ENDEXPORT→次段へ縦矢印
-  s.addShape(pres.shapes.LINE, { x: 8.25, y: 4.02, w: 0, h: 0.22, line: { color: CSG, width: 1.5 } });
-  s.addText("▼", { x: 8.16, y: 4.18, w: 0.18, h: 0.18, fontSize: 9, color: CSG, margin: 0 });
+  s.addShape(pres.shapes.LINE, { x: 8.25, y: 3.86, w: 0, h: 0.22, line: { color: CSG, width: 1.5 } });
+  s.addText("▼", { x: 8.16, y: 4.02, w: 0.18, h: 0.18, fontSize: 9, color: CSG, margin: 0 });
 
-  const ySG2 = 4.24; // SG送信段
+  const ySG2 = 4.08; // SG送信段
   // 夜間バッチ トリガー
   const CNIGHT = "9966BB";
   fb(s, 0.22, ySG2, 1.66, hR, "EventBridge cron\nJST 05:30毎日\n(night-export-sg)", "F5F0FF", CNIGHT, CNIGHT, 6.5);
@@ -548,23 +548,46 @@ function arrowV(s, x, y1, y2, color, label) {
   fb(s, 9.22, ySG2, 1.36, hR, "USMH\nFTP Server\n/{store}/Recv", "FCE4EC", "C8102E", "C8102E", 6.5);
 
   // SG2への合流線（store_list取得の注釈）
-  s.addText("store_list(SyncFlag=1)\n→ DB(Secrets Manager)", { x: 2.02, y: ySG2+hR+0.02, w: 1.66, h: 0.30, fontSize: 6.5, fontFace: "Meiryo", color: "888888", align: "center", margin: 0 });
+  s.addText("store_list(SyncFlag=1)\n→ DB(Secrets Manager)", { x: 2.02, y: ySG2+hR+0.02, w: 1.66, h: 0.26, fontSize: 6.5, fontFace: "Meiryo", color: "888888", align: "center", margin: 0 });
+
+  // ── ギフトカード決済（行5: y=4.84）──
+  const yGC = 4.84; const CGC = "D4A017";
+  // セパレーター
+  s.addShape(pres.shapes.RECTANGLE, { x: 0.20, y: yGC-0.16, w: 10.40, h: 0.14, fill: { color: "FFF9E6" }, line: { color: CGC, width: 0.5 } });
+  s.addText("ギフトカード決済データ送信 / Gửi dữ liệu thanh toán Gift Card", { x: 0.26, y: yGC-0.16, w: 10.28, h: 0.14, fontSize: 7, fontFace: "Meiryo", color: CGC, bold: true, valign: "middle", margin: 0 });
+
+  fb(s, 0.22, yGC, 1.66, hR, "EC2 giftcard\n(Spring Boot)\ncron 09:00", "FFFDE7", CGC, CGC, 6.5);
+  arr(s, 1.88, yGC+hR/2, 2.02, CGC);
+  fb(s, 2.02, yGC, 1.66, hR, "Aurora MySQL\n取引データ取得\n(settlement_history)", "FFFDE7", CGC, CGC, 6.5);
+  arr(s, 3.68, yGC+hR/2, 3.82, CGC);
+  fb(s, 3.82, yGC, 1.66, hR, "EBCDICファイル\n生成(/tmp)\n6301900000_*", "FFFDE7", CGC, CGC, 6.5);
+  arr(s, 5.48, yGC+hR/2, 5.62, CGC);
+  fb(s, 5.62, yGC, 1.66, hR, "SftpService\n(JSch / SSH鍵認証)\nNAT GW経由", "FFFDE7", CGC, CGC, 6.5);
+  arr(s, 7.28, yGC+hR/2, 7.42, "C8102E");
+  fb(s, 7.42, yGC, 1.66, hR, "インターネット\n(NAT GW\n57.182.174.110)", "FFF3E0", "C8102E", "C8102E", 6.5);
+  arr(s, 9.08, yGC+hR/2, 9.22, "C8102E");
+  fb(s, 9.22, yGC, 1.36, hR, "NTT DATA CDS\n210.144.93.17\nTCP 22 (SFTP)", "FCE4EC", "C8102E", "C8102E", 6.5);
 
   // ─ 注釈 ─
-  s.addShape(pres.shapes.RECTANGLE, { x: 0.20, y: 5.06, w: 10.40, h: 0.30, fill: { color: "FFF8E1" }, line: { color: "E8A040", width: 0.5 } });
+  s.addShape(pres.shapes.RECTANGLE, { x: 0.20, y: 5.36, w: 10.40, h: 0.26, fill: { color: "FFF8E1" }, line: { color: "E8A040", width: 0.5 } });
   s.addText(
     "⚠️ sent-txt-file Lambda は平文FTP（Apache Commons Net）を使用。VPN内通信のため実害は低いが、将来的なFTPS化を推奨。",
-    { x: 0.26, y: 5.06, w: 10.28, h: 0.30, fontSize: 7.5, fontFace: "Meiryo", color: "B07020", valign: "middle", margin: 0 }
+    { x: 0.26, y: 5.36, w: 10.28, h: 0.26, fontSize: 7, fontFace: "Meiryo", color: "B07020", valign: "middle", margin: 0 }
   );
-  s.addShape(pres.shapes.RECTANGLE, { x: 0.20, y: 5.40, w: 10.40, h: 0.28, fill: { color: "F1F8E9" }, line: { color: CSG, width: 0.5 } });
+  s.addShape(pres.shapes.RECTANGLE, { x: 0.20, y: 5.66, w: 10.40, h: 0.26, fill: { color: "F1F8E9" }, line: { color: CSG, width: 0.5 } });
   s.addText(
     "✅ SG受信フロー: VINX→SFTP PUT→tf-server-sg→S3→EB→SF(import) → S3(.ENDEXPORT) → EB → SF(create-txt) → Lambda FTP送信",
-    { x: 0.26, y: 5.40, w: 10.28, h: 0.28, fontSize: 7.5, fontFace: "Meiryo", color: "228844", valign: "middle", margin: 0 }
+    { x: 0.26, y: 5.66, w: 10.28, h: 0.26, fontSize: 7, fontFace: "Meiryo", color: "228844", valign: "middle", margin: 0 }
   );
-  s.addShape(pres.shapes.RECTANGLE, { x: 0.20, y: 5.72, w: 10.40, h: 0.28, fill: { color: "F5F0FF" }, line: { color: CNIGHT, width: 0.5 } });
+  s.addShape(pres.shapes.RECTANGLE, { x: 0.20, y: 5.96, w: 10.40, h: 0.26, fill: { color: "FFFDE7" }, line: { color: CGC, width: 0.5 } });
+  s.addText(
+    "🎁 ギフト決済フロー: EC2 giftcard cron(09:00) → Aurora MySQL(取引データ) → EBCDICファイル生成 → JSch SFTP(SSH鍵) → NTT DATA CDS(210.144.93.17:22) ※インターネット経由",
+    { x: 0.26, y: 5.96, w: 10.28, h: 0.26, fontSize: 7, fontFace: "Meiryo", color: CGC, valign: "middle", margin: 0 }
+  );
+  s.addShape(pres.shapes.RECTANGLE, { x: 0.20, y: 6.26, w: 10.40, h: 0.26, fill: { color: "F5F0FF" }, line: { color: CNIGHT, width: 0.5 } });
   s.addText(
     "🌙 夜間バッチ: EventBridge cron(05:30) → Lambda(create-file-end-for-night) → DB(store_list取得) → 各店舗分.ENDEXPORTをS3に生成 → 送信フローに合流",
-    { x: 0.26, y: 5.72, w: 10.28, h: 0.28, fontSize: 7.5, fontFace: "Meiryo", color: CNIGHT, valign: "middle", margin: 0 }
+    { x: 0.26, y: 6.26, w: 10.28, h: 0.26, fontSize: 7, fontFace: "Meiryo", color: CNIGHT, valign: "middle", margin: 0 }
   );
 }
 
