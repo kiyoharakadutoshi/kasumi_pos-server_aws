@@ -63,6 +63,75 @@ done
 
 ---
 
+---
+
+## [3] Transfer Family セキュリティグループ確認
+
+**コマンド:**
+```bash
+for VPCE in vpce-00da0e948a06819d1 vpce-0c489e9240780e92b vpce-0bb018fa328a44d12; do
+  aws ec2 describe-vpc-endpoints --region ap-northeast-1 \
+    --vpc-endpoint-ids $VPCE \
+    --query 'VpcEndpoints[0].{Groups:Groups,SubnetIds:SubnetIds}' \
+    --output json
+done
+```
+
+**受信内容:**
+
+全3サーバー共通:
+- **SG: sg-0d8afd91c37a78137 (ksm-posprd-vpc-sg-ep-tf)**
+- サブネット: subnet-030f7db5506682c07 / subnet-0d125718b8c5c5a23
+
+**確認結果:** Transfer Family 3台すべてが同一SGを共有。SG名から専用SGが設定されている。ルール詳細は別途確認要。
+
+---
+
+## [4] Lambda `sent-txt-file` コード確認
+
+**コマンド:**
+```bash
+aws lambda get-function --region ap-northeast-1 \
+  --function-name ksm-posprd-lmd-function-sent-txt-file \
+  --query 'Code.Location' --output text
+# → 署名付きURL取得後、GitHubリポジトリ kasumi_pos-server-batch-isida のソースで確認
+```
+
+**確認対象ファイル:**
+- `send-file-handler/src/main/java/com/luvina/pos/provider/SentFileHandler.java`
+- `send-file-handler/src/main/java/com/luvina/pos/provider/FtpService.java`
+
+**確認結果:**
+
+| 項目 | 内容 |
+|---|---|
+| プロトコル | **平文FTP**（`org.apache.commons.net.ftp.FTPClient`） |
+| 暗号化 | **なし**（FTPSClientではなくFTPClient） |
+| 接続モード | Passive Mode |
+| ファイルタイプ | BINARY |
+| 接続先情報 | Lambda入力パラメータ `ftp_access_info.host/port/user/pass` |
+| 送信先ディレクトリ | `/{storeCode}/Recv`（storeCode = "0" + パスの末尾） |
+| リトライ | なし（例外スロー） |
+
+**フロー詳細:**
+```
+Step Functions
+  → Lambda(sent-txt-file) が受け取るパラメータ:
+      bucketName: S3バケット名
+      path:       S3オブジェクトパス (例: pos-master/ishida/csv/001/)
+      name:       ファイル名
+      ftp_access_info: {host, port, user, pass}  ← Aurora MySQLから取得
+  → S3からファイルを読み込み
+  → FTPClient で host:port に接続（平文）
+  → /{storeCode}/Recv に PUT
+  → 成功時: backupパス(csv→backup)をレスポンスに返す
+```
+
+**⚠️ セキュリティ上の問題:**
+- 平文FTPのためネットワーク上でID/パスワード・ファイル内容が盗聴可能
+- ただし通信経路はUSMH閉域網（VPN）内のため、インターネット露出はなし
+- VPN T2がDOWNしているため、T1のみで冗長性なし
+
 ## チャット別索引
 
 | 日時 | 内容 |
