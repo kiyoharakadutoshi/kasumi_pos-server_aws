@@ -63,6 +63,38 @@ done
 
 ---
 
+---
+
+## [3] Transfer Family セキュリティグループ確認
+
+**コマンド:**
+```bash
+for VPCE in vpce-003c773c1f3807562 vpce-0b7fe3eac68ea1d3b vpce-00ef51cdd11a09ae1; do
+  aws ec2 describe-network-interfaces --region ap-northeast-1 \
+    --filters "Name=vpc-id,Values=vpc-09bc4a6da904ace31" \
+              "Name=description,Values=*$VPCE*" \
+    --query 'NetworkInterfaces[*].{ID:NetworkInterfaceId,IP:PrivateIpAddress,SG:Groups[*].GroupId}' \
+    --output json
+done
+```
+
+**受信内容:**
+
+| VPC EP | ENI ID | プライベートIP | SG |
+|---|---|---|---|
+| vpce-003c773c1f3807562 (oc) | eni-0e6d7d2707a080231 | 10.239.2.218 | sg-06153ac3ff38765ab |
+| vpce-003c773c1f3807562 (oc) | eni-09c7dbbad288acdd0 | 10.239.3.228 | sg-06153ac3ff38765ab |
+| vpce-0b7fe3eac68ea1d3b (sg) | eni-0e7d92a64bc1d4fa3 | 10.239.2.225 | sg-09de3d205a615797e **+ sg-06153ac3ff38765ab** |
+| vpce-0b7fe3eac68ea1d3b (sg) | eni-099a5be535407b015 | 10.239.3.217 | sg-09de3d205a615797e **+ sg-06153ac3ff38765ab** |
+| vpce-00ef51cdd11a09ae1 (sh) | eni-0af243fb279081d11 | 10.239.2.147 | sg-06153ac3ff38765ab |
+| vpce-00ef51cdd11a09ae1 (sh) | eni-034ce3aaa1c514874 | 10.239.3.253 | sg-06153ac3ff38765ab |
+
+**確認結果:**
+- ⚠️ **tf-server-sg（VINX/POS系）のみ sg-09de3d205a615797e が追加で付いている**
+- OC・SHは共通SG sg-06153ac3ff38765ab のみ
+- sg-09de3d205a615797e の名前・ルール詳細は別途確認要
+- 各VPC EP に ENI が2つ（AZ-1a: 10.239.2.x / AZ-1c: 10.239.3.x）
+
 ## チャット別索引
 
 | 日時 | 内容 |

@@ -83,7 +83,20 @@ done
 - **SG: sg-0d8afd91c37a78137 (ksm-posprd-vpc-sg-ep-tf)**
 - サブネット: subnet-030f7db5506682c07 / subnet-0d125718b8c5c5a23
 
-**確認結果:** Transfer Family 3台すべてが同一SGを共有。SG名から専用SGが設定されている。ルール詳細は別途確認要。
+**確認結果:**
+
+| VPC EP | ENI ID | プライベートIP | SG |
+|---|---|---|---|
+| vpce-00da0e948a06819d1 (oc) | eni-0f824c1ac25885c8c | 10.238.3.138 | sg-0d8afd91c37a78137 |
+| vpce-00da0e948a06819d1 (oc) | eni-0fba3aa261c62018f | 10.238.2.221 | sg-0d8afd91c37a78137 |
+| vpce-0c489e9240780e92b (sg) | eni-02b46c90c62f3d3b0 | 10.238.3.215 | sg-0d8afd91c37a78137 |
+| vpce-0c489e9240780e92b (sg) | eni-036980648a3c00dd4 | 10.238.2.234 | sg-0d8afd91c37a78137 |
+| vpce-0bb018fa328a44d12 (sh) | eni-01d33a59ca70ab2e4 | 10.238.3.139 | sg-0d8afd91c37a78137 |
+| vpce-0bb018fa328a44d12 (sh) | eni-0f22b1fbb8a44b889 | 10.238.2.184 | sg-0d8afd91c37a78137 |
+
+- 各VPC EP に ENI が2つ（AZ-1a: 10.238.2.x / AZ-1c: 10.238.3.x）
+- PRD全3台は **sg-0d8afd91c37a78137 (ksm-posprd-vpc-sg-ep-tf)** 1つのみ
+- SGインバウンドルール詳細は別途確認要
 
 ---
 
