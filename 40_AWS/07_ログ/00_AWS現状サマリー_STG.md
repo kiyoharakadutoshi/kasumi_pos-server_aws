@@ -56,14 +56,27 @@ AWSアカウント: 750735758916
 
 ---
 
-## 5. S3バケット
+## 5. S3バケット（8本）
+
+### プロジェクト管理バケット（5本）
 
 | バケット名 | 用途 |
 |---|---|
 | stg-ignica-ksm | メイン（pos-original/oc・sg・sh） |
-| stg-ignica-ksm-master-backup | バックアップ |
 | stg-ignica-ksm-pmlogs | PMログ |
-| その他 | PRDと対応するバケット |
+| stg-aeon-gift-card | ギフトカード |
+| stg-ignica-com-configrecord | 設定レコード |
+| dev-ignica-ksm | **Lambda JARファイル置き場**（PRDのprd-ignica-com-lmd-jarに相当）※名前がdevだが現役稼働中（16件・340MB・最終更新2026-03-06） |
+
+### AWSサービス自動生成バケット（3本）
+
+| バケット名 | 自動生成元 | 用途 |
+|---|---|---|
+| aws-quicksetup-patchpolicy-750735758916-v4t88 | SSM Quick Setup | パッチポリシー設定用 |
+| aws-quicksetup-patchpolicy-access-log-750735758916-a4fd-v4t88 | SSM Quick Setup | アクセスログ用（上記のペア） |
+| do-not-delete-ssm-diagnosis-750735758916-ap-northeast-1-89e4k | SSM診断機能 | 削除禁止 |
+
+> **【削除済】2026-03-10** `phongbt-auditor-staging`（中身空・CloudTrail未使用バケット）を削除。PRDのphongbt-auditor-productionと同一パターン。
 
 ---
 
