@@ -145,6 +145,83 @@ aws ec2 describe-security-groups --region ap-northeast-1 \
 
 ---
 
+---
+
+## [4] Transfer Family VPCエンドポイント プライベートIP
+
+**コマンド:**
+```bash
+for VPCE in vpce-003c773c1f3807562 vpce-0b7fe3eac68ea1d3b vpce-00ef51cdd11a09ae1; do
+  aws ec2 describe-network-interfaces --region ap-northeast-1 \
+    --filters "Name=description,Values=VPC Endpoint Interface $VPCE" \
+    --query 'NetworkInterfaces[*].{AZ:AvailabilityZone,IP:PrivateIpAddress}' \
+    --output table
+done
+```
+
+**受信内容:**
+
+| サーバー | VPCE ID | AZ-1a IP | AZ-1c IP |
+|---|---|---|---|
+| tf-server-**oc** | vpce-003c773c1f3807562 | 10.239.2.218 | 10.239.3.228 |
+| tf-server-**sg** | vpce-0b7fe3eac68ea1d3b | 10.239.2.225 | 10.239.3.217 |
+| tf-server-**sh** | vpce-00ef51cdd11a09ae1 | 10.239.2.147 | 10.239.3.253 |
+
+---
+
+## [5] S3バケット通知設定
+
+**コマンド:**
+```bash
+aws s3api get-bucket-notification-configuration --bucket stg-ignica-ksm --output json
+```
+
+**受信内容:** `{ "EventBridgeConfiguration": {} }`
+
+**確認結果:** PRDと同じくS3全イベントをEventBridgeに転送する設定。
+
+---
+
+## [6] EventBridgeルール一覧
+
+**コマンド:**
+```bash
+aws events list-rules --region ap-northeast-1 \
+  --query 'Rules[*].{Name:Name,State:State}' --output table
+```
+
+**受信内容（STG全ルール）:**
+
+| ルール名 | 状態 | PRDとの差異 |
+|---|---|---|
+| eb-rule-receive-pos-master-**oc** | ENABLED | 同じ |
+| eb-rule-receive-pos-master-**sg** | ENABLED | 同じ |
+| eb-rule-receive-pos-master-**sg-9233** | **DISABLED** | **STGのみ** |
+| eb-rule-receive-pos-master-**sh** | ENABLED | 同じ |
+| eb-rule-receive-splited-pos-master-oc | ENABLED | 同じ |
+| eb-rule-create-txt-file-sg | ENABLED | 同じ |
+| eb-rule-create-txt-file-**sg-9233** | **DISABLED** | **STGのみ** |
+| eb-rule-copy-backup-sg | ENABLED | 同じ |
+| eb-rule-**night-export-sg** | **ENABLED** | **STGのみ** |
+| eb-rule-**night-export-sg-9233** | **DISABLED** | **STGのみ** |
+| eb-rule-check-price | **ENABLED** | **PRDはDISABLED** |
+| eb-rule-itemmaster-import-monitoring | ENABLED | 同じ |
+| eb-rule-p001-import-monitoring | ENABLED | 同じ |
+
+**PRDとの重要な差異:**
+
+| 差異 | STG | PRD | 考察 |
+|---|---|---|---|
+| `*-9233` 系ルール | 3本（全DISABLED） | 存在しない | 店舗コード9233向けテスト用ルール。STGで開発・テスト後にDISABLEDのまま残存 |
+| `night-export-sg` | ENABLED | 存在しない | 夜間SG出力ルール。STG専用か、PRDに未展開か確認要 |
+| `check-price` | **ENABLED** | DISABLED | ESL（電子棚札）価格チェック。STGでは有効、PRDでは停止中 |
+
+**要確認:**
+- `night-export-sg` のターゲット・パターンを確認（PRDへの展開予定があるか）
+- `-9233` ルールは削除対象か
+
+---
+
 ## チャット別索引
 
 | 日時 | 内容 |
