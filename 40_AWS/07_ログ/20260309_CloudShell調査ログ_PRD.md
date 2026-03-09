@@ -193,6 +193,82 @@ aws s3api get-bucket-notification-configuration \
 
 ---
 
+---
+
+## [7] EventBridgeルール（S3トリガー）確認
+
+**コマンド:**
+```bash
+aws events list-rules --region ap-northeast-1 \
+  --query 'Rules[*].{Name:Name,State:State,Pattern:EventPattern}' \
+  --output json | python3 -c "..."
+```
+
+**受信内容（S3関連ルール一覧）:**
+
+| ルール名 | 状態 | トリガー条件（S3キー） |
+|---|---|---|
+| eb-rule-receive-pos-master-**oc** | ENABLED | `pos-original/oc/receive/*.end` or `*.END` |
+| eb-rule-receive-pos-master-**sg** | ENABLED | `pos-original/sg/receive/*.zip` or `*.ZIP` |
+| eb-rule-receive-pos-master-**sh** | ENABLED | `pos-original/sh/receive/*.end` or `*.END` |
+| eb-rule-receive-splited-pos-master-**oc** | ENABLED | `pos-original/oc/csv/0253/*/`.ENDIMPORT`、`/0218/*/` 、`/0343/*/` |
+| eb-rule-create-txt-file-**sg** | ENABLED | `pos-original/sg/csv/*/*.ENDEXPORT` |
+| eb-rule-copy-backup-**sg** | ENABLED | `pos-original/sg/backup/*/*.zip` |
+| eb-rule-check-price | **DISABLED** | `pos-master/ishida/backup/*/*ESLDATA.TXT` or `csv/*/*063000ESLDATA.TXT` |
+| eb-rule-itemmaster-import-monitoring | ENABLED | （Cron/Pattern=null） |
+| eb-rule-p001-import-monitoring | ENABLED | （Cron/Pattern=null） |
+
+**確認結果・重要ポイント:**
+
+① **トリガーファイルはフラグファイル方式**
+- OC/SH: `.end` / `.END` ファイルが来たら処理開始
+- SG: `.zip` / `.ZIP` ファイルが来たら処理開始（ZIPで転送）
+
+② **OC系に店舗コード限定ルール**
+- `receive-splited-pos-master-oc` は店舗コード 0253/0218/0343 専用
+- 特定店舗向けに別処理（分割インポート）が存在
+
+③ **ESL連携ルールが無効化中**
+- `eb-rule-check-price` = DISABLED（ESLデータ = 電子棚札向け価格データ）
+- 過去に実装されたが現在は停止中
+
+**確定した受信フロー（OC系）:**
+```
+BIPROGY(OpenCentral)
+  ──SFTP PUT──→ Transfer Family (tf-server-oc)
+  → S3: pos-original/oc/receive/*.end
+  → EventBridge: eb-rule-receive-pos-master-oc
+  → Step Functions: receive-pos-master-oc
+  → （import-pos-master-oc → Aurora MySQL投入）
+```
+
+**確定した受信フロー（SG系）:**
+```
+VINX(POS Server)
+  ──SFTP PUT──→ Transfer Family (tf-server-sg)
+  → S3: pos-original/sg/receive/*.zip
+  → EventBridge: eb-rule-receive-pos-master-sg
+  → Step Functions: receive-and-import-pos-master-sg
+  → S3: pos-original/sg/csv/*/*.ENDEXPORT
+  → EventBridge: eb-rule-create-txt-file-sg
+  → Step Functions: create-txt-file-sg
+  → S3: pos-original/sg/backup/*/*.zip
+  → EventBridge: eb-rule-copy-backup-sg
+  → （バックアップ処理）
+```
+
+**確定した受信フロー（SH系）:**
+```
+SHARP(P003)
+  ──SFTP PUT──→ Transfer Family (tf-server-sh)
+  → S3: pos-original/sh/receive/*.end
+  → EventBridge: eb-rule-receive-pos-master-sh
+  → Step Functions: import-pos-master-sh
+  → （Aurora MySQL投入）
+```
+
+---
+
 ## チャット別索引
 
 | 日時 | 内容 |
