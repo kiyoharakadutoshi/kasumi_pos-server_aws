@@ -1,0 +1,71 @@
+# CloudShell調査ログ STG 2026-03-09
+
+| 項目 | 内容 |
+|---|---|
+| 調査日 | 2026-03-09 |
+| 調査者 | 清原 |
+| AWSアカウント | 750735758916 (STG) |
+| リージョン | ap-northeast-1 |
+
+---
+
+## [1] Transfer Family サーバー一覧
+
+**コマンド:**
+```bash
+aws transfer list-servers --region ap-northeast-1 --output table
+```
+
+**受信内容:**
+```
+s-7c808e1040dd437da  S3  VPC  SERVICE_MANAGED  ONLINE  UserCount:1  ksm-posstg-iam-role-tf-logs
+s-a69b3df467bc43b99  S3  VPC  SERVICE_MANAGED  ONLINE  UserCount:1  (ログロールなし)
+s-d5d0d941bfb04a72b  S3  VPC  SERVICE_MANAGED  ONLINE  UserCount:1  ksm-posstg-iam-role-tf-logs
+```
+
+**確認結果:** 3台すべてONLINE
+
+---
+
+## [2] Transfer Family サーバー詳細（エンドポイント・ユーザー）
+
+**コマンド:**
+```bash
+for SID in s-7c808e1040dd437da s-a69b3df467bc43b99 s-d5d0d941bfb04a72b; do
+  echo "=== $SID ==="
+  aws transfer describe-server --region ap-northeast-1 --server-id $SID \
+    --query 'Server.{State:State,EndpointDetails:EndpointDetails,Protocols:Protocols,Tags:Tags}' \
+    --output json
+  USERS=$(aws transfer list-users --region ap-northeast-1 --server-id $SID --query 'Users[*].UserName' --output text)
+  for U in $USERS; do
+    aws transfer describe-user --region ap-northeast-1 --server-id $SID --user-name $U \
+      --query 'User.{Name:UserName,HomeDir:HomeDirectory,HomeDirMappings:HomeDirectoryMappings,Role:Role}' \
+      --output json
+  done
+done
+```
+
+**受信内容:**
+
+| サーバー名 | サーバーID | VPC EP | S3マッピング先 |
+|---|---|---|---|
+| ksm-posstg-tf-server-**oc** | s-7c808e1040dd437da | vpce-003c773c1f3807562 | /stg-ignica-ksm/pos-original/**oc**/receive |
+| ksm-posstg-tf-server-**sg** | s-d5d0d941bfb04a72b | vpce-0b7fe3eac68ea1d3b | /stg-ignica-ksm/pos-original/**sg**/receive |
+| ksm-posstg-tf-server-**sh** | s-a69b3df467bc43b99 | vpce-00ef51cdd11a09ae1 | /stg-ignica-ksm/pos-original/**sh**/receive |
+
+共通:
+- VPC: vpc-09bc4a6da904ace31
+- サブネット: subnet-08999673be546d752 / subnet-0d4bb4d8d559e39b1
+- IAMロール: ksm-posstg-iam-role-tf
+- CFnスタック: ksm-posstg-transfer（OC・SG）、SHはタグなし（手動追加）
+
+**確認結果:** 全サーバー受信専用（/receive パス）。PRDと構成対称。
+
+---
+
+## チャット別索引
+
+| 日時 | 内容 |
+|---|---|
+| 2026-03-09 AM | PRD/STG セキュリティ監査・ネットワーク構成図・VPN T2調査 |
+| 2026-03-09 PM [1][2] | Transfer Family STG全サーバー詳細・S3マッピング確定 |
