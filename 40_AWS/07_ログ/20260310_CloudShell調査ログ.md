@@ -212,3 +212,109 @@ remove_bucket: phongbt-auditor-staging
 |---|---|
 | 2026-03-10 午前 | PRD S3バケット調査・CloudTrail稼働確認・phongbt-auditor-production 削除 |
 | 2026-03-10 午後 | STG S3バケット調査・CloudTrail未設定確認・dev-ignica-ksm用途確認・phongbt-auditor-staging 削除 |
+
+---
+
+## [2] 全サービス調査（2026-03-10）
+
+### 調査対象
+CSVコスト明細に登場する32サービスの全容確認。PRD→STGの順で実施。
+
+### [2]-1 PRD 全サービス調査
+
+**実行コマンド・結果:**
+
+```
+# Config
+aws --no-cli-pager configservice describe-config-rules --query 'ConfigRules[*].ConfigRuleName' --output text | wc -l
+→ 345（全てSecurityHub自動作成・ACTIVE）
+
+# CloudFormation
+→ 25スタック（AWS自動生成4 + com-posprd系6 + ksm-posprd系15）
+
+# SNS
+→ 3トピック: app-logs / app-logs-test / aws-logs
+
+# X-Ray
+→ Defaultグループのみ（InsightsEnabled: false）
+
+# CloudWatch Alarms
+→ 19本・全てOK
+
+# CloudWatch Log Groups
+→ 40本。Lambda21本・RDS・Transfer・ECS・/pos/log全て保持期間null（無期限）⚠️
+→ 🚨 /aws/lambda/ksm-posstg-lmd-export-polling がPRDアカウントに混在
+
+# ECR
+→ 4リポジトリ: sg-export-data / oc-export-data / oc-import-data / sg-import-data
+
+# Route53
+→ ignicapos.com.（パブリック）1ゾーンのみ
+
+# KMS
+→ カスタムキー4本: kms-db / kms-ebs / kms-ecr / kms-sm
+→ AWS管理キー実体あり: lambda / secretsmanager / sns / ssm
+
+# Glue / Location / DirectConnect / PaymentCryptography
+→ 全て空（リソースなし）
+
+# IAM Roles（ksm系）
+→ 10ロール: db-cluster / db-monitoring / eb / ec2 / ec2-web-be / ecs / lmd / sf / tf / tf-logs
+
+# IAM Users
+→ 15名（kiyohara/cfn_user/dattv/locnt_deploy/nangld系/Vangle2名/USMH用/phong等）
+→ dattv_cli_deploy / locnt_cli_deploy は昨日(2026-03-09)作成
+
+# Secrets Manager
+→ 7件（ksm-posprd-sm-db/replica/sftp + prd/Mail/Batch/Replica/Replica_RO）
+→ 全て2025-06-20〜2025-08-14更新（最近の更新なし）
+```
+
+**確認結果:**
+- ✅ CloudFormationで全リソースがIaC管理されている
+- 🚨 PRDアカウントにSTGのLambdaログ混在（/aws/lambda/ksm-posstg-lmd-export-polling）
+- ⚠️ CloudWatch Logs保持期間が大量に未設定（コスト増大リスク）
+- ✅ ECSクラスター存在確認（ksm-posprd-ecs-cluster・sg/ocデータ処理）
+- ✅ KMSカスタムキー4本（db/ebs/ecr/sm）でリソース暗号化済み
+
+### [2]-2 STG 全サービス調査
+
+```
+# CloudFormation
+→ 23スタック。PRD比: com-posstg-cloudwatchlogs / iam-analyzer / securityhub スタックなし⚠️
+
+# SNS
+→ 4トピック（PRD+1）
+→ 🚨 ksm-posspk-sns-topic-app-logs-dev が存在（posspk=開発環境用残留物？）
+
+# CloudWatch Alarms
+→ 19本中 2本がALARM状態！
+   🚨 ksm-posstg-cw-alarm-ec2-audit-log → ALARM
+   🚨 ksm-posstg-cw-alarm-ec2-messages → ALARM
+
+# CloudWatch Log Groups
+→ 41本（PRD比+1: /pos/log/web/be がSTG独自）
+→ /aws/ecs/ksm-posstg-ecs-oc-export-data もSTG独自
+→ 全Lambda/RDS/Transfer/ECS保持期間null（PRD同等の課題）
+→ VPCフローログなし（PRDにはあり）
+
+# ECR
+→ 8リポジトリ（PRDの2倍）
+→ STG独自4本: ecr-web-fe / ecr-web-be / ecr-repository-ecs-import-db-master-sg/oc
+
+# KMS / Secrets Manager
+→ PRDと同等構成（ksm-posstg-kms-db/ebs/ecr/sm）
+
+# IAM Users
+→ 15名。STG独自: locnt（汎用）/ dev（開発用汎用アカウント要確認）
+
+# Glue / X-Ray
+→ 空（PRD同等）
+```
+
+**確認結果:**
+- 🚨 EC2アラーム2本ALARM状態（audit-log / messages）→ bastionのCWエージェント停止疑い
+- 🚨 ksm-posspk-*というSNSトピックが残留（posspk環境とは何か要調査）
+- ⚠️ STGのECRにweb-fe/web-beリポジトリ（PRDにない）→ 用途不明
+- ⚠️ PRDにあるセキュリティ系スタック3本がSTGにない（securityhub/iam-analyzer/cloudwatchlogs）
+

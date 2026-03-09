@@ -286,3 +286,180 @@ EC2 giftcard (Windows Server 2022 / i-03d6bf91c19385cdf)
 - [ ] Secrets Manager ksm-posprd-sm-sftp 修正状況
 - [ ] PowerUserAccess 削除後動作確認
 - [ ] settlement_history テーブル最新実行確認
+
+---
+
+## 16. CloudFormation（25スタック）
+
+| カテゴリ | スタック名 | 状態 |
+|---|---|---|
+| AWS自動生成 | StackSet-AWS-QuickSetup-PatchPolicy-LA-3eig7-* | UPDATE_COMPLETE |
+| AWS自動生成 | AWS-QuickSetup-PatchPolicy-LocalDeploymentRolesStack | CREATE_COMPLETE |
+| AWS自動生成 | StackSet-AWS-QuickSetup-SSM-LA-74sd4-* | CREATE_COMPLETE |
+| AWS自動生成 | AWS-QuickSetup-SSM-LocalDeploymentRolesStack | CREATE_COMPLETE |
+| 共通インフラ | com-posprd-cloudwatchlogs | UPDATE_COMPLETE |
+| 共通インフラ | com-posprd-iam-analyzer | CREATE_COMPLETE |
+| 共通インフラ | com-posprd-config | UPDATE_COMPLETE |
+| 共通インフラ | com-posprd-securityhub | CREATE_COMPLETE |
+| 共通インフラ | com-posprd-endpoint | UPDATE_COMPLETE |
+| 共通インフラ | com-posprd-prefixlist | CREATE_COMPLETE |
+| KSMアプリ | ksm-posprd-cloudwatch-alarm1/2/3 | CREATE/UPDATE_COMPLETE |
+| KSMアプリ | ksm-posprd-sns | UPDATE_COMPLETE |
+| KSMアプリ | ksm-posprd-ecs | CREATE_COMPLETE |
+| KSMアプリ | ksm-posprd-rds / rds-replica | UPDATE_COMPLETE |
+| KSMアプリ | ksm-posprd-ecr | CREATE_COMPLETE |
+| KSMアプリ | ksm-posprd-secretsmanager | CREATE_COMPLETE |
+| KSMアプリ | ksm-posprd-transfer | UPDATE_COMPLETE |
+| KSMアプリ | ksm-posprd-ec2-bastion | UPDATE_COMPLETE |
+| KSMアプリ | ksm-posprd-network | UPDATE_COMPLETE |
+| KSMアプリ | ksm-posprd-kms | CREATE_COMPLETE |
+| KSMアプリ | ksm-posprd-s3 | UPDATE_COMPLETE |
+| KSMアプリ | ksm-posprd-sg | UPDATE_COMPLETE |
+
+> 全リソースはCloudFormationで管理されている（IaC済み）
+
+## 17. SNS（3トピック）
+
+| トピック名 | 用途推定 |
+|---|---|
+| ksm-posprd-sns-topic-app-logs | アプリログのアラート通知先 |
+| ksm-posprd-sns-topic-app-logs-test | テスト用 |
+| ksm-posprd-sns-topic-aws-logs | AWSサービスログのアラート通知先 |
+
+→ CloudWatch Alarms → SNS → メール通知 の構成
+
+## 18. CloudWatch（アラーム19本 / ロググループ40本）
+
+**■ アラーム一覧（全19本・現在全てOK）**
+
+| カテゴリ | アラーム名（抜粋） | 状態 |
+|---|---|---|
+| RDS(cluster) | cpu, aborted-clients, acu, dml-rejected-writer, freeable-memory, serverless-capacity | OK |
+| RDS(replica) | cpu, aborted-clients, dml-rejected-writer, free-local-storage, freeable-memory | OK |
+| EC2(bastion) | audit-log, dnf-log, messages, secure, statuscheck-instance, statuscheck-system | OK |
+| Transfer Family | tf-oc, tf-sg | OK |
+
+**■ ロググループ（40本）保持期間まとめ**
+
+| ロググループ | 保持期間 | 備考 |
+|---|---|---|
+| /aws/ecs/containerinsights/.../performance | **1日** ⚠️ | 短すぎ |
+| /aws/ecs/ksm-posprd-ecs-sg-export-data | **無期限** ⚠️ | 未設定 |
+| /aws/lambda/ksm-posprd-lmd-* (21本) | **無期限** ⚠️ | 全Lambda未設定 |
+| /aws/rds/cluster/.../error (2本) | **無期限** ⚠️ | 未設定 |
+| /aws/transfer/* (3本) | **無期限** ⚠️ | 未設定 |
+| /aws/vpc/com-posprd-cw-lg-vpc-fl | 365日 | ✅ |
+| /aws/vpc/com-posprd-cw-lg-vpc-flow-log | **無期限** ⚠️ | 二重登録？ |
+| /aws/vpn/vpn-0ea9b7895f78e4c7e | 30日 | ✅ |
+| /pos/log/export・import・sent (6本) | **無期限** ⚠️ | 未設定 |
+| /var/log/* (4本) | 365日 | ✅ |
+| RDSOSMetrics | 30日 | ✅ |
+| **/aws/lambda/ksm-posstg-lmd-export-polling** | **無期限** | 🚨 **STGのログがPRDアカウントに混在！** |
+
+## 19. ECR（4リポジトリ）
+
+| リポジトリ名 | URI |
+|---|---|
+| ksm-posprd-ecr-sg-export-data | 332802448674.dkr.ecr.ap-northeast-1.amazonaws.com/ksm-posprd-ecr-sg-export-data |
+| ksm-posprd-ecr-oc-export-data | 332802448674.dkr.ecr.ap-northeast-1.amazonaws.com/ksm-posprd-ecr-oc-export-data |
+| ksm-posprd-ecr-oc-import-data | 332802448674.dkr.ecr.ap-northeast-1.amazonaws.com/ksm-posprd-ecr-oc-import-data |
+| ksm-posprd-ecr-sg-import-data | 332802448674.dkr.ecr.ap-northeast-1.amazonaws.com/ksm-posprd-ecr-sg-import-data |
+
+→ ECSタスク（ksm-posprd-ecs-sg-export-data）が使用するDockerイメージ置き場。sg/ocのexport/importデータ処理用コンテナ。
+
+## 20. ECS（1クラスター）
+
+- クラスター名: ksm-posprd-ecs-cluster
+- タスク: ksm-posprd-ecs-sg-export-data（SG系データのエクスポート処理）
+- CloudFormationスタック: ksm-posprd-ecs
+- ログ: /aws/ecs/ksm-posprd-ecs-sg-export-data（保持期間未設定⚠️）
+
+> 以前「App Server/Batch Server なし」と記録していたが、ECSクラスターは存在する。用途はSGデータのエクスポート処理コンテナ（EC2ベースのアプリサーバーとは別物）。
+
+## 21. Route53
+
+- ホストゾーン: ignicapos.com.（パブリック / ID: Z017481510MTQ4HID9VH2）
+- ゾーン数: 1（プライベートゾーンなし）
+
+## 22. KMS（カスタムキー4本）
+
+| エイリアス | 用途 |
+|---|---|
+| alias/ksm-posprd-kms-db | Aurora MySQLクラスター暗号化 |
+| alias/ksm-posprd-kms-ebs | EC2 EBS暗号化 |
+| alias/ksm-posprd-kms-ecr | ECRリポジトリ暗号化 |
+| alias/ksm-posprd-kms-sm | Secrets Manager暗号化 |
+
+AWS管理キー（実キーID付き）: lambda / secretsmanager / sns / ssm
+
+## 23. Config（345ルール）
+
+- レコーダー名: com-posprd-config-recorder
+- 記録範囲: 全リソース（CONTINUOUS）
+- ルール数: **345本**（全てSecurityHubが自動作成・ACTIVE）
+- 管理: com-posprd-config CloudFormationスタック
+
+## 24. X-Ray
+
+- グループ: Default のみ（InsightsEnabled: false）
+- カスタム設定なし → **コスト発生しているが実質デフォルト状態**
+
+## 25. IAM
+
+**■ ロール（ksm系10本）**
+
+| ロール名 | 用途 |
+|---|---|
+| ksm-posprd-iam-role-db-cluster | RDSクラスター |
+| ksm-posprd-iam-role-db-monitoring | RDSモニタリング |
+| ksm-posprd-iam-role-eb | EventBridge |
+| ksm-posprd-iam-role-ec2 | EC2（bastion） |
+| ksm-posprd-iam-role-ec2-web-be | EC2（giftcard） |
+| ksm-posprd-iam-role-ecs | ECS |
+| ksm-posprd-iam-role-lmd | Lambda |
+| ksm-posprd-iam-role-sf | Step Functions |
+| ksm-posprd-iam-role-tf | Transfer Family |
+| ksm-posprd-iam-role-tf-logs | Transfer Family ログ |
+
+**■ IAMユーザー（15名）**
+
+| ユーザー名 | 作成日 | 種別推定 |
+|---|---|---|
+| kiyohara | 2025-06-23 | カスミ管理者 |
+| cfn_user | 2025-07-04 | CloudFormation用サービスアカウント |
+| daisuke.sasaki_s3access | 2025-07-28 | カスミ S3アクセス専用 |
+| dattv | 2025-08-01 | Luvina開発者 |
+| manhnd-serviceaccess | 2025-08-01 | Luvinサービスアカウント |
+| posusmhprd | 2025-05-27 | USMH連携用サービスアカウント |
+| kiyohara_s3access | 2025-08-14 | カスミ S3アクセス専用（2つ目） |
+| pos_prd_vangle_sonln | 2026-01-23 | Vangle社 sonln |
+| pos_prd_vangle_tuannv | 2026-01-23 | Vangle社 tuannv |
+| buithephong | 2026-01-07 | Luvina phong（S3バケット作成者） |
+| locnt_deploy | 2026-03-02 | Luvina locnt デプロイ用 |
+| nangld_admin | 2026-03-02 | Luvina nangld 管理者 |
+| nangld_readonly | 2026-03-02 | Luvina nangld 読み取り専用 |
+| locnt_cli_deploy | 2026-03-09 | Luvina locnt CLI用（昨日作成） |
+| dattv_cli_deploy | 2026-03-09 | Luvina dattv CLI用（昨日作成） |
+
+## 26. Secrets Manager（7件）
+
+| シークレット名 | 最終更新 | 用途 |
+|---|---|---|
+| ksm-posprd-sm-db | 2025-06-20 | RDS(writer)接続情報 |
+| ksm-posprd-sm-db-replica | 2025-06-20 | RDS(replica)接続情報 |
+| ksm-posprd-sm-sftp | 2025-06-20 | SFTP認証情報 |
+| prd/Mail_Kasumi | 2025-08-01 | メール送信認証情報 |
+| prd/Batch_Kasumi | 2025-08-01 | バッチ処理用認証情報 |
+| prd/Replica_Kasumi | 2025-08-01 | レプリカDB認証情報 |
+| prd/Replica_Kasumi_RO | 2025-08-14 | レプリカDB読み取り専用（新規発見） |
+
+## 27. 未使用・空サービス（PRD）
+
+| サービス | 状態 |
+|---|---|
+| Glue | ジョブなし（空） |
+| Location Service | なし |
+| Direct Connect | なし（VPN接続のみ） |
+| Payment Cryptography | なし |
+| X-Ray | Defaultグループのみ（実質未設定） |
+

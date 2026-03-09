@@ -245,3 +245,125 @@ PRDと同等。バケット名・Lambda名のプレフィックスが stg- / pos
 - [ ] Transfer Family SG Bastion許可ルール削除状況
 - [ ] EventBridge -9233 系 3本削除状況
 - [ ] VPN T2 復旧状況
+
+---
+
+## 16. CloudFormation（23スタック）
+
+| カテゴリ | スタック名 | PRD対応 |
+|---|---|---|
+| AWS自動生成 | StackSet-AWS-QuickSetup-SSM-LA-89e4k-* | ✅ 同等 |
+| AWS自動生成 | AWS-QuickSetup-SSM-LocalDeploymentRolesStack | ✅ 同等 |
+| AWS自動生成 | StackSet-AWS-QuickSetup-PatchPolicy-LA-v4t88-* | ✅ 同等 |
+| AWS自動生成 | AWS-QuickSetup-PatchPolicy-LocalDeploymentRolesStack | ✅ 同等 |
+| 共通インフラ | com-posstg-config | ✅ |
+| 共通インフラ | com-posstg-prefixlist | ✅ |
+| 共通インフラ | com-posstg-endpoint | ✅ |
+| 共通インフラ | com-posstg-network | ✅ |
+| KSMアプリ | ksm-posstg-cloudwatch-alarm1/2/3 | ✅ |
+| KSMアプリ | ksm-posstg-sns | ✅ |
+| KSMアプリ | ksm-posstg-ecs | ✅ |
+| KSMアプリ | ksm-posstg-rds / rds-replica | ✅ |
+| KSMアプリ | ksm-posstg-ecr | ✅ |
+| KSMアプリ | ksm-posstg-secretsmanager | ✅ |
+| KSMアプリ | ksm-posstg-transfer | ✅ |
+| KSMアプリ | ksm-posstg-ec2-bastion | ✅ |
+| KSMアプリ | ksm-posstg-network | ✅ |
+| KSMアプリ | ksm-posstg-kms | ✅ |
+| KSMアプリ | ksm-posstg-s3 | ✅ |
+| KSMアプリ | ksm-posstg-sg | ✅ |
+
+> **⚠️ STGにはない（PRD専用）スタック:** com-posprd-cloudwatchlogs / com-posprd-iam-analyzer / com-posprd-securityhub → STGはセキュリティ系スタックが未整備
+
+## 17. SNS（4トピック）
+
+| トピック名 | 備考 |
+|---|---|
+| ksm-posstg-sns-topic-app-logs | PRD同等 |
+| ksm-posstg-sns-topic-app-logs-check-price | STG独自（価格チェック専用） |
+| ksm-posstg-sns-topic-aws-logs | PRD同等 |
+| **ksm-posspk-sns-topic-app-logs-dev** | 🚨 **posspk とは？開発環境用の残留物？** |
+
+## 18. CloudWatch（アラーム19本 / ロググループ41本）
+
+**■ アラーム（PRDと同数19本）**
+
+| 状態 | アラーム名 |
+|---|---|
+| 🚨 **ALARM** | ksm-posstg-cw-alarm-ec2-audit-log |
+| 🚨 **ALARM** | ksm-posstg-cw-alarm-ec2-messages |
+| OK | その他17本（RDS・EC2・Transfer系） |
+
+> **⚠️ 2本がALARM状態！** EC2（bastion）のaudit.logとmessagesログが途絶えているか、ログ出力が停止している可能性。要確認。
+
+**■ ロググループ（41本）保持期間まとめ**
+
+| ロググループ | 保持期間 | PRD比較 |
+|---|---|---|
+| /aws/ecs/containerinsights/.../performance | 1日 ⚠️ | PRD同じ |
+| /aws/ecs/ksm-posstg-ecs-sg-export-data | 無期限 ⚠️ | PRD同じ |
+| /aws/ecs/ksm-posstg-ecs-oc-export-data | 無期限 ⚠️ | **STG独自** |
+| /aws/lambda/ksm-posstg-lmd-* (24本) | 無期限 ⚠️ | PRD同じ |
+| /aws/rds/cluster/.../error (2本) | 無期限 ⚠️ | PRD同じ |
+| /aws/transfer/* (3本) | 無期限 ⚠️ | PRD同じ |
+| /aws/vpn/vpn-0840f46eaf8de7e79 | 30日 | ✅ |
+| /pos/log/export・import・sent (6本) | 無期限 ⚠️ | PRD同じ |
+| **/pos/log/web/be** | 無期限 ⚠️ | **STG独自（giftcard EC2用？）** |
+| /var/log/* (4本) | 365日 | ✅ |
+| RDSOSMetrics | 30日 | ✅ |
+
+> VPCフローログ（/aws/vpc/）はSTGに存在しない → PRDと差異あり
+
+## 19. ECR（8リポジトリ ※PRDの2倍）
+
+| リポジトリ名 | PRD対応 |
+|---|---|
+| ksm-posstg-ecr-sg-export-data → **ksm-posstg-ecs-sg-export-data** | PRD同等（命名差異あり） |
+| ksm-posstg-ecr-oc-export-data | ✅ PRD同等 |
+| ksm-posstg-ecr-oc-import-data | ✅ PRD同等 |
+| ksm-posstg-ecs-sg-import-data | ✅ PRD同等 |
+| **ksm-posstg-ecr-web-fe** | 🔍 STG独自（フロントエンドコンテナ？） |
+| **ksm-posstg-ecr-web-be** | 🔍 STG独自（バックエンドコンテナ？） |
+| **ksm-posstg-ecr-repository-ecs-import-db-master-sg** | 🔍 STG独自 |
+| **ksm-posstg-ecr-repository-ecs-import-db-master-oc** | 🔍 STG独自 |
+
+> STGはPRDに比べECRリポジトリが4本多い。web-fe/web-beはgiftcardまたはPOS-SERVER移行検討用の可能性。
+
+## 20. KMS（カスタムキー4本）
+
+| エイリアス | PRD対応 |
+|---|---|
+| alias/ksm-posstg-kms-db | ✅ |
+| alias/ksm-posstg-kms-ebs | ✅ |
+| alias/ksm-posstg-kms-ecr | ✅ |
+| alias/ksm-posstg-kms-sm | ✅ |
+
+## 21. IAMユーザー（15名）
+
+| ユーザー名 | PRD比較 |
+|---|---|
+| kiyohara / daisuke.sasaki_s3access / kiyohara_s3access | ✅ 同等 |
+| cfn_user / dattv / buithephong | ✅ 同等 |
+| dattv_cli_deploy / locnt_cli_deploy / nangld_admin / nangld_readonly | ✅ 同等 |
+| posusmhstg | ✅ STG用USMH連携 |
+| pos_stag_vangle_sonln / pos_stag_vangle_tuannv | ✅ STG用Vangle |
+| **locnt** | 🔍 STG独自（PRDにはlocnt_deployのみ） |
+| **dev** | 🔍 STG独自（開発用汎用アカウント？要確認） |
+
+> PRDに比べ: manhnd-serviceaccess / locnt_deploy / pos_prd_vangle_* がSTGにはない
+
+## 22. Secrets Manager（7件 / PRD同等）
+
+| シークレット名 | 対応 |
+|---|---|
+| ksm-posstg-sm-db / db-replica / sftp | ✅ PRD同等 |
+| stg/Mail_Kasumi / Batch_Kasumi / Replica_Kasumi / Replica_Kasumi_RO | ✅ PRD同等 |
+
+## 23. 未使用・空サービス（STG）
+
+| サービス | 状態 |
+|---|---|
+| Glue | ジョブなし（空）|
+| X-Ray | Defaultのみ（PRD同等）|
+| Location Service / Payment Cryptography / Direct Connect | 未確認だが空と推定 |
+
