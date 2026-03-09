@@ -96,7 +96,8 @@ done
 
 - 各VPC EP に ENI が2つ（AZ-1a: 10.238.2.x / AZ-1c: 10.238.3.x）
 - PRD全3台は **sg-0d8afd91c37a78137 (ksm-posprd-vpc-sg-ep-tf)** 1つのみ
-- SGインバウンドルール詳細は別途確認要
+- SGインバウンドルール: TCP22 / 許可元 **10.156.96.192/26** (For SFTP Inbound) のみ ✅
+  → USMH SFTPセグメントのみ許可。インターネット完全遮断。
 
 ---
 
