@@ -437,3 +437,21 @@ aws --no-cli-pager ecr delete-repository \
   --region ap-northeast-1 \
   --repository-name "ksm-posstg-ecr-web-be" --force
 ```
+
+### [2]-7 STG EC2台数誤記修正
+
+**CloudShell調査で判明したSTG EC2全台:**
+
+| Name | InstanceId | IP | Type | Platform |
+|---|---|---|---|---|
+| ksm-posstg-ec2-instance-bastion  | i-0bd9a4db1b74b5a69 | 10.239.2.4   | t3.xlarge | Linux |
+| ksm-posstg-ec2-instance-giftcard | i-0f8ededc7ae313cbe | 10.239.2.193 | t2.large  | Windows |
+| ksm-posstg-ec2-instance-web-be   | i-06a74666e851e4d12 | 10.239.2.195 | t3.medium | Linux |
+| ksm-posstg-ec2-instance-web-fe   | i-0fa4cf3cf5c1a8864 | 10.239.2.253 | t3.medium | Linux |
+
+**修正内容:**
+- 誤: STG EC2 3台（bastion/giftcard/web-be）
+- 正: STG EC2 **4台**（bastion/giftcard/web-be/web-fe）
+- web-feが記録から漏れていた
+- giftcard: 10.239.2.193 は実在するEC2（NATアドレスではなかった）
+- STG ECR web-fe/web-beは空だが、web-fe/web-be EC2が稼働中

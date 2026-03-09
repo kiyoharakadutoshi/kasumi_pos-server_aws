@@ -27,10 +27,11 @@ AWSアカウント: 750735758916
 | 名前 | プライベートIP | AZ | 用途 |
 |---|---|---|---|
 | bastion(STG) | 10.239.2.4 | 1a | 踏み台・OpenVPN(UDP1194) |
-| giftcard(STG) | 10.239.2.193 | 1a | ギフトカード決済処理 |
-| web-be | - | - | ⚠️ **【STG独自】SG: ALL(-1)→0.0.0.0/0 全通信許可（要即時修正）** |
+| giftcard(STG) | 10.239.2.193 | 1a | Windows t2.large | ギフトカード決済処理 |
+| web-be | 10.239.2.195 | 1a | Linux t3.medium | ⚠️ 【STG独自】SG: ALL(-1)全通信許可（要修正）|
+| web-fe | 10.239.2.253 | 1a | Linux t3.medium | ⚠️ 【STG独自】|
 
-**【PRD/STG差異】PRDはEC2 2台 / STGはEC2 3台（web-be追加）**
+【PRD/STG差異】PRDはEC2 2台（bastion/giftcard）/ STGはEC2 4台（bastion/giftcard/web-be/web-fe）
 
 ---
 
@@ -222,7 +223,7 @@ PRDと同等。バケット名・Lambda名のプレフィックスが stg- / pos
 
 | 項目 | PRD | STG |
 |---|---|---|
-| EC2台数 | 2台（bastion/giftcard） | 3台（+web-be） |
+| EC2台数 | 2台（bastion/giftcard） | **4台**（bastion/giftcard/web-be/web-fe） |
 | web-be SG | - | 🔴 ALL(-1)全通信許可 |
 | api-be ALB | ALBなし（PL制限済み） | internet-facing |
 | GuardDuty | ✅ 有効 | 🔴 無効 |
