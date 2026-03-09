@@ -367,3 +367,11 @@ PRDと同等。バケット名・Lambda名のプレフィックスが stg- / pos
 | X-Ray | Defaultのみ（PRD同等）|
 | Location Service / Payment Cryptography / Direct Connect | 未確認だが空と推定 |
 
+
+## 24. 不要リソース（削除候補・承認待ち）
+
+| リソース | 種別 | 理由 | 状態 |
+|---|---|---|---|
+| ksm-posspk-sns-topic-app-logs-dev | SNS | Luvina開発環境残留物（サブスクライバー: Luvina社員のみ） | 削除未実施 |
+| ksm-posstg-ecr-web-fe | ECR | イメージ0件・未使用 | 削除未実施 |
+| ksm-posstg-ecr-web-be | ECR | イメージ0件・未使用 | 削除未実施 |
