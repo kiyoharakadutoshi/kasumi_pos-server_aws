@@ -308,7 +308,7 @@ const children = [
   h1('2. 改修詳細 / Chi tiết cải tiến'),
 
   ...riskDetails.flatMap(d => [
-    h2(`■ No.${d.no}  ${d.title}`),
+    h1(`■ No.${d.no}  ${d.title}`),
     new Table({
       width: { size: 8504, type: WidthType.DXA },
       columnWidths: [1500, 7004],
