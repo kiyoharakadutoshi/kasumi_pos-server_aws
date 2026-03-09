@@ -413,3 +413,50 @@ EC2 giftcard (Windows/Spring Boot) cron 09:00
   → NTT DATA CDS (210.144.93.17:22 TCP SFTP)
 ```
 
+
+---
+
+## [11] ギフトカード決済フロー・NTT CDS送信コード詳細解析（2026-03-10）
+
+**対象リポジトリ:** aeongiftcardserver-product
+
+**コード解析結果:**
+
+### SettlementJobRunner.java
+- `@Scheduled(cron = "0 0 9 * * ?")` → 毎日 JST 09:00 に自動実行
+- `waitUntilExactTime()` で正確な09:00まで最大60秒待機
+
+### SftpService.java（NTT DATA CDS送信実装）
+| 項目 | 内容 |
+|---|---|
+| ライブラリ | JCraft JSch |
+| 認証 | SSH公開鍵認証 (`jSch.addIdentity(privateKeyPath)`) |
+| StrictHostKeyChecking | **no**（HostKey検証なし・セキュリティリスク） |
+| UserKnownHostsFile | **/dev/null** |
+| アップロード方式 | `dummy_{filename}` で送信後 `rename` で正式名に変更 |
+| リモートディレクトリ | なければ自動作成 (`mkdir`) |
+
+### SettlementService.java（EBCDICファイル生成）
+- 会社コード: `KASUMI_COMPANY_CODE = 100`
+- ファイル名: `6301900000_____000{XX}`（XX=2桁連番）
+- 格納先: `C:\gift\settlement\100\{yyMMdd}\`
+- レコード長: 120バイト固定長
+- 種別: ヘッダー(0xF1)/データ(0xF2)/トレーラー(0xF8)/エンド(0xF9)
+- ファイル上限: 2GB（超過時自動分割）
+- バッファ: 100KB（超過時 flush）
+- DBバッチ: 500件/クエリ
+
+### application.yml 確認（デフォルト値）
+| キー | デフォルト | 本番値 |
+|---|---|---|
+| sftp.gift.host | **210.144.93.18（試験）** | EC2環境変数で 210.144.93.17（本番）に上書き |
+| sftp.gift.port | 22 | 22 |
+| sftp.gift.username | 80510048 | 同左 |
+| sftp.gift.private-key-path | C:\\gift\\sftp-key\\key | 同左（EC2ローカル） |
+| sftp.gift.remote-path | put/ | 同左 |
+| settlement.batch.folder-temp | C:\\gift\\settlement | 同左 |
+
+**確認結果:**
+- Secrets Manager `ksm-posprd-sm-sftp` の `SFTP_PRIVATE_KEY="test"` は未使用（アプリはローカルファイルを直接参照）
+- エラー時メール通知は未実装（TODO コメントあり）
+- CloudWatch Logs 未設定（障害時調査不可）
