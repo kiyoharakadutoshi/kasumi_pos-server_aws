@@ -477,3 +477,163 @@ Internet → ALB(ksm-posstg-alb-web-fe, internet-facing) → web-fe:80
 - 🔴 web-be SG: ALL(-1)→0.0.0.0/0 / TCP:8080→0.0.0.0/0 全開放（改修依頼No.5）
 - 🔴 ALB×2: internet-facing（インターネット公開中）→ カスミに用途確認要
 - 🟡 web-be IAM: S3FullAccess・SecretsManagerReadWrite（権限過剰・要絞り込み）
+
+---
+
+## [3] ALB詳細調査（STG）
+
+### [3]-1 ターゲットグループ確認
+
+```bash
+aws elbv2 describe-target-groups \
+  --region ap-northeast-1 \
+  --query 'TargetGroups[*].{Name:TargetGroupName,ARN:TargetGroupArn}'
+```
+
+**受信内容:**
+```json
+[
+    {"Name": "alb-target-be", "ARN": "arn:aws:elasticloadbalancing:ap-northeast-1:750735758916:targetgroup/alb-target-be/e1d3c617e2a0bdfc"},
+    {"Name": "alb-target-fe", "ARN": "arn:aws:elasticloadbalancing:ap-northeast-1:750735758916:targetgroup/alb-target-fe/da33aafd108d83b3"}
+]
+```
+
+### [3]-2 ターゲットヘルス確認
+
+```bash
+# BE側
+aws elbv2 describe-target-health \
+  --region ap-northeast-1 \
+  --target-group-arn arn:aws:elasticloadbalancing:ap-northeast-1:750735758916:targetgroup/alb-target-be/e1d3c617e2a0bdfc
+
+# FE側
+aws elbv2 describe-target-health \
+  --region ap-northeast-1 \
+  --target-group-arn arn:aws:elasticloadbalancing:ap-northeast-1:750735758916:targetgroup/alb-target-fe/da33aafd108d83b3
+```
+
+**確認結果:**
+
+| ALB | ターゲットID | Port | 状態 |
+|---|---|---|---|
+| alb-target-be | i-06a74666e851e4d12 (web-be) | 80 | healthy |
+| alb-target-fe | i-0fa4cf3cf5c1a8864 (web-fe) | 80 | healthy |
+
+→ **どちらも1対1（負荷分散なし）**。ALBは現時点でSSL終端専用として機能。
+
+### [3]-3 ALBリスナー確認
+
+```bash
+# ALB一覧
+aws elbv2 describe-load-balancers \
+  --region ap-northeast-1 \
+  --query 'LoadBalancers[*].{Name:LoadBalancerName,ARN:LoadBalancerArn}' \
+  --output table
+
+# FE側リスナー
+aws elbv2 describe-listeners \
+  --region ap-northeast-1 \
+  --load-balancer-arn arn:aws:elasticloadbalancing:ap-northeast-1:750735758916:loadbalancer/app/ksm-posstg-alb-web-fe/a4eb347a3cf149f9 \
+  --query 'Listeners[*].{Port:Port,Protocol:Protocol,SSL:Certificates}'
+
+# BE側リスナー
+aws elbv2 describe-listeners \
+  --region ap-northeast-1 \
+  --load-balancer-arn arn:aws:elasticloadbalancing:ap-northeast-1:750735758916:loadbalancer/app/ksm-posstg-alb-api-be/583caa4ac9e37817 \
+  --query 'Listeners[*].{Port:Port,Protocol:Protocol,SSL:Certificates}'
+```
+
+**確認結果:**
+
+| ALB | Port 80 | Port 443 | SSL証明書 |
+|---|---|---|---|
+| alb-web-fe | HTTP ✅ | HTTPS ✅ | ACM (a77b0b86-ac65-4f45-93f1-8cf93957849e) |
+| alb-api-be | HTTP ✅ | HTTPS ✅ | ACM (同一証明書) |
+
+→ **ALBを使っている理由はSSL終端のため**
+
+### [3]-4 ACM証明書確認
+
+```bash
+aws acm describe-certificate \
+  --region ap-northeast-1 \
+  --certificate-arn arn:aws:acm:ap-northeast-1:750735758916:certificate/a77b0b86-ac65-4f45-93f1-8cf93957849e \
+  --query 'Certificate.{Domain:DomainName,SANs:SubjectAlternativeNames,Status:Status}'
+```
+
+**確認結果:**
+```json
+{
+    "Domain": "ignicapos.com",
+    "SANs": ["ignicapos.com", "*.ignicapos.com"],
+    "Status": "ISSUED"
+}
+```
+
+→ `*.ignicapos.com` ワイルドカード証明書1枚でFE・BE両ALBを共有
+
+---
+
+## [4] ECS稼働状況確認（STG・PRD）
+
+### [4]-1 STG ECS確認
+
+```bash
+aws ecs list-clusters --region ap-northeast-1
+aws ecs list-services \
+  --region ap-northeast-1 \
+  --cluster arn:aws:ecs:ap-northeast-1:750735758916:cluster/ksm-posstg-ecs-cluster
+aws ecs list-tasks \
+  --region ap-northeast-1 \
+  --cluster arn:aws:ecs:ap-northeast-1:750735758916:cluster/ksm-posstg-ecs-cluster
+```
+
+**確認結果:**
+- クラスター: `ksm-posstg-ecs-cluster` 存在
+- サービス: **0件（空）**
+- タスク: **0件（空）**
+
+### [4]-2 PRD ECS確認
+
+```bash
+aws ecs list-clusters --region ap-northeast-1
+aws ecs list-tasks \
+  --region ap-northeast-1 \
+  --cluster arn:aws:ecs:ap-northeast-1:332802448674:cluster/ksm-posprd-ecs-cluster
+```
+
+**確認結果:**
+- クラスター: `ksm-posprd-ecs-cluster` 存在
+- タスク: **0件（空）**
+
+→ **PRD・STGともにECSは器のみ存在・何も動いていない**
+→ 将来のコンテナ化（ECS移行）に向けて準備済みの状態
+
+### [4]-3 PRD EC2全台確認
+
+```bash
+aws ec2 describe-instances \
+  --region ap-northeast-1 \
+  --query 'Reservations[*].Instances[*].{Name:Tags[?Key==`Name`]|[0].Value,IP:PrivateIpAddress,Type:InstanceType,State:State.Name}' \
+  --output table
+```
+
+**確認結果:**
+
+| Name | IP | Type | State |
+|---|---|---|---|
+| ksm-posprd-ec2-instance-bastion | 10.238.2.39 | t3.xlarge | running |
+| ksm-posprd-ec2-instance-giftcard | 10.238.2.198 | t2.large | running |
+
+→ **PRDはEC2 2台のみ（web-fe/web-beなし）**
+→ pos-server（Kotlin）・frontend（React）はPRDにまだ未展開
+→ カスミより「本番展開する」意向確認済み（2026-03-10）
+
+---
+
+## チャット別索引
+
+| セクション | 内容 | チャット日時 |
+|---|---|---|
+| [3] | STG ALB詳細調査（ターゲット・リスナー・SSL証明書） | 2026-03-10 |
+| [4] | ECS稼働状況確認（STG/PRD）・PRD EC2全台確認 | 2026-03-10 |

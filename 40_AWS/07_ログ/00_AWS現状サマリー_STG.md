@@ -382,12 +382,27 @@ PRDと同等。バケット名・Lambda名のプレフィックスが stg- / pos
 **構成:**
 ```
 Internet
-  → ALB: ksm-posstg-alb-web-fe (internet-facing)
+  → ALB: ksm-posstg-alb-web-fe (internet-facing) ← Port80(HTTP) + Port443(HTTPS/ACM)
   → EC2: web-fe (10.239.2.253 / t3.medium / 2025-09-17起動)
-  → ALB: ksm-posstg-alb-api-be (internet-facing)
+  → ALB: ksm-posstg-alb-api-be (internet-facing) ← Port80(HTTP) + Port443(HTTPS/ACM)
   → EC2: web-be (10.239.2.195 / t3.medium / 2025-09-17起動)
   → Aurora MySQL
 ```
+
+**ALB詳細（2026-03-10調査）:**
+
+| ALB | ARN末尾 | ターゲット | 登録台数 | ヘルス |
+|---|---|---|---|---|
+| ksm-posstg-alb-web-fe | a4eb347a3cf149f9 | i-0fa4cf3cf5c1a8864 (web-fe) | **1台のみ** | healthy |
+| ksm-posstg-alb-api-be | 583caa4ac9e37817 | i-06a74666e851e4d12 (web-be) | **1台のみ** | healthy |
+
+→ 負荷分散なし（1対1）。**ALBの役割はSSL終端のみ**
+
+**ACM証明書:**
+- ARN: `arn:aws:acm:ap-northeast-1:750735758916:certificate/a77b0b86-ac65-4f45-93f1-8cf93957849e`
+- ドメイン: `ignicapos.com` + `*.ignicapos.com`（ワイルドカード）
+- 状態: ISSUED（有効）
+- 両ALBで同一証明書を共有
 
 **IAM:**
 - web-fe: ECRFullAccess（コンテナイメージ取得用）
@@ -396,7 +411,8 @@ Internet
 **特記事項:**
 - CloudFormation管理なし（手動構築）
 - ECRリポジトリは空（コンテナ未デプロイ）
-- PRDに同等構成なし → STG限定の開発中機能と推定
+- **カスミより「PRD本番展開する」意向確認済み（2026-03-10）**
+- ECSクラスター（ksm-posstg-ecs-cluster）は存在するがサービス・タスクとも0件（器のみ）
 - 🔴 web-be SG: ALL(-1)→0.0.0.0/0 全開放（改修依頼No.5）
-- 🔴 ALB×2: internet-facing（用途・公開範囲をカスミに確認要）
+- 🔴 ALB×2: internet-facing → **改修指示書No.018でinternal化指示済み（今週中対応予定）**
 - 🟡 web-be IAM権限過剰（S3/SecretsManager Full）

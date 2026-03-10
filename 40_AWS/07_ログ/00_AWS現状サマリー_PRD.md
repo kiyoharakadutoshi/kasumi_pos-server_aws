@@ -374,6 +374,13 @@ EC2 giftcard (Windows Server 2022 / i-03d6bf91c19385cdf)
 - CloudFormationスタック: ksm-posprd-ecs
 - ログ: /aws/ecs/ksm-posprd-ecs-sg-export-data（保持期間未設定⚠️）
 
+**2026-03-10 追加調査結果:**
+- `aws ecs list-tasks` → **taskArns: []（タスク0件・現在何も動いていない）**
+- pos-server（Kotlin）・frontend（React）はPRDに**未展開**
+- PRD EC2はbastion/giftcardの2台のみ（web-fe/web-beなし）
+- **カスミより「PRD本番展開する」意向確認済み（2026-03-10）**
+- 展開時はEC2 web-fe/web-be + ALB × 2 の追加が必要（月額+$110概算）
+
 > 以前「App Server/Batch Server なし」と記録していたが、ECSクラスターは存在する。用途はSGデータのエクスポート処理コンテナ（EC2ベースのアプリサーバーとは別物）。
 
 ## 21. Route53
