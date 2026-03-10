@@ -1218,3 +1218,62 @@ nat-0bdcfc7911587eb4c  available  52.196.152.170  10.239.2.55  subnet-030d02a05f
 - **sent-txt-file / unzip-file / backup-file / create-file-end**: ENV:none（S3操作のみ or ハードコード）
 - **import-pos-master-sh**: DB_KASUMI=stg/Replica_Kasumi（Write Endpoint参照）→ タイムアウト障害中
 
+
+---
+
+## Section A〜E: SG全件・IAMロール・Lambda VPC・SF定義・VPCネットワーク詳細調査（2026-03-11 第3回）
+
+### [A] セキュリティグループ 主要所見
+- 全25SG確認完了
+- **web-be SG (sg-02a3156bfb0ac0046)**: TCP8080←0.0.0.0/0 / ALL(-1)←0.0.0.0/0 / TCP80←ALB・web-fe SG / TCP22←bastion → 改修No.5
+- **ep-tf SG (sg-06153ac3ff38765ab)**: bastion SG残存ルール → 改修No.13
+- **ksm-posstg-temp (sg-0991baa076710475a)**: ルールゼロ → 削除候補
+- **ksm-posstg-vpc-sg-kasumi-charge (sg-07c81567ac87d00c5)**: Inboundなし・用途不明 → 削除調査要
+- **posstg-lmd-function-send-master-file (sg-0f39bd8617062491d)**: 対応Lambda不在 → db SGのルールと合わせて削除候補
+
+### [B] IAMロール 主要所見
+- **ksm-posstg-iam-role-lmd**: PowerUserAccess付与（改修No.2）
+- **ksm-posstg-iam-role-tf**: InlinePolicy名が "test"（機能は正常 / 名前のみ要修正）
+- **ksm-posstg-iam-role-eb**: AWSLambda_FullAccess付与（Invoke権限のみで十分）
+- **ksm-posstg-iam-role-ecs**: SecretsManagerReadWrite / AmazonECS_FullAccess / S3FullAccess（過剰）→ 改修No.10
+- posstg-role-ec2-web-be: S3FullAccess / SecretsManagerReadWrite（過剰）
+- posstg-role-ec2-web-fe: ECRFullAccess（ReadOnlyで十分）
+
+### [C] Lambda VPC設定 主要所見
+- VPC内Lambda（private-1a/1cサブネット）: DB接続系・ビジネスロジック系 15関数
+- VPC外Lambda: export-polling / zipfile-polling / trigger-sqs-export-sg / trigger-sqs-import-sg（SQSトリガー系・VPC不要）
+- DB接続が必要な関数は全て sg-0c2b1347aaadfdc83（lambda-rds-1）をアタッチ
+
+### [D] Step Functions 主要所見
+- 7本の全ステートマシン定義確認完了
+- ECS RunTask (waitForTaskToken) を使用: create-txt-file-oc / create-txt-file-sg
+- SQSメッセージ削除処理あり: create-txt-file-sg / receive-and-import-pos-master-sg
+- 全SF: ksm-posstg-iam-role-sf を使用
+
+### [E] VPCネットワーク・EventBridge・ALB・RDS PG 主要所見
+
+**VPC:**
+- サブネット8本確認。private-1a/1c がLambda・EC2の主配置場所
+- Aurora は protected-1a/1c（NAT GWなし・インターネット不可）
+- public-1cにVGWルートなし（public-1aのみ）→ 非対称
+
+**EventBridge:**
+- 🚨 **eb-rule-copy-backup-sg ターゲット = arn:aws:lambda:ap-northeast-1:891376952870:function:ksm-posspk-lmd-function-copy-backup-sg（別アカウントposspk）**
+  → STGアカウントに同名Lambdaが存在するにもかかわらず別アカウントを参照。設定ミスと推定。
+
+**ALB:**
+- web-fe: HTTP80(リダイレクト想定？) + HTTPS443→alb-target-fe(HTTP:80 / ヘルスチェック: /)
+- api-be: HTTP80(同上) + HTTPS443→alb-target-be(HTTP:80 / ヘルスチェック: /api/v1/health-check)
+
+**RDS パラメータグループ:**
+- local_infile=1（セキュリティリスク）
+- activate_all_roles_on_login=1（主クラスターのみ）
+- binlog_format=OFF / gtid-mode=OFF_PERMISSIVE
+- innodb_buffer_pool_size={DBInstanceClassMemory*3/4}
+- クラスター用PGとreplica用PGの主な差異: activate_all_roles_on_login / aws_default_s3_role が主クラスターのみ設定
+
+**CloudWatch メトリクスフィルター:**
+- 全4ロググループ（audit.log / messages / dnf.log / secure）に同一パターン:
+  `[message="*ERROR*" || message="*Error*" || message="*error*" || message="*FAIL*" || message="*Fail*" || message="*fail*"]`
+- この広範パターンがPAMの正常終了ログ（res=failed）を誤検知→ ALARMの根本原因確定
+

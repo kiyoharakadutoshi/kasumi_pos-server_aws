@@ -1,6 +1,6 @@
 # AWS現状サマリー STG
 
-最終更新: 2026-03-11（第2回）  
+最終更新: 2026-03-11（第3回）  
 AWSアカウント: 750735758916  
 リージョン: ap-northeast-1（東京）  
 コンソール: https://ap-northeast-1.console.aws.amazon.com/console/home?region=ap-northeast-1
@@ -16,11 +16,69 @@ AWSアカウント: 750735758916
 | VPC ID | vpc-09bc4a6da904ace31 |
 | CIDR | 10.239.0.0/16 |
 | AZ | ap-northeast-1a + ap-northeast-1c |
-| NAT GW Public IP | 52.196.152.170 |
+| NAT GW | nat-0bdcfc7911587eb4c / 52.196.152.170 (Public) / 10.239.2.55 (Private) / subnet-030d02a05fcba055e |
+| Internet GW | igw-0f2b7450bfe9a8798 (com-posstg-vpc-ig) |
+| Virtual Private GW | vgw-03575f50ba917794a (posstg-vpc-vgw) |
+| S3 VPC Endpoint | vpce-0ae36bb9b6b38c692 (Gateway型・全ルートテーブルに追加済み) |
 
-サブネット: public/private/protected/common × 1a/1c（計8本）
+### サブネット一覧
 
----
+| サブネットID | CIDR | AZ | 名前 | 用途 |
+|---|---|---|---|---|
+| subnet-030d02a05fcba055e | 10.239.2.0/26 | 1a | public-1a | bastion・NAT GW配置 |
+| subnet-071c68d5edb0cfb07 | 10.239.3.0/26 | 1c | public-1c | 冗長用 |
+| subnet-08999673be546d752 | 10.239.2.128/25 | 1a | private-1a | Lambda・ECS・EC2(web-be/fe/giftcard) |
+| subnet-0d4bb4d8d559e39b1 | 10.239.3.128/25 | 1c | private-1c | 同上（冗長） |
+| subnet-0fca160c3c0af3733 | 10.239.2.64/26 | 1a | protected-1a | Aurora（インターネット不可） |
+| subnet-0fabd6914bfd0f1a3 | 10.239.3.64/26 | 1c | protected-1c | Aurora（インターネット不可） |
+| subnet-0735401d21249139c | 10.239.0.0/26 | 1a | common-1a | VPCエンドポイント配置 |
+| subnet-0428e0814dfd61b90 | 10.239.1.0/26 | 1c | common-1c | VPCエンドポイント配置 |
+
+### ルートテーブル まとめ
+
+| ルートテーブル | 関連サブネット | 主要ルート | 備考 |
+|---|---|---|---|
+| rt-public-1a | subnet-030d02a05fcba055e | 0.0.0.0/0→IGW / 10.156.96.192/26→VGW | USMH SFTP向けVGW経由 |
+| rt-public-1c | subnet-071c68d5edb0cfb07 | 0.0.0.0/0→IGW | VGWルートなし（非対称）⚠️ |
+| rt-private-1a | subnet-08999673be546d752 | 0.0.0.0/0→NAT / 172.21.10.0/24→VGW / 10.156.96.192/26→VGW | Lambda・ECS |
+| rt-private-1c | subnet-0d4bb4d8d559e39b1 | 0.0.0.0/0→NAT / 172.21.10.0/24→VGW / 10.156.96.192/26→VGW | 同上 |
+| rt-protected-1a | subnet-0fca160c3c0af3733 | 172.21.10.0/24→VGW | NATなし（インターネット不可）Aurora用 |
+| rt-protected-1c | subnet-0fabd6914bfd0f1a3 | 172.21.10.0/24→VGW | 同上 |
+| rt-common-1a/1c | subnet-0735401d21249139c / 0428e0814dfd61b90 | ローカルのみ | エンドポイント配置用 |
+
+> ⚠️ **public-1cルートテーブルにVGWルートなし**（public-1aにはあり）→ 非対称設定。意図的か要確認。  
+> ✅ 全ルートテーブルにS3 Gateway Endpoint（vpce-0ae36bb9b6b38c692）追加済み
+
+### セキュリティグループ 全件（2026-03-11確認）
+
+| SG名 | SG ID | Inbound | Outbound | 評価 |
+|---|---|---|---|---|
+| ksm-posstg-vpc-sg-ec2-bastion | sg-01f1bbc2ae66a6591 | UDP1194（OpenVPN） | ALL→0.0.0.0/0 | ✅ |
+| ksm-posstg-vpc-sg-ec2-web-fe | sg-05e67c2aa07685a1e | TCP80←ALB-fe SG / TCP22←bastion SG | ALL→0.0.0.0/0 | ✅ |
+| **ksm-posstg-vpc-sg-ec2-web-be** | sg-02a3156bfb0ac0046 | TCP80←ALB-be SG・web-fe SG / **TCP8080←0.0.0.0/0** / **ALL←0.0.0.0/0** / TCP22←bastion SG | ALL→0.0.0.0/0 | 🔴 **ALL開放・改修No.5** |
+| ksm-posstg-vpc-sg-giftcard | sg-0e4893fdcd3bfc72b | TCP80←0.0.0.0/0 / TCP3389←bastion SG | ALL→0.0.0.0/0 | ⚠️ TCP80全開 |
+| ksm-posstg-vpc-sg-db | sg-006e18b25235d3a1d | TCP3306←172.21.10.0/24 / ←ECS SG / ←bastion SG / ←**sg-0f39bd8617062491d** / ←Lambda SG | ALL→0.0.0.0/0 | ⚠️ sg-0f39bd8617062491d確認要 |
+| ksm-posstg-vpc-sg-ecs | sg-02865a2ca8164b2e7 | なし | ALL→0.0.0.0/0 | ✅ |
+| ksm-posstg-vpc-sg-lmd | sg-07e2f45f6a0f49c24 | なし | ALL→0.0.0.0/0 | ✅ |
+| lambda-rds-1 | sg-0c2b1347aaadfdc83 | なし | TCP3306→rds-lambda-1 | ✅（Lambda→RDS専用） |
+| rds-lambda-1 | sg-0ee95ce0bfe7c1d19 | TCP3306←lambda-rds-1 | なし | ✅ |
+| rds-ec2-1 | sg-02cd48ad974df77be | TCP3306←ec2-rds-1 | なし | ✅ |
+| ec2-rds-1 | sg-0f0811b7336aaa804 | なし | TCP3306→rds-ec2-1 | ✅ |
+| ksm-posstg-vpc-sg-alb-web-fe | sg-0a95f93ea132f542c | TCP80・443←0.0.0.0/0 | ALL→0.0.0.0/0 | ✅（ALB用） |
+| ksm-posstg-vpc-sg-alb-web-be | sg-0c00041d6728442c6 | TCP80・443←0.0.0.0/0 | ALL→0.0.0.0/0 | ✅（ALB用） |
+| ksm-posstg-vpc-sg-ep-tf | sg-06153ac3ff38765ab | TCP22←10.156.96.192/26 / **TCP22←bastion SG**（残骸） | ALL→0.0.0.0/0 | 🔴 **改修No.13** |
+| ksm-posstg-vpc-sg-ep-ecr | sg-0ea38a9bf01ae9cdf | TCP443←Lambda SG / ←ECS SG | ALL→0.0.0.0/0 | ✅ |
+| ksm-posstg-vpc-sg-ep-cw-logs | sg-02fbe4b65f59bd010 | TCP443←Lambda/ECS/RDS/EC2/sg-02a3156bfb0ac0046 SG | ALL→0.0.0.0/0 | ✅ |
+| ksm-posstg-vpc-sg-ep-cw-metrics | sg-044c17b67ecc44b3b | TCP443←Lambda/ECS/RDS SG | ALL→0.0.0.0/0 | ✅ |
+| ksm-posstg-vpc-sg-ep-sm | sg-06a78433a1adce0a9 | TCP443←Lambda/ECS SG | ALL→0.0.0.0/0 | ✅ |
+| ksm-posstg-vpc-sg-ep-kms | sg-0ccbb38c45d28c70d | TCP443←Lambda/ECS/RDS SG | ALL→0.0.0.0/0 | ✅ |
+| ksm-posstg-vpc-sg-s3 | sg-0066dd51f597012b2 | TCP443←0.0.0.0/0 | ALL→0.0.0.0/0 | ✅ |
+| **ksm-posstg-temp** | sg-0991baa076710475a | **なし** | **なし** | 🟢 削除候補（ルールゼロ） |
+| **ksm-posstg-vpc-sg-kasumi-charge** | sg-07c81567ac87d00c5 | なし | ALL→0.0.0.0/0 | 🟡 用途不明・未使用の可能性 |
+| **posstg-lmd-function-send-master-file** | sg-0f39bd8617062491d | なし | ALL→0.0.0.0/0 | 🟡 対応Lambda不明（23関数に該当なし）→ 削除候補 |
+| default | sg-09de3d205a615797e | ALL←self | ALL→0.0.0.0/0 | ✅（未使用） |
+
+
 
 ## 2. EC2
 
@@ -145,9 +203,41 @@ CFn: ksm-posstg-transfer（OC・SG）/ SHはタグなし手動追加
 
 ## 7. Step Functions（7本）
 
-PRDと同等の7本（プレフィックスが ksm-posstg- に変わるのみ）
+| SF名 | 主要フロー | 特記 |
+|---|---|---|
+| sf-sm-receive-pos-master-oc | CreateLogStreams→SplitCsv→ParallelProcessing→LogSuccess | OCデータ受信・分割 |
+| sf-sm-import-pos-master-oc | CreateLogStreams→LogStart→RunImportData(oc-import-data)→LogSuccess | OC取込 |
+| sf-sm-create-txt-file-oc | CreateLogStreams→GetSyncStore→LogStart→**RunExportData(ECS)**→SplitTxtBySentTime→LogSuccess | OC変換・送信 |
+| sf-sm-receive-and-import-pos-master-sg | CreateLogStreams→LogStart→UnzipFile→Choice→ParallelProcessing→CreateEndFile→LogSuccess | SG受信・解凍・投入 |
+| sf-sm-create-txt-file-sg | CreateLogStreams→GetSyncStore→LogStart→**RunExportData(ECS)**→SplitTxtBySentTime→LogSuccess→DeleteMessage | SG変換・送信（SQS連携あり） |
+| **sf-sm-import-pos-master-sh** | CreateLogStreams→LogStart→RunImportData(import-pos-master-sh)→LogSuccess | **🔴 タイムアウト障害中** |
+| **sf-sm-sent-txt-file** | CreateLogStreams→LogStart→GetSyncStore→**SendFile(sent-txt-file)**→BackupFile→LogSuccess | **🔴 FTP接続障害中** |
+
+> ECS RunTask（waitForTaskToken）: create-txt-file-oc/sg の RunExportData ステップで使用  
+> SQS DeleteMessage: create-txt-file-sg / receive-and-import-pos-master-sg でメッセージ削除ステップあり
 
 ---
+
+## 7-b. IAMロール 詳細（2026-03-11確認）
+
+| ロール名 | Trust Principal | アタッチポリシー | 評価 |
+|---|---|---|---|
+| ksm-posstg-iam-role-ec2 | ec2.amazonaws.com | CloudWatchAgentServerPolicy / AmazonSSMManagedInstanceCore / AmazonS3ReadOnlyAccess / PatchPolicy | ✅ 最小権限 |
+| ksm-posstg-iam-role-db-cluster | rds.amazonaws.com | ksm-posstg-iam-policy-db-cluster | ✅ |
+| ksm-posstg-iam-role-db-monitoring | monitoring.rds.amazonaws.com | CloudWatchLogsFullAccess | ✅ |
+| ksm-posstg-iam-role-tf | transfer.amazonaws.com | S3FullAccess/AmazonECS_FullAccess/StepFunctionsFullAccess/AWSLambdaRole + **InlinePolicy"test"** | 🟡 Inline名が"test"（残骸命名）・権限過剰 |
+| ksm-posstg-iam-role-tf-logs | transfer.amazonaws.com | AWSTransferLoggingAccess | ✅ |
+| ksm-posstg-iam-role-eb | events.amazonaws.com | AWSStepFunctionsFullAccess / **AWSLambda_FullAccess** | 🟡 Lambda_FullAccess過剰（Invokeのみで十分） |
+| **ksm-posstg-iam-role-lmd** | lambda/events/scheduler | 多数 + **PowerUserAccess** 🔴 | 🔴 **改修依頼No.2 未実施** |
+| ksm-posstg-iam-role-ecs | ecs-tasks.amazonaws.com | ECRFullAccess / **SecretsManagerReadWrite** / **AmazonECS_FullAccess** / **S3FullAccess** / StepFunctionsFullAccess | 🟡 権限過剰 → 改修依頼No.10 |
+| ksm-posstg-iam-role-sf | states/scheduler | S3FullAccess / ECS_FullAccess / CloudWatchFullAccess / LambdaRole / SQSFullAccess / StepFunctionsFullAccess | 🟡 CloudWatchFullAccess過剰 |
+| posstg-role-ec2-web-be | ec2.amazonaws.com | CloudWatchLogsFullAccess / **SecretsManagerReadWrite** / **AmazonS3FullAccess** / ECR | 🟡 S3・SM Full過剰 |
+| posstg-role-ec2-web-fe | ec2.amazonaws.com | **AmazonEC2ContainerRegistryFullAccess** | 🟡 FullAccess過剰（ReadOnlyで十分） |
+
+> 🔴 **ksm-posstg-iam-role-lmd に PowerUserAccess → 改修依頼No.2（最優先）**  
+> 🟡 ksm-posstg-iam-role-tf の InlinePolicy名が "test"（内容：iam:PassRole / states:StartExecution / ecs:RunTask → 機能的には問題なし・名前のみ要修正）
+
+
 
 ## 8. SQS（2 FIFOキュー）
 
@@ -162,22 +252,28 @@ PRDと同等の7本（プレフィックスが ksm-posstg- に変わるのみ）
 
 ## 9. EventBridge
 
-| ルール名 | スケジュール | JST | 状態 | 備考 |
-|---|---|---|---|---|
-| eb-rule-check-p001-price | - | - | **ENABLED** | **【STG独自・PRD/STG差異】PRDはDISABLED** |
-| eb-rule-night-export-sg | cron(30 20 * * ? *) | 05:30 | **ENABLED** | PRDと同じ |
-| eb-rule-receive-pos-master-oc | S3 | - | ENABLED | - |
-| eb-rule-receive-pos-master-sg | S3 | - | ENABLED | - |
-| eb-rule-receive-pos-master-sh | S3 | - | ENABLED | - |
-| eb-rule-create-txt-file-sg | S3 | - | ENABLED | - |
-| **ksm-posstg-eb-rule-receive-pos-master-sg-9233** | - | - | **DISABLED** | 🔴 **【STG独自】店舗9233向けテスト残骸** → 改修依頼 No.14 |
-| **ksm-posstg-eb-rule-create-txt-file-sg-9233** | - | - | **DISABLED** | 🔴 **【STG独自】同上** → 改修依頼 No.14 |
-| **ksm-posstg-eb-rule-night-export-sg-9233** | - | - | **DISABLED** | 🔴 **【STG独自】同上** → 改修依頼 No.14 |
+| ルール名 | 状態 | ターゲット | 評価 |
+|---|---|---|---|
+| eb-rule-check-p001-price | **ENABLED** | Lambda: check-price | 【STG独自・PRD=DISABLED】 |
+| eb-rule-night-export-sg | **ENABLED** | Lambda: create-file-end-for-night | 毎日JST05:30 |
+| eb-rule-receive-pos-master-oc | ENABLED | SF: receive-pos-master-oc | S3トリガー |
+| eb-rule-receive-pos-master-sg | ENABLED | Lambda: trigger-sqs-import-sg | S3トリガー |
+| eb-rule-receive-pos-master-sh | ENABLED | SF: import-pos-master-sh | S3トリガー |
+| eb-rule-create-txt-file-sg | ENABLED | Lambda: trigger-sqs-export-sg | S3トリガー |
+| eb-rule-receive-splited-pos-master-oc | ENABLED | SF: import-pos-master-oc | S3トリガー |
+| eb-rule-itemmaster-import-monitoring | ENABLED | Lambda: itemmaster-import-monitoring | - |
+| eb-rule-p001-import-monitoring | ENABLED | Lambda: p001-import-monitoring | Input: {"bucketName":"stg-ignica-ksm"} |
+| **eb-rule-copy-backup-sg** | ENABLED | **Lambda: arn:aws:lambda:...:891376952870:function:ksm-posspk-lmd-function-copy-backup-sg** | 🚨 **別アカウント(891376952870=posspk)のLambdaを参照！** |
+| **eb-rule-receive-pos-master-sg-9233** | DISABLED | SQS: store-code-queue-sg.fifo | 🔴 残骸 → No.14 |
+| **eb-rule-create-txt-file-sg-9233** | DISABLED | SQS: export-queue-sg.fifo | 🔴 残骸 → No.14 |
+| **eb-rule-night-export-sg-9233** | DISABLED | Lambda: create-file-end | 🔴 残骸 → No.14 |
 
-**【STG独自】-9233 系 DISABLED ルール 3本が残存（PRDにはなし）**  
-**【PRD/STG差異】Inspector ルール: PRDにあり（6本）/ STGになし**
+> 🚨 **重大問題: eb-rule-copy-backup-sgのターゲットが別アカウント(891376952870 = posspk開発環境)のLambdaを参照**  
+> 現在 STG アカウントから posspk アカウントへのクロスアカウント Lambda 呼び出しが設定されている。  
+> posspk 側で Lambda Resource Policy が許可されていれば動作するが、意図的な設計か不明。  
+> **正しくは同一 STG アカウントの ksm-posstg-lmd-function-copy-backup-sg を参照すべき。要修正。**
 
----
+
 
 ## 10. ネットワーク接続
 
@@ -475,9 +571,15 @@ PRDと同等。バケット名・Lambda名のプレフィックスが stg- / pos
 
 | リソース | 種別 | 理由 | 注意事項 | 状態 |
 |---|---|---|---|---|
-| ksm-posspk-sns-topic-app-logs-dev | SNS | Luvina開発環境残留物（Luvina2名のみ購読） | **削除前にksm-posstg-lmd-function-sent-emailのENV更新必須** | 削除未実施 |
+| ksm-posspk-sns-topic-app-logs-dev | SNS | Luvina開発環境残留物（Luvina2名のみ購読） | **削除前にsent-email LambdaのENV更新必須** | 削除未実施 |
 | ksm-posstg-ecr-web-fe | ECR | イメージ0件・未使用 | - | 削除未実施 |
 | ksm-posstg-ecr-web-be | ECR | イメージ0件・未使用 | - | 削除未実施 |
+| **ksm-posstg-temp** | SG | ルールゼロ・未使用 | アタッチ先がないことを確認してから削除 | 削除未実施 |
+| **ksm-posstg-vpc-sg-kasumi-charge** | SG | Inboundなし・用途不明・アタッチ先不明 | アタッチ先確認後に削除 | 要調査 |
+| **posstg-lmd-function-send-master-file** | SG | 対応Lambdaが現存23関数に該当なし（ksm-posstg-vpc-sg-dbのInboundに許可ルールあり） | db SGのルールも合わせて削除 | 要調査 |
+| **eb-rule-copy-backup-sg** | EventBridge | **ターゲットが別アカウント(891376952870=posspk)のLambdaを参照（設定ミスの可能性）** | 同アカウントの copy-backup-sg Lambda に修正するか、不要なら削除 | 🚨 要修正 |
+
+
 
 ## 25. web-fe / web-be 詳細（STG独自Webアプリ）
 
