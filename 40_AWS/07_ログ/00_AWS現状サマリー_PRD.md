@@ -165,29 +165,39 @@ CFn: ksm-posprd-transfer（OC・SG）/ SHはタグなし手動追加
 
 ## 10. ネットワーク接続
 
-### Luvina開発端末 → PRD（AWS Client VPN）
-```
-Luvina開発端末（対象端末①②③④）
-  → AWS Client VPN（Luvina TP-Link ER605: 14.224.146.153）
-  → PRD Bastion: 10.238.2.39
-```
-- 各端末へのIP振り分けはClient VPN内のルーティングにて行う
+### 全体構成（構成資料スライド6）
 
-### USMH閉域網 → PRD（AWS Direct Connect）
 ```
-USMH閉域網
-  → SmartVPN → AWS Direct Connect（100Mbps）
-  → Gateway VPC → VPN gateway
-  → PRD VPC（10.238.0.0/16）
+① Luvina個人PC → AWS Client VPN → LuvinaAWS PRD（10.238.2.39）
+② Luvinaオフィス → TP-Link ER605(14.224.146.153) → Site-to-Site VPN → LuvinaAWS PRD
+③ LuvinaAWS → VPN gateway → Direct Connect(100Mbps) → SmartVPN → USMH閉域網
 ```
+
+### ① Luvina個人PC → PRD（AWS Client VPN）
+
+| 項目 | 値 |
+|---|---|
+| 接続方式 | AWS Client VPN（個人PC単位） |
+| 接続先 | PRD Bastion: 10.238.2.39 |
+| 備考 | 各端末へのIP振り分けはClient VPN内のルーティングにて行う |
+
+### ② Luvinaオフィス → PRD（Site-to-Site VPN）
+
+| 項目 | 値 |
+|---|---|
+| 接続方式 | IPSec Site-to-Site VPN |
+| CGW | cgw-02789a11a8e88d0cd（TP-Link ER605: 14.224.146.153） |
+| VGW | vgw-06d8981903cf33c62 |
+| VPN ID | vpn-0ea9b7895f78e4c7e |
+| T1 | 35.79.95.18 — **UP** |
+| T2 | 52.192.144.197 — **DOWN**（2026-02-19から） |
+
+### ③ LuvinaAWS → USMH閉域網（Direct Connect）
 
 | 項目 | 値 |
 |---|---|
 | 接続方式 | AWS Direct Connect（100Mbps） |
-| VPN ID（AWS側） | vpn-0ea9b7895f78e4c7e |
-| VGW | vgw-06d8981903cf33c62 |
-| T1 | 35.79.95.18 — **UP** |
-| T2 | 52.192.144.197 — **DOWN**（2026-02-19から） |
+| 経路 | VPN gateway → Direct Connect → SmartVPN → USMH閉域網 |
 | USMH CIDR | 10.156.96.0/24 / 172.21.10.0/24 / 10.156.96.192/26 |
 
 ### NATアドレス変換
