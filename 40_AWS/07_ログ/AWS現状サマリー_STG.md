@@ -758,3 +758,91 @@ Internet
 | T1 | 3.115.250.166 | **UP** ✅ | 2026-02-25 |
 | T2 | 18.178.240.88 | **DOWN** 🔴 | **2026-02-24 01:26（約2.5週間）** |
 
+
+---
+
+## 28. EC2内 アプリ構成（2026-03-11 SSM調査）
+
+### bastion (i-0bd9a4db1b74b5a69)
+
+**OSユーザー一覧（/home/配下）:**
+| ユーザー | 最終アクセス | 備考 |
+|---|---|---|
+| ec2-user | Feb 11 11:56 | メインユーザー |
+| buithephong | Jan 7 06:37 | Luvinnaメンバー個人アカウント |
+| kiyohara | Jul 17 2025 | 木原さん個人アカウント |
+| kiyohara_s3 | Jul 17 2025 | S3アクセス用 |
+| dev | Jun 24 2025 | ⚠️ 汎用開発ユーザー |
+
+**OpenVPN サーバー設定（/etc/openvpn/server.conf）:**
+```
+port 1194
+proto udp
+dev tun
+ca ca.crt / cert server.crt / key server.key / dh dh.pem
+server 10.239.2.128 255.255.255.128   ← ⚠️ 重大問題
+client-config-dir /etc/openvpn/ccd
+```
+
+> 🚨 **重大問題: OpenVPN のIPプール `10.239.2.128/25` が private-1a サブネット(10.239.2.128/25) と完全に重複**  
+> VPNクライアントに払い出すIPと、Lambda・ECS・EC2が使用するプライベートIPが同一レンジ。  
+> IPアドレス競合が発生する可能性があり、障害の潜在的原因になりうる。  
+> **Client VPN（AWS管理）への完全移行後、このOpenVPNは廃止が急務。**
+
+---
+
+### web-be (i-06a74666e851e4d12)
+
+**実行中プロセス:**
+| プロセス | 実行ユーザー | 起動時期 | 詳細 |
+|---|---|---|---|
+| `java -jar ishida-20251217-1.jar --server.port=8081` | **root** | 2025年 | 🔴 **rootで本番Javaアプリ実行** / 215時間稼働 |
+| `nginx: master process` | root/www-data | Feb 13 | リバースプロキシ（:8081→nginx） |
+
+**ファイル構成（/home/dev/）:**
+```
+/home/dev/
+├── ishida-20251217-1.jar          ← 実行中（Javaアプリ本体）
+├── pos-ishida-api.jar             ← 旧バージョン？
+├── gift##260107-01.jar            ← ⚠️ giftcard関連JAR（2026-01-07）
+├── gift##260106-01.jar            ← ⚠️ giftcard関連JAR（2026-01-06）
+├── ishida-api.log
+├── gift-api.log
+├── logo_header_kasumi.svg
+├── awscliv2.zip                   ← AWS CLI インストーラ残留
+└── logs/
+    ├── gift-api.log
+    └── giftcard/                  ← ⚠️ giftcard系ログ多数（2025-12-22〜2026-01-08）
+```
+
+**重大な問題点:**
+
+| # | 問題 | リスク |
+|---|---|---|
+| 1 | **rootでJavaアプリ実行** | アプリ侵害時にサーバー全体乗っ取り可能 |
+| 2 | **giftcardアプリ（JAR・ログ）がweb-beに混在** | giftcardはWindows EC2(giftcard)が別にあるはずなのに、web-be上でも動作している可能性 |
+| 3 | **JARファイルが/home/dev/直下に散在** | バージョン管理・デプロイ管理なし |
+| 4 | **devユーザーで本番運用** | 汎用アカウントで本番稼働（権限管理不明） |
+| 5 | **awscliv2.zipが残留** | 不要ファイル（軽微） |
+| 6 | **最新JARが2025-12-17** | 最終更新から約3ヶ月経過 |
+
+> ⚠️ giftcard関連JAR（gift##260107-01.jar等）がweb-be上に存在する理由を要確認。  
+> Windows EC2(giftcard, i-0f8ededc7ae313cbe)とweb-beが同じgiftcard APIを提供している二重管理の可能性。
+
+---
+
+### Transfer Family SSH公開鍵（2026-03-11確認）
+
+| サーバー | ユーザー | 鍵ID | 登録日 | コメント（送信元） | 評価 |
+|---|---|---|---|---|---|
+| s-7c808e1040dd437da (OC用) | ksm-posstg-tf-user-oc | key-cbabc5e69f4b4db6a | 2025-06-13 | u2022096@W300000000692 | ✅ OC端末 |
+| s-7c808e1040dd437da (OC用) | ksm-posstg-tf-user-oc | key-0c3826bf105040e5b | 2025-07-01 | (2本目) | 🟡 2本登録・古い方は削除検討 |
+| s-7c808e1040dd437da (OC用) | ksm-posstg-tf-user-oc | key-da05fa7f2517477c8 | 2025-07-01 | (3本目) | 🟡 3本登録・整理要 |
+| s-d5d0d941bfb04a72b (SG用) | ksm-posstg-tf-user-sg | key-541a9f09dd864e6c9 | 2025-06-26 | **root@ip-10-239-2-4** | 🔴 **bastionで生成したキー！外部パートナー鍵ではなく内部生成** |
+| s-a69b3df467bc43b99 (SH用) | ksm-posstg-tf-user-sh | key-17e5bd1140974c418 | 2025-11-21 | (コメントなし) | 🟡 送信元不明 |
+
+> 🔴 **重大: tf-user-sg の SSH鍵コメントが `root@ip-10-239-2-4.ap-northeast-1.compute.internal`（bastionのホスト名）**  
+> これはカスミ・SGの外部システムが使う鍵ではなく、bastion上でroot権限で生成した鍵を登録している。  
+> セキュリティ上、rootで生成した鍵は問題。外部パートナーが提供した公開鍵に差し替えるべき。  
+> また、tf-user-oc に3本の鍵が登録されている（通常は1本）。2025-06-13の最初の鍵が不要なら削除要。
+
