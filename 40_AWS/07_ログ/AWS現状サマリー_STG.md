@@ -1,6 +1,6 @@
 # AWS現状サマリー STG
 
-最終更新: 2026-03-10  
+最終更新: 2026-03-11  
 AWSアカウント: 750735758916  
 リージョン: ap-northeast-1（東京）  
 コンソール: https://ap-northeast-1.console.aws.amazon.com/console/home?region=ap-northeast-1
@@ -486,3 +486,98 @@ Internet
 ### 削除候補（新規）
 - `ksm-posstg-temp` SG（ルールゼロ）
 - Transfer Family EP 3本の名前タグ追加推奨
+
+---
+
+## 28. Aurora DB 設定・データ現状（2026-03-11調査）
+
+### RDS クラスター・インスタンス SG アタッチ状況
+
+| クラスター/インスタンス | アタッチSG |
+|---|---|
+| ksm-posstg-db-cluster（プライマリ） | sg-02cd48ad974df77be（rds-ec2-1）/ sg-006e18b25235d3a1d（ksm-posstg-vpc-sg-db）/ sg-0ee95ce0bfe7c1d19（rds-lambda-1） |
+| ksm-posstg-db-cluster-replica | sg-006e18b25235d3a1d（ksm-posstg-vpc-sg-db）のみ |
+| db-instance-1（Writer） | rds-ec2-1 / ksm-posstg-vpc-sg-db / rds-lambda-1 |
+| db-instance-2（Reader） | rds-ec2-1 / ksm-posstg-vpc-sg-db / rds-lambda-1 |
+| db-instance-1-replica | ksm-posstg-vpc-sg-db のみ |
+| db-instance-2-replica | ksm-posstg-vpc-sg-db のみ |
+
+**⚠️ db-cluster-replica（replicaクラスター）に rds-lambda-1 未アタッチ**
+→ Lambda から replica クラスターへの接続が必要な場合は追加要
+
+### Lambda → Aurora SG 接続経路
+
+| SG名 | 役割 | ルール |
+|---|---|---|
+| sg-0c2b1347aaadfdc83（lambda-rds-1） | Lambda側アウトバウンド | Outbound TCP 3306 → rds-lambda-1 |
+| sg-0ee95ce0bfe7c1d19（rds-lambda-1） | Aurora側インバウンド | Inbound TCP 3306 ← lambda-rds-1 |
+| sg-006e18b25235d3a1d（ksm-posstg-vpc-sg-db） | Aurora汎用SG | Inbound TCP 3306 ← Bastion/ECS/Lambda/172.21.10.0 |
+| sg-02cd48ad974df77be（rds-ec2-1） | EC2→Aurora | Inbound TCP 3306 ← sg-0f0811b7336aaa804 |
+
+### Lambda 環境変数・Secrets Manager 参照設定
+
+| Lambda | 環境変数 | 参照シークレット | 接続先DB |
+|---|---|---|---|
+| import-pos-master-sh | DB_KASUMI=stg/Replica_Kasumi / DB_BATCH=stg/Batch_Kasumi | HOST: Write Endpoint / PORT: 3306 | Replica_Kasumi / Batch_Kasumi |
+| sent-txt-file | **null（環境変数なし）** | 接続先不明（ソースコード内定数と推定） | 石田ESLサーバー |
+
+### Secrets Manager シークレット一覧（全7件）
+
+| シークレット名 | HOST（パスワード除く） | PORT | DB_NAME |
+|---|---|---|---|
+| stg/Batch_Kasumi | ksm-posstg-db-cluster.cluster-cvmomy000wqn... | 3306 | Batch_Kasumi |
+| stg/Replica_Kasumi | ksm-posstg-db-cluster.cluster-cvmomy000wqn...（Write Endpoint） | 3306 | Replica_Kasumi |
+| stg/Mail_Kasumi | ksm-posstg-db-cluster.cluster-cvmomy000wqn... | 3306 | Mail_Kasumi |
+| stg/Replica_Kasumi_RO | 未確認 | - | - |
+| ksm-posstg-sm-sftp | SFTP_PRIVATE_KEY: **"test"（テスト値のまま）** 🚨 | - | - |
+| ksm-posstg-sm-db / db-replica | MasterUsername: admin のみ確認 | - | - |
+
+**⚠️ stg/Replica_Kasumi の HOST が Write Endpoint（cluster）を参照している**
+→ 名前は Replica だが実際は Write Endpoint（意図的かどうか確認推奨）
+
+**🚨 ksm-posstg-sm-sftp の SFTP_PRIVATE_KEY が "test" のまま**
+→ sent-txt-file Lambda の石田ESLサーバーへのSFTP接続に使用される可能性あり
+
+### Replica_Kasumi DB テーブル構成（主要テーブル）
+
+| テーブル名 | 行数 | サイズ | 用途 |
+|---|---|---|---|
+| 42_P003_history | **106,764,454（約1億行）** | **32,872MB（約32GB）** 🚨 | P003取込履歴 |
+| 41_P001_history | 14,875,312 | 27,982MB | P001取込履歴 |
+| 41_P001 | 12,471,014 | 17,833MB | P001データ |
+| 01_GHPLUM_history | 12,696,321 | 15,716MB | GHPLUM履歴 |
+| 01_GHPLUM | 10,079,651 | 11,721MB | GHPLUMデータ |
+| 02_GHDISCOUNTM | 14,493,212 | 6,798MB | 割引マスタ |
+| 42_P003 | 2,606,064 | 459MB | P003データ（COUNT実行時間約6秒） |
+| 82_ESLDATA | 2,464,479 | 1,393MB | ESLデータ |
+| ESLDATA | 6,334,115 | 851MB | ESLデータ（旧？） |
+| **Replica_Kasumi 合計** | - | **約120,723MB（約118GB）** 🚨 | - |
+
+**DB別サイズ:**
+
+| DB名 | サイズ |
+|---|---|
+| Replica_Kasumi | **118GB** 🚨 |
+| M_KSM | 38.9MB |
+| T_KSM | 19.1MB |
+| Batch_Kasumi | 8.0MB |
+
+### 取込状況テーブル（直近の取込結果）
+
+| 日時 | StoreCode | Class | TableName | FileName |
+|---|---|---|---|---|
+| 2026-03-11 02:06 | 343 | POS Server | PLUマスタ・特売マスタ | ItemMaster_*.csv / SpecialPriceKsmMaster_*.csv |
+| 2026-03-11 01:53 | 218 | POS Server | PLUマスタ・特売マスタ | 同上 |
+| 2026-03-11 01:54 | 253 | POS Server | PLUマスタ・特売マスタ | 同上 |
+| 2026-03-10 | 218 | ESL | 棚札売価情報 | ESLDATA.TXT |
+
+**⚠️ SH（P003）の取込状況レコードは存在しない**
+→ 取込状況への書き込み前にタイムアウトしていることを示す
+
+### VPN 接続状態
+
+| Tunnel | IP | 状態 | 最終変更 |
+|---|---|---|---|
+| T1 | 3.115.250.166 | **UP** ✅ | 2026-02-25 |
+| T2 | 18.178.240.88 | **DOWN** 🔴 | **2026-02-24 01:26（約2.5週間）** |
+
