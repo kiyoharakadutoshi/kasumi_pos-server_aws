@@ -846,3 +846,56 @@ T1は UP しているため S2S VPN自体は生きている。
 
 **要確認: import-pos-master-sh が実際に何をしているか（DB書き込みか読み込みか）**
 
+
+---
+
+## [F] Logs Insights 詳細調査（2026-03-11）
+
+### [F]-5 CloudWatch Logs Insights 結果（import-pos-master-sh）
+
+**DB接続ログが確認できた（DB接続は成功している）:**
+
+| 日時（JST） | メッセージ |
+|---|---|
+| 2026-03-10 13:11:07 | `getConnection(Line_35)_secretKey: stg/Replica_Kasumi` |
+| 2026-03-10 13:11:09 | `getConnection(Line_35)_secretKey: stg/Replica_Kasumi` |
+| 2026-03-10 13:11:09 | `ENGINE=InnoDB ... COMMENT = '棚番情報_TMP'` |
+| 2026-03-09 13:11:07 | `getConnection(Line_35)_secretKey: stg/Replica_Kasumi` |
+| 2026-03-09 13:11:09 | `ENGINE=InnoDB ... COMMENT = '棚番情報_TMP'` |
+| 2026-03-08 13:11:06 | `getConnection(Line_35)_secretKey: stg/Replica_Kasumi` |
+| 2026-03-08 13:11:09 | `ENGINE=InnoDB ... COMMENT = '棚番情報_TMP'` |
+| **2026-03-08 13:25:36** | `getConnection(Line_35)_secretKey: stg/Replica_Kasumi` ← **成功時の最終DB接続** |
+
+**重要な発見:**
+1. **DB接続は成功している**（CloudWatch接続数が0に見えたのは計測タイミングの問題）
+2. 03-08 成功時: 13:11開始 → 13:25:36に最終getConnection → 13:25:37完了（約14分で完了）
+3. 03-10 失敗時: 13:11開始 → 13:11:09に最終ログ → 13:26:05タイムアウト（15分）
+4. **03-10 は 13:11:09 以降のログが一切なし** → 13:11:09直後に処理がハング
+
+**`棚番情報_TMP` テーブルのCREATE文が最後のログ** → TMP テーブル作成後の処理（INSERT等）でハング
+
+---
+
+### 🎯 障害① 最終確定原因（確定）
+
+**`棚番情報_TMP` テーブルへのDELETE/INSERT処理中にDBがハング**
+
+| 項目 | 内容 |
+|---|---|
+| DB接続自体 | 成功 ✅ |
+| TMP テーブル CREATE | 成功 ✅ |
+| その後の処理（INSERT/LOAD等） | **13:11:09以降ログなし → ハング** |
+| タイムアウト | 900秒後（13:26:05）に強制終了 |
+| 03-08との差異 | 03-08は13:25まで正常ログあり → 途中まで正常進行 |
+
+**推定メカニズム:**
+- 棚番情報_TMPへの大量INSERT中にDBロックが発生
+- または前回実行の不完全なトランザクションが残存しロック待ち
+- 03-09も同日FAILEDのため2日連続でTMP処理がスタック状態
+
+**対応方法:**
+1. Aurora に直接接続して `SHOW PROCESSLIST` / `SHOW ENGINE INNODB STATUS` 確認
+2. 前回の不完全トランザクションがあれば `KILL <process_id>` で解放
+3. `棚番情報_TMP` テーブルの状態確認（ロック・行数）
+4. その後 `import-pos-master-sh` を手動再実行
+
