@@ -899,3 +899,65 @@ T1は UP しているため S2S VPN自体は生きている。
 3. `棚番情報_TMP` テーブルの状態確認（ロック・行数）
 4. その後 `import-pos-master-sh` を手動再実行
 
+
+---
+
+## [G] Aurora DB直接調査（2026-03-11）
+
+### PROCESSLIST 分析
+
+| 接続元 | DB | 接続数 | 最長Sleep |
+|---|---|---|---|
+| 10.239.2.4（Bastion） | Replica_Kasumi | 3 | 486秒 |
+| 10.239.2.195（web-be） | Replica_Kasumi | 多数 | **1597秒** 🔴 |
+| 10.239.2.195（web-be） | Batch_Kasumi | 多数 | **1246秒** 🔴 |
+| 10.239.2.193（giftcard） | M_KSM / T_KSM | 複数 | 106秒 |
+
+web-beからのコネクションが大量にSleep状態（最長26分）→ コネクションプールが解放されていない。
+
+### INNODB_TRX: 空（未完了トランザクションなし）✅
+
+### 棚番情報_TMP: Replica_Kasumiに存在しない
+
+→ Logs Insightsで見えた `ENGINE=InnoDB COMMENT='棚番情報_TMP'` はCREATE文のログだが、実際には作成されていない or すぐDROPされている。
+
+### TMPテーブル一覧
+
+- Batch_KasumiにTMPテーブルなし
+- INFORMATION_SCHEMA.TABLESにTMPテーブルあり（別DB）:
+  - `11_ItemMaster_TMP_XXX` / `MST_11_ItemMaster_TMP_XXX` 系（店舗番号付き）
+
+### Replica_Kasumi テーブル（57テーブル）
+
+注目テーブル:
+- `42_P003` / `42_P003_history` → SH取込先（P003.csv）
+- `ESLDATA` / `ExportedELSData` / `イシダ_売価変更データファイル` → ESL関連
+- `82_ESLDATA` → ESLデータ
+- `取込状況` → 取込管理テーブル
+- `ProcedureLog` → 処理ログ
+
+### DBサイズ
+
+| DB | サイズ |
+|---|---|
+| Replica_Kasumi | **120,723 MB（約118GB）** 🚨 |
+| M_KSM | 38.9 MB |
+| T_KSM | 19.1 MB |
+| Batch_Kasumi | 8.0 MB |
+
+**Replica_Kasumi が 118GB は非常に大きい。Aurora r5.2xlarge の上限に近づいている可能性あり。**
+
+---
+
+### 🎯 障害① 再確定
+
+**`棚番情報_TMP` は存在しない → CREATE → 即DROP の設計（処理後にDROPしている）**
+
+実際の失敗原因は `42_P003` または `取込状況` テーブルへの大量INSERT/UPDATE処理が途中でハング。
+Replica_Kasumi が **118GB** という巨大サイズのため、INSERT処理に時間がかかりすぎてタイムアウト。
+
+**次確認事項:**
+- `42_P003` のレコード数・サイズ
+- `取込状況` の最新レコード
+- `ProcedureLog` の直近エラー
+
