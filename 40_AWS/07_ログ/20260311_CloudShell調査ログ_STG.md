@@ -1,0 +1,530 @@
+# CloudShell調査ログ 2026-03-11（STG）
+
+| 項目 | 内容 |
+|---|---|
+| 調査日 | 2026-03-11 |
+| 調査者 | 清原 |
+| AWSアカウント | 750735758916（STG） |
+| リージョン | ap-northeast-1 |
+| 目的 | 未調査・不明点の全面洗い出し（EC2/ALB/ECS/RDS/Lambda/EventBridge/IAM/S3/Transfer/Network） |
+
+---
+
+## [1] EC2 / ALB 詳細調査
+
+### [1]-1 EC2インスタンス詳細
+
+| InstanceId | Name | State | Type | PrivateIP | PublicIP | 起動日 | IAM Profile |
+|---|---|---|---|---|---|---|---|
+| i-0bd9a4db1b74b5a69 | ksm-posstg-ec2-instance-bastion | running | **t3.xlarge** | 10.239.2.4 | 46.51.249.130 | 2025-07-31 | ksm-posstg-iam-ip |
+| i-06a74666e851e4d12 | ksm-posstg-ec2-instance-web-be | running | t3.medium | 10.239.2.195 | None | 2025-09-17 | posstg-role-ec2-web-be |
+| i-0fa4cf3cf5c1a8864 | ksm-posstg-ec2-instance-web-fe | running | t3.medium | 10.239.2.253 | None | 2025-09-17 | posstg-role-ec2-web-fe |
+| i-0f8ededc7ae313cbe | ksm-posstg-ec2-instance-giftcard | running | t2.large | 10.239.2.193 | None | 2025-11-26 | **posstg-role-ec2-web-be（web-beと同じ！）** |
+
+**🚨 新発見: giftcard が web-be と同じ IAMプロファイル を使用**
+→ giftcard専用ロール(`posstg-role-ec2-giftcard`)を作成すべき。S3FullAccess/SecretsManagerReadWriteがgiftcardに不要な権限を与えている可能性。
+
+**🚨 新発見: bastionが t3.xlarge（4vCPU/16GiB）**
+→ PRDのbastion(t3.medium)と比較して過剰スペック。踏み台用途であれば t3.micro/small で十分。コスト改善余地あり。
+
+---
+
+### [1]-2 web-be セキュリティグループ
+
+`--filters "Name=tag:Name,Values=*web-be*"` でSGが取得できず（タグ未設定）。
+`sg-02a3156bfb0ac0046`（ksm-posstg-vpc-sg-ec2-web-be）がweb-beのSG（インバウンド4件 / アウトバウンド1件）
+
+---
+
+### [1]-3 ALB一覧・リスナー
+
+| ALB名 | スキーム | 状態 |
+|---|---|---|
+| ksm-posstg-alb-web-fe | **internet-facing** 🔴 | active |
+| ksm-posstg-alb-api-be | **internet-facing** 🔴 | active |
+
+両ALBとも **internet-facing のまま（改修指示書No.018 未実施）**
+
+**リスナー構成:**
+- web-fe: Port80(HTTP→redirect) / Port443(HTTPS→forward) ✅ HTTPSリダイレクト設定済み
+- api-be: Port80(HTTP→redirect) / Port443(HTTPS→forward) ✅ HTTPSリダイレクト設定済み
+
+---
+
+### [1]-4 ターゲットグループ・ヘルス
+
+| TG名 | ターゲット | ヘルス |
+|---|---|---|
+| alb-target-be | i-06a74666e851e4d12 (web-be) | **healthy** ✅ |
+| alb-target-fe | i-0fa4cf3cf5c1a8864 (web-fe) | **healthy** ✅ |
+
+---
+
+## [2] ECS 詳細調査
+
+### [2]-1 ECSクラスター
+
+| クラスター名 | 状態 | 稼働タスク | サービス | コンテナインスタンス |
+|---|---|---|---|---|
+| ksm-posstg-ecs-cluster | ACTIVE | **0** | **0** | **0** |
+
+**ECSクラスターは「器のみ」で完全に空。Fargate/EC2タスクなし。**
+
+---
+
+### [2]-2 ECSサービス
+
+サービスなし（空）
+
+---
+
+### [2]-3 タスク定義（最新リビジョン）
+
+**有効なタスク定義4件:**
+
+| タスク定義名 | 最新リビジョン |
+|---|---|
+| ksm-posstg-task-definition-oc-export-data | :2 |
+| ksm-posstg-task-definition-oc-import-data | :3 |
+| ksm-posstg-task-definition-sg-export-data | :6 |
+| ksm-posstg-task-definition-sg-import-data | :7 |
+
+**🔍 不明点:** `None` が11件返却 → 古いリビジョンのみでアクティブなタスク定義ファミリーが削除済みか、名前付けが異なる可能性。要追加調査。
+
+---
+
+### [2]-4 ECRリポジトリ イメージ状況
+
+| リポジトリ名 | イメージ数 | 最新push日 | 備考 |
+|---|---|---|---|
+| ksm-posstg-ecr-repository-ecs-import-db-master-sg | 6 | 2025-08-02 | STG独自 |
+| ksm-posstg-ecr-web-fe | **0** | None | 🔴 空・未使用（削除候補） |
+| ksm-posstg-ecr-repository-ecs-import-db-master-oc | 6 | 2025-08-02 | STG独自 |
+| ksm-posstg-ecr-oc-export-data | 9 | 2025-07-31 | ✅ |
+| ksm-posstg-ecr-oc-import-data | 56 | 2025-08-18 | ✅ |
+| ksm-posstg-ecr-web-be | **0** | None | 🔴 空・未使用（削除候補） |
+| ksm-posstg-ecs-sg-export-data | 100+ | 2025-12-24 | ✅ 最新 |
+| ksm-posstg-ecs-sg-import-data | 32 | 2025-08-20 | ✅ |
+
+**🚨 ksm-posstg-ecr-web-fe / web-be: イメージ0件。未使用確定 → 削除推奨**
+
+---
+
+## [3] RDS / Aurora 詳細調査
+
+### [3]-1 RDSクラスター詳細
+
+| クラスター名 | 状態 | エンジン | バージョン | MultiAZ | バックアップ保持 | バックアップウィンドウ | メンテナンスウィンドウ | 削除保護 | 暗号化 |
+|---|---|---|---|---|---|---|---|---|---|
+| ksm-posstg-db-cluster | available | aurora-mysql | 8.0.mysql_aurora.3.08.2 | **True** | **1日** 🟡 | 15:00-15:30 UTC | sat:15:30-16:00 UTC | True ✅ | True ✅ |
+| ksm-posstg-db-cluster-replica | available | aurora-mysql | 8.0.mysql_aurora.3.08.2 | **True** | **1日** 🟡 | 15:00-15:30 UTC | sat:15:30-16:00 UTC | True ✅ | True ✅ |
+
+**🟡 バックアップ保持期間1日 → 前回サマリー記載の通り（改修依頼対象）。推奨は7日以上。**
+**✅ 新発見: MultiAZ=True → 以前のサマリー(False)から変更されている可能性。要確認。**
+
+---
+
+### [3]-2 RDSインスタンス詳細
+
+| インスタンス名 | クラス | 状態 | AZ | 公開アクセス | 自動マイナーバージョン | 監視間隔 | Performance Insights |
+|---|---|---|---|---|---|---|---|
+| ksm-posstg-db-instance-1 | db.r5.2xlarge | available | 1c | False ✅ | **False** 🟡 | 60秒 | **True** ✅ |
+| ksm-posstg-db-instance-1-replica | db.t3.medium | available | 1a | False ✅ | **False** 🟡 | 60秒 | **False** 🟡 |
+| ksm-posstg-db-instance-2 | db.r5.2xlarge | available | 1a | False ✅ | **False** 🟡 | 60秒 | **True** ✅ |
+| ksm-posstg-db-instance-2-replica | db.t3.medium | available | 1c | False ✅ | **False** 🟡 | 60秒 | **False** 🟡 |
+
+**🚨 新発見: インスタンスが4台（前回サマリーは2台と記載）**
+→ ksm-posstg-db-cluster（instance-1 + instance-2）
+→ ksm-posstg-db-cluster-replica（instance-1-replica + instance-2-replica）
+→ 2クラスター × 各2台（1c/1aにそれぞれ配置）= 計4台
+
+**🟡 AutoMinorVersionUpgrade: 全4台False → セキュリティパッチ自動適用なし**
+**🟡 Performance Insights: replicaインスタンスのみ無効**
+
+---
+
+### [3]-3 RDSスナップショット
+
+| スナップショット | 作成日 | 種別 | 状態 |
+|---|---|---|---|
+| ksm-posstg-rds-replica-snapshot-* | 2025-06-19 | manual | available |
+| rds:ksm-posstg-db-cluster-replica-2026-03-10-15-06 | 2026-03-10 | automated | available |
+| rds:ksm-posstg-db-cluster-2026-03-10-15-08 | 2026-03-10 | automated | available |
+
+自動スナップショットは正常に取得されている。手動スナップショットは2025-06-19の1件のみ。
+
+---
+
+### [3]-4 RDSパラメータグループ
+
+| グループ名 | ファミリー |
+|---|---|
+| default.aurora-mysql8.0 | aurora-mysql8.0 |
+| ksm-posstg-db-cluster-pg | aurora-mysql8.0 |
+| ksm-posstg-db-cluster-pg-replica | aurora-mysql8.0 |
+| ksm-posstg-db-replica-cluster-pg | aurora-mysql8.0 |
+
+カスタムPGが3件。`ksm-posstg-db-cluster-pg-replica` と `ksm-posstg-db-replica-cluster-pg` の2つが類似名で存在 → どちらが実際に使われているか要確認。
+
+---
+
+### [3]-5 Secrets Manager
+
+| シークレット名 | 最終更新 | 最終アクセス | ローテーション |
+|---|---|---|---|
+| ksm-posstg-sm-sftp | 2025-06-12 | 2026-03-09 | **無効** 🔴 |
+| ksm-posstg-sm-db | 2025-06-12 | 2026-03-09 | **無効** 🔴 |
+| ksm-posstg-sm-db-replica | 2025-06-19 | 2026-03-09 | **無効** 🔴 |
+| stg/Mail_Kasumi | 2025-07-29 | 2026-03-09 | **無効** 🔴 |
+| stg/Batch_Kasumi | 2025-07-29 | 2026-03-09 | **無効** 🔴 |
+| stg/Replica_Kasumi | 2025-08-28 | 2026-03-10 | **無効** 🔴 |
+| stg/Replica_Kasumi_RO | 2025-08-14 | 2026-03-10 | **無効** 🔴 |
+
+**🔴 全7シークレット ローテーション無効**
+→ PRDと同様の問題。DB認証情報・SFTP認証情報が自動ローテーションなし（改修依頼対象）。
+
+---
+
+## [4] Lambda / EventBridge / Step Functions 詳細調査
+
+### [4]-1 Lambda関数一覧（23本）
+
+**ksm-pos系プロジェクト関数（20本）:**
+
+| 関数名 | Runtime | Memory | Timeout | 最終更新 |
+|---|---|---|---|---|
+| ksm-posstg-lmd-function-create-file-end-for-night | java17 | 512 | 300 | 2025-11-07 |
+| ksm-posstg-lmd-function-get-sync-store | java17 | 1024 | 900 | 2025-11-07 |
+| ksm-posstg-lmd-function-oc-import-data | java17 | 2048 | 900 | **2026-02-12** |
+| ksm-posstg-lmd-function-unzip-file | java17 | 1024 | 900 | 2025-11-07 |
+| ksm-posstg-lmd-import-pos-master-sh | java17 | 1024 | 900 | **2026-02-12** |
+| ksm-posstg-lmd-function-sent-txt-file | java17 | 1024 | 900 | 2025-08-28 |
+| ksm-posstg-lmd-function-backup-file | java17 | 1024 | 900 | 2025-08-28 |
+| ksm-posstg-lmd-function-sg-import-data | java17 | 2048 | 900 | **2026-02-12** |
+| ksm-posstg-lmd-function-split-txt-by-sent-time | java17 | 1024 | 900 | 2025-11-17 |
+| ksm-posstg-lmd-function-create-file-end | java17 | 1024 | 900 | 2025-08-28 |
+| ksm-posstg-lmd-function-split-csv | java17 | 1024 | 900 | **2026-02-12** |
+| ksm-posstg-lmd-export-polling | python3.13 | 128 | 300 | 2025-08-21 |
+| ksm-posstg-lmd-zipfile-polling | python3.13 | 128 | 300 | 2025-08-13 |
+| ksm-posstg-lmd-function-copy-backup-sg | java17 | 512 | **15** 🟡 | **2026-02-13** |
+| ksm-posstg-lmd-function-sent-email | java17 | 1024 | 900 | **2026-02-27** |
+| ksm-posstg-lmd-trigger-sqs-export-sg | python3.13 | 128 | 300 | **2026-01-14** |
+| ksm-posstg-lmd-function-itemmaster-import-monitoring | java17 | 512 | 900 | 2025-08-28 |
+| ksm-posstg-lmd-function-p001-import-monitoring | java17 | 512 | 900 | **2026-01-23** |
+| ksm-posstg-lmd-trigger-sqs-import-sg | python3.13 | 128 | 300 | **2026-01-14** |
+| ksm-posstg-lmd-function-check-price | java17 | 512 | 900 | **2026-03-06** |
+
+**AWSシステム自動生成関数（3本）:**
+- aws-quicksetup-lifecycle-LA-89e4k (python3.11)
+- baseline-overrides-a4fd-v4t88 (python3.11)
+- delete-name-tags-ap-northeast-1-a4fd-v4t88 (python3.11)
+
+**PRD(21本) との差分 2本 = `ksm-posstg-lmd-function-p001-import-monitoring` + `ksm-posstg-lmd-function-check-price`**
+→ check-price は STG有効（PRDはDISABLED状態に対応）、p001-import-monitoring は価格監視機能
+
+---
+
+### [4]-2 Lambda 環境変数キー（主要関数のみ抜粋）
+
+| 関数名 | 環境変数キー |
+|---|---|
+| create-file-end-for-night | DB_BATCH, DB_KASUMI |
+| oc/sg-import-data | DB_BATCH, DB_KASUMI |
+| split-txt-by-sent-time | ROLE_ARN, TARGET_ARN, FIRST_NAME_SCHEDULE |
+| sent-email | SNS_TOPIC_ARN, CHANNEL_CONFIG, MAIL_CONFIG, TEAMS_CHANNEL_EMAIL, SNS_TOPIC_ARN_CHECK_PRICE, MAIL_CONFIG_CHECK_PRICE |
+| copy-backup-sg | DEST_PREFIX, DEST_BUCKET |
+| check-price | ROLE_ARN, TARGET_ARN, FIRST_NAME_SCHEDULE, DB_KASUMI, DEST_PREFIX, DEST_BUCKET |
+| p001-import-monitoring | DB_KASUMI, DATA_SOURCE |
+| export-polling / zipfile-polling | SF_ARN |
+| trigger-sqs-export/import-sg | QUEUE_URL |
+
+**🔍 sent-email に `TEAMS_CHANNEL_EMAIL` がある → Microsoft Teamsチャンネルへメール転送している可能性**
+
+---
+
+### [4]-3 EventBridgeルール（13本）
+
+| ルール名 | 状態 | トリガー | 備考 |
+|---|---|---|---|
+| ksm-posstg-eb-rule-check-price | **ENABLED** | S3 Object Created (pos-master/ishida/) | STG独自・PRDはDISABLED |
+| ksm-posstg-eb-rule-copy-backup-sg | ENABLED | S3 Object Created (pos-original/sg/backup/) | ✅ |
+| ksm-posstg-eb-rule-create-txt-file-sg | ENABLED | S3 Object Created (*.ENDEXPORT) | ✅ |
+| ksm-posstg-eb-rule-create-txt-file-sg-9233 | **DISABLED** 🔴 | S3 (9233/*.ENDEXPORT) | 残骸→削除対象 |
+| ksm-posstg-eb-rule-itemmaster-import-monitoring | ENABLED | cron(30 20 * * ? *) = JST 05:30 | ✅ |
+| ksm-posstg-eb-rule-night-export-sg | ENABLED | cron(30 20 * * ? *) = JST 05:30 | ✅ |
+| ksm-posstg-eb-rule-night-export-sg-9233 | **DISABLED** 🔴 | cron(30 20 * * ? *) | 残骸→削除対象 |
+| ksm-posstg-eb-rule-p001-import-monitoring | ENABLED | cron(00 15 * * ? *) = JST 00:00 | ✅ |
+| ksm-posstg-eb-rule-receive-pos-master-oc | ENABLED | S3 (*.end / *.END) | ✅ |
+| ksm-posstg-eb-rule-receive-pos-master-sg | ENABLED | S3 (*.zip / *.ZIP) | ✅ |
+| ksm-posstg-eb-rule-receive-pos-master-sg-9233 | **DISABLED** 🔴 | S3 (*9233_*.zip) | 残骸→削除対象 |
+| ksm-posstg-eb-rule-receive-pos-master-sh | ENABLED | S3 (*.end / *.END) | ✅ |
+| ksm-posstg-eb-rule-receive-splited-pos-master-oc | ENABLED | S3 (*.ENDIMPORT) | ✅ |
+
+**🚨 -9233系 DISABLED 3本 → 引き続き削除待ち（改修依頼No.14）**
+**🆕 新発見: `ksm-posstg-eb-rule-copy-backup-sg` が存在（前回サマリー未記載）**
+
+---
+
+### [4]-4 -9233系ルール詳細
+
+コマンドエラー（`contains` に整数型が入りクエリ失敗）。前回調査ログから内容確認済み。
+
+---
+
+### [4]-5 Step Functions 実行履歴
+
+| SM名 | 直近3件の状態 | 最終実行日 | 備考 |
+|---|---|---|---|
+| sf-sm-create-txt-file-oc | 実行なし | - | OC処理なし |
+| sf-sm-create-txt-file-sg | SUCCEEDED × 3 | 2026-03-10 17:07 | ✅ 正常稼働 |
+| sf-sm-import-pos-master-oc | SUCCEEDED × 3 | 2026-03-10 12:51 | ✅ 正常稼働 |
+| sf-sm-import-pos-master-sh | **FAILED × 2**, SUCCEEDED × 1 | 2026-03-10 13:26 | 🚨 **2日連続FAILED！** |
+| sf-sm-receive-and-import-pos-master-sg | SUCCEEDED × 3 | 2026-03-10 17:06 | ✅ 正常稼働 |
+| sf-sm-receive-pos-master-oc | SUCCEEDED × 3 | 2026-03-10 12:49 | ✅ 正常稼働 |
+| sf-sm-sent-txt-file | **FAILED × 3** | 2026-03-10 14:27 | 🚨 **全件FAILED！** |
+
+**🚨 重大: `sf-sm-import-pos-master-sh` が 2026-03-09・03-10 連続FAILED（約15分で終了）**
+→ SHデータ取込が2日間失敗中。S3に `pos-original/sh/receive/P003.csv` は存在しているが取込失敗している。
+
+**🚨 重大: `sf-sm-sent-txt-file` が全件FAILED**
+→ USMH向けTXTファイル送信が失敗中。Transfer Familyまたはネットワーク（S2S VPN T2 DOWN）の問題の可能性。
+
+---
+
+## [5] IAM 詳細調査
+
+### [5]-1 IAMユーザー一覧・MFA状態
+
+| ユーザー名 | MFA | アクセスキー状態 | 評価 |
+|---|---|---|---|
+| buithephong | **0** 🔴 | Active(2026-02-12) + Inactive(2026-01) | MFA未設定・アクティブキーあり |
+| cfn_user | **0** 🔴 | Inactive(2025-07) のみ | MFA未設定（キー無効化済み） |
+| daisuke.sasaki_s3access | **0** 🔴 | Active(2025-07-28) | MFA未設定・アクティブキーあり |
+| dattv | 1 ✅ | キーなし | ✅ |
+| dattv_cli_deploy | **0** 🔴 | キーなし | MFA未設定（CLI専用なのでOK？） |
+| dev | **0** 🔴 | **Inactive(2025-07-08)** | MFA未設定・キー無効化済み |
+| kiyohara | 3 ✅ | キーなし | ✅ MFA3台 |
+| kiyohara_s3access | **0** 🔴 | **Active × 2**（2025-11-07） | 🚨 アクセスキー2本Active！ |
+| locnt | 1 ✅ | キーなし | ✅ |
+| locnt_cli_deploy | **0** 🔴 | キーなし | MFA未設定 |
+| nangld_admin | 1 ✅ | キーなし | ✅ |
+| nangld_readonly | 1 ✅ | キーなし | ✅ |
+| posusmhstg | 2 ✅ | キーなし | ✅ |
+| pos_stag_vangle_sonln | 1 ✅ | キーなし | ✅ |
+| pos_stag_vangle_tuannv | 1 ✅ | キーなし | ✅ |
+
+**🚨 kiyohara_s3access: アクセスキー2本 同時Active**
+→ ローテーション途中で古いキーを無効化し忘れた可能性。要整理。
+
+**🔴 MFA未設定ユーザー（アクティブキーあり）:**
+- buithephong（Active key）
+- daisuke.sasaki_s3access（Active key）
+- kiyohara_s3access（Active key × 2）
+
+---
+
+### [5]-2 IAMユーザー 'dev' の権限
+
+| 項目 | 内容 |
+|---|---|
+| インラインポリシー | なし |
+| マネージドポリシー | **AmazonEC2ContainerRegistryFullAccess** のみ |
+| グループ | なし |
+| アクセスキー | **Inactive（2025-07-08作成）** |
+
+**🔍 用途判明: dev = ECRへのフルアクセス権限を持つ開発用アカウント**
+→ CI/CDパイプライン（GitHub Actions等）からECRにDockerイメージをpushするための専用ユーザーと推定。
+→ アクセスキーが無効化されているため現在は未使用状態。削除候補。
+
+---
+
+### [5]-3 IAMユーザー 'locnt' の権限
+
+| ポリシー | 種別 |
+|---|---|
+| com-posstg-iam-policy-mfa | カスタム（MFA強制用） |
+| AmazonEC2FullAccess | AWS管理 |
+| AmazonRDSFullAccess | AWS管理 |
+| ReadOnlyAccess | AWS管理 |
+| AmazonECS_FullAccess | AWS管理 |
+| CloudWatchFullAccess | AWS管理 |
+| AWSStepFunctionsFullAccess | AWS管理 |
+| AmazonS3FullAccess | AWS管理 |
+| AWSTransferFullAccess | AWS管理 |
+| AWSLambda_FullAccess | AWS管理 |
+
+**グループ: KsmPosIamMfa（2026-03-04作成）**
+
+**🚨 `locnt` は実質的に管理者相当の権限を持つ広範囲ユーザー**
+→ EC2/RDS/ECS/S3/Lambda/Transfer/StepFunctions全て Full Access
+→ 最小権限の原則に反する。必要な権限に絞り込むべき（改修依頼追加候補）
+
+---
+
+### [5]-4 IAMロール（主要カスタムロール）
+
+**27ロール確認。主な特記事項:**
+- `posstg-role-ec2-web-be` / `posstg-role-ec2-web-fe`（2025-09-17作成）: web-be/fe用。giftcardも web-be を流用中 🔴
+- `StepFunctions-posstg-lmd-function-merge-export-fi-role-*` / `send-master-fil-role-*`: 古いSF関連ロール（現行SMに対応するロールかどうか要確認）
+- `Amazon_EventBridge_Invoke_Lambda_*` が2本（192543660: 2026-02-26、20916940: 2026-02-13）: 比較的最近作成。check-price機能追加時のロールと推定。
+
+---
+
+### [5]-5 パスワードポリシー
+
+**🔴 パスワードポリシー未設定（改修依頼No.6 未実施のまま）**
+
+---
+
+### [5]-6 セキュリティサービス状態
+
+| サービス | 状態 | 備考 |
+|---|---|---|
+| GuardDuty | 🔴 **無効**（Detector IDなし） | 改修依頼No.3 未実施 |
+| Security Hub | 🔴 **無効** | PRD/STG差異 |
+| CloudTrail | 🔴 **無効**（trailList空） | 改修依頼No.4 未実施 |
+
+---
+
+## [6] S3 / Transfer Family 詳細調査
+
+### [6]-1 S3バケット詳細（Section 5ドキュメントより抜粋）
+
+stg-ignica-ksm バケット内容: **77,727オブジェクト**
+
+主要フォルダ:
+- `pos-original/sg/receive/` → 毎日 JST 01:40頃 に SGデータ受信（2025-12-23 から継続中）
+  - 09060店舗: 毎日300KB程度
+  - 09149店舗: 毎日 669〜1,396 bytes（2026-01-09以降小さくなった）
+  - 09299店舗: 毎日 32〜34KB（2026-01-14以降）
+  - 09156店舗: 2026-01-06の1件のみ（テスト？）
+- `pos-original/sg/log/` → ForcePriceMaster/ItemMaster/SpecialPriceKsmMasterのログ大量蓄積
+- `pos-original/sh/receive/` → P003.csv（2026-03-10 13:10 最新） + P003.end
+- `pos-original/sh/backup/` → P003.csv が毎日 JST 22:11 頃にバックアップ（〜80MB）
+
+**🚨 sh/receive/P003.end が 2026-03-10 13:11に存在 → sf-sm-import-pos-master-sh が同日 13:11〜13:26 FAILED**
+→ ファイルは届いているが取込処理で失敗している。Lambdaのエラー内容を詳細調査すべき。
+
+---
+
+### [6]-3 Transfer Family サーバー詳細
+
+| サーバーID | 状態 | 認証方式 | エンドポイント | CFn管理 |
+|---|---|---|---|---|
+| s-7c808e1040dd437da (oc) | **ONLINE** ✅ | SERVICE_MANAGED | VPC | ✅ ksm-posstg-transfer |
+| s-a69b3df467bc43b99 (sh) | **ONLINE** ✅ | SERVICE_MANAGED | VPC | ❌ タグなし（手動追加） |
+| s-d5d0d941bfb04a72b (sg) | **ONLINE** ✅ | SERVICE_MANAGED | VPC | ✅ ksm-posstg-transfer |
+
+**🟡 sh サーバーのみ CloudFormation管理外（手動追加）→ 前回調査から変化なし**
+
+---
+
+### [6]-4 Transfer Family ユーザー
+
+| サーバー | ユーザー | HomeDirectory | ロール |
+|---|---|---|---|
+| oc (s-7c808e1040dd437da) | ksm-posstg-tf-user-oc | **None** 🟡 | ksm-posstg-iam-role-tf |
+| sh (s-a69b3df467bc43b99) | ksm-posstg-tf-user-sh | **None** 🟡 | ksm-posstg-iam-role-tf |
+| sg (s-d5d0d941bfb04a72b) | ksm-posstg-tf-user-sg | **None** 🟡 | ksm-posstg-iam-role-tf |
+
+**🟡 HomeDirectory が全サーバーでNone → logical home directory mapping またはrole設定で制御されている可能性。PRDと同様であれば問題なし。**
+
+---
+
+## [7] ネットワーク詳細調査
+
+### [7]-1 VPC・サブネット
+
+VPC: vpc-09bc4a6da904ace31 / 10.239.0.0/16（変化なし）
+
+サブネット8本の詳細確認:
+
+| サブネット名 | CIDR | AZ | MapPublicIP |
+|---|---|---|---|
+| ksm-posstg-vpc-subnet-public-1a | 10.239.2.0/26 | 1a | **False** |
+| ksm-posstg-vpc-subnet-public-1c | 10.239.3.0/26 | 1c | **False** |
+| ksm-posstg-vpc-subnet-private-1a | 10.239.2.128/25 | 1a | False |
+| ksm-posstg-vpc-subnet-private-1c | 10.239.3.128/25 | 1c | False |
+| ksm-posstg-vpc-subnet-protected-1a | 10.239.2.64/26 | 1a | False |
+| ksm-posstg-vpc-subnet-protected-1c | 10.239.3.64/26 | 1c | False |
+| com-posstg-vpc-subnet-common-1a | 10.239.0.0/26 | 1a | False |
+| com-posstg-vpc-subnet-common-1c | 10.239.1.0/26 | 1c | False |
+
+**✅ 全サブネット MapPublicIpOnLaunch=False → パブリックサブネットでも自動パブリックIP割り当てなし（正常）**
+
+---
+
+### [7]-2 セキュリティグループ（24本）
+
+主な問題SG:
+
+| SG名 | インバウンド数 | 備考 |
+|---|---|---|
+| ksm-posstg-vpc-sg-ec2-web-be | **4** 🔴 | 前回調査でALL(-1)全許可確認済み |
+| ksm-posstg-vpc-sg-ep-tf | 1 | Bastionからの許可ルール残存（改修No.13） |
+| ksm-posstg-temp | 0/0 | 完全に空のSG → 削除候補 |
+| ksm-posstg-vpc-sg-ecs | 0 | インバウンドなし（ECS用） |
+
+**🆕 新発見: `ksm-posstg-temp` という名前のSGが存在（ルールゼロ）→ 削除候補**
+
+---
+
+### [7]-3 Client VPN
+
+**結果なし（空）→ Client VPNエンドポイントはSTGアカウントに存在しない**
+→ 前回サマリー「AWS Client VPN（個人PC）→ STG Bastion 10.239.2.4 に接続」は、STGアカウント内にVPNエンドポイントがあるのではなく、**PRDアカウント側のVPNエンドポイント経由でSTGにアクセスする構成**の可能性。要確認。
+
+---
+
+### [7]-4 Site-to-Site VPN / CGW
+
+**Customer Gateway 2本を確認（前回調査から追加発見）:**
+
+| CGW名 | IP | ASN |
+|---|---|---|
+| pos-stag-cgw-site-to-site-vpn-test-er605 | 14.224.146.153 | 65000 |
+| **pos-stag-cgw-site-to-site-vpn-poc** | **222.252.99.5** | 65000 | 🆕 |
+
+**🚨 新発見: `pos-stag-cgw-site-to-site-vpn-poc`（IP: 222.252.99.5）が存在**
+→ 名前に"poc"が付いており、VPN接続は`pos-stag-cgw-site-to-site-vpn-test-er605`のみ。
+→ 前回調査で言及されていた「Vangle CGW残骸（改修依頼No.12）」がこれ。222.252.99.5はVangleのIPと推定。
+
+**VPN接続状態:**
+- vpn-0840f46eaf8de7e79: State=available / T1=**UP** ✅ / T2=**DOWN** 🔴（前回から変化なし）
+
+---
+
+### [7]-5 VPCエンドポイント（11本）
+
+| EP名 | 種別 | サービス |
+|---|---|---|
+| com-posstg-vpc-ep-s3 | Gateway | S3 |
+| com-posstg-vpc-ep-cw-logs | Interface | CloudWatch Logs |
+| com-posstg-vpc-ep-cw-metrics | Interface | CloudWatch Metrics |
+| com-posstg-vpc-ep-kms | Interface | KMS |
+| com-posstg-vpc-ep-sm | Interface | Secrets Manager |
+| com-posstg-vpc-ep-s3-for-rds | Interface | S3 |
+| com-posstg-vpc-ep-ecr-api | Interface | ECR API |
+| com-posstg-vpc-ep-ecr-dkr | Interface | ECR DKR |
+| (名前なし) × 3 | Interface | Transfer Family（oc/sg/sh） |
+
+**✅ 主要サービスエンドポイントは整備されている**
+**🟡 Transfer Family 3本のエンドポイントに名前タグなし**
+
+---
+
+### [7]-6 NAT GW / Route Tables
+
+- NAT GW: nat-0bdcfc7911587eb4c / 52.196.152.170 / 1aのパブリックサブネット（1本のみ）
+- Route Tables: 9本（private-1a: 5ルート、private-1c: 4ルート）
+
+**🟡 NAT GWが1aのみ → 1cの可用性はNAT GW障害時に影響あり（PRDと同様の構成）**
+
+---
+
+## チャット別索引
+
+| セクション | 取得日 | チャット |
+|---|---|---|
+| [1]-[7] 全セクション | 2026-03-11 | 本チャット（20260311_チャットログ.md） |
+

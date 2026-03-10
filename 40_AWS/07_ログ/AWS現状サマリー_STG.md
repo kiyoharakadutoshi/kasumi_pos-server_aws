@@ -443,3 +443,46 @@ Internet
 - 🔴 web-be SG: ALL(-1)→0.0.0.0/0 全開放（改修依頼No.5）
 - 🔴 ALB×2: internet-facing → **改修指示書No.018でinternal化指示済み（今週中対応予定）**
 - 🟡 web-be IAM権限過剰（S3/SecretsManager Full）
+
+---
+
+## 26. 🚨 緊急対応要 - Step Functions 障害（2026-03-11調査）
+
+| SM名 | 直近状態 | 発生日 | 影響 |
+|---|---|---|---|
+| sf-sm-import-pos-master-sh | 🔴 **FAILED（2日連続）** | 2026-03-09〜03-10 | SHデータ取込が2日間失敗 |
+| sf-sm-sent-txt-file | 🔴 **FAILED（全3件）** | 2026-03-10 | USMH向けTXTファイル送信不可 |
+
+**sf-sm-import-pos-master-sh 調査ポイント:**
+- `pos-original/sh/receive/P003.end`（2026-03-10 13:11）は存在確認 → ファイル受信は正常
+- 取込処理（Lambda: ksm-posstg-lmd-import-pos-master-sh）でエラー → CloudWatch Logsで詳細確認要
+
+**sf-sm-sent-txt-file 調査ポイント:**
+- USMH向けFTP送信処理（sent-txt-file Lambda）が失敗
+- VPN T2 DOWN が影響している可能性
+
+---
+
+## 27. 2026-03-11 調査 - 新規発見・更新事項
+
+### EC2
+- bastion: `t3.xlarge`（4vCPU/16GiB）→ 踏み台用途に対して**過剰スペック**
+- giftcard EC2: IAMプロファイルが `posstg-role-ec2-web-be`（web-beと共用）→ **専用ロール作成推奨**
+
+### RDS
+- インスタンス数: **4台**（db-instance-1/2 + -1-replica/-2-replica）
+- MultiAZ: **True**（2クラスター両方）
+- AutoMinorVersionUpgrade: **全4台 False**（セキュリティパッチ自動未適用 → 改修検討）
+
+### IAM（新規問題）
+- `kiyohara_s3access`: **Active アクセスキー 2本同時存在** → 古いキー削除要
+- `locnt`: EC2/RDS/ECS/S3/Lambda/Transfer/StepFunctions Full Access → **最小権限化推奨**
+- `dev` ユーザー: キー無効化済み・ECRFullAccessのみ → **削除候補**
+
+### ネットワーク
+- Client VPN: **STGアカウントにエンドポイントなし** → 接続経路確認要
+- Vangle CGW残骸（改修No.12）= `pos-stag-cgw-site-to-site-vpn-poc`（IP: 222.252.99.5）正体確認
+
+### 削除候補（新規）
+- `ksm-posstg-temp` SG（ルールゼロ）
+- Transfer Family EP 3本の名前タグ追加推奨
