@@ -711,3 +711,77 @@ T1は UP しているため S2S VPN自体は生きている。
 **VPN T2 DOWN（2026-02-24）のタイミングと障害発生が関連している可能性が高い。**
 ただしT1はUPのため S2S VPN自体は生きている。石田サーバーへの経路が T2 依存だった可能性あり。
 
+
+---
+
+## [D] SG疎通・DB接続設定確認（2026-03-11）
+
+### [D]-1 Lambda-RDS 間 SG ルール
+
+**sg-0c2b1347aaadfdc83 / lambda-rds-1（RDS Proxy自動作成）**
+- Outbound: TCP 3306 → sg-0ee95ce0bfe7c1d19
+
+**sg-0ee95ce0bfe7c1d19 / rds-lambda-1（RDS Proxy自動作成）**
+- Inbound: TCP 3306 ← sg-0c2b1347aaadfdc83
+
+**sg-006e18b25235d3a1d / ksm-posstg-vpc-sg-db**
+- Inbound TCP 3306:
+  - CIDR: 172.21.10.0/24
+  - sg-02865a2ca8164b2e7（For ECS）
+  - sg-01f1bbc2ae66a6591（For EC2 Bastion）
+  - sg-0f39bd8617062491d（for posstg-lmd-function-send-master-file）
+  - sg-07e2f45f6a0f49c24（For Lambda）
+- **⚠️ sg-0c2b1347aaadfdc83（lambda-rds-1）がDB SGのインバウンドに存在しない**
+
+**sg-07e2f45f6a0f49c24 / ksm-posstg-vpc-sg-lmd**
+- Inbound: なし
+- Outbound: ALL 0.0.0.0/0
+
+### [D]-2 import-pos-master-sh Lambda VPC設定
+
+| 項目 | 値 |
+|---|---|
+| SG | sg-0c2b1347aaadfdc83（lambda-rds-1）/ sg-02865a2ca8164b2e7 |
+| Subnet | private-1a / private-1c |
+| DB_BATCH | stg/Batch_Kasumi |
+| DB_KASUMI | stg/Replica_Kasumi |
+
+### [D]-3 他Lambda SGとの比較
+
+| Lambda | SG |
+|---|---|
+| import-pos-master-sh | **sg-0c2b1347aaadfdc83** + sg-02865a2ca8164b2e7 |
+| sg-import-data | **sg-0c2b1347aaadfdc83** + sg-02865a2ca8164b2e7 |
+| oc-import-data | sg-02865a2ca8164b2e7 **のみ**（lambda-rds-1なし） |
+
+### [D]-5 Secrets Manager DB接続先
+
+**stg/Batch_Kasumi:**
+- HOST: ksm-posstg-db-cluster.cluster-cvmomy000wqn.ap-northeast-1.rds.amazonaws.com
+- PORT: 3306 / DB_NAME: Batch_Kasumi / USER: admin
+
+**stg/Replica_Kasumi:**
+- HOST: ksm-posstg-db-cluster.cluster-cvmomy000wqn.ap-northeast-1.rds.amazonaws.com
+- PORT: 3306 / DB_NAME: Replica_Kasumi / USER: admin
+
+**⚠️ 両シークレットとも Write Endpoint（cluster）を参照。Replica_Kasumiが Write Endpoint を参照しているのは設計上の疑問点。**
+
+### [D]-7 Secrets Manager シークレット一覧
+
+- ksm-posstg-sm-sftp / ksm-posstg-sm-db / ksm-posstg-sm-db-replica
+- stg/Mail_Kasumi / stg/Batch_Kasumi / stg/Replica_Kasumi / stg/Replica_Kasumi_RO
+
+**stg/Mail_Kasumi → sent-txt-file の接続先と推測（要確認）**
+
+---
+
+### 🎯 障害① 最終確定原因
+
+**`ksm-posstg-vpc-sg-db`（Aurora本体のSG）のインバウンドに `sg-0c2b1347aaadfdc83（lambda-rds-1）` が許可ルールとして存在しない。**
+
+- lambda-rds-1 → rds-lambda-1 の SG参照ルールは存在する
+- しかし Aurora クラスターに実際にアタッチされているのは `ksm-posstg-vpc-sg-db` であり、rds-lambda-1 ではない可能性が高い
+- 結果: LambdaのアウトバウンドTCP3306がAuroraに到達できずタイムアウト（900秒）
+
+**次の確認: Aurora クラスターに実際にアタッチされているSGが `rds-lambda-1` か `ksm-posstg-vpc-sg-db` かを確認する。**
+
