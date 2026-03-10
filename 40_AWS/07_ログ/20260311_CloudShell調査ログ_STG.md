@@ -1022,3 +1022,199 @@ Replica_Kasumi が **118GB** という巨大サイズのため、INSERT処理に
 - 中期: historyテーブルのパーティション化またはアーカイブ設計
 - 根本: Lambda タイムアウト対策（ECS Fargateへの移行、またはバッチ分割処理）
 
+
+---
+
+## Section I: 未調査・未確認項目の網羅調査（2026-03-11 第2回）
+
+| 項目 | 内容 |
+|---|---|
+| 調査日 | 2026-03-11（第2回） |
+| 調査者 | Luvina（Claude調査） |
+| AWSアカウント | 750735758916（STG） |
+
+---
+
+### [I-1] EC2 インスタンス詳細
+
+```
+bastion  i-0bd9a4db1b74b5a69 t3.xlarge 10.239.2.4  running 2025-07-31 IAM:ksm-posstg-iam-ip
+web-be   i-06a74666e851e4d12 t3.medium 10.239.2.195 running 2025-09-17 IAM:posstg-role-ec2-web-be
+web-fe   i-0fa4cf3cf5c1a8864 t3.medium 10.239.2.253 running 2025-09-17 IAM:posstg-role-ec2-web-fe
+giftcard i-0f8ededc7ae313cbe t2.large  10.239.2.193 running 2025-11-26 IAM:posstg-role-ec2-web-be(web-beと共用) Platform:windows
+```
+
+**所見:** giftcardとweb-beが同一IAMプロファイル共用（既知問題）。web-feは独立プロファイルあり。
+
+---
+
+### [I-2] EBS ボリューム暗号化状況
+
+```
+vol-0543e2e85d267fed3 100GB Encrypted:False bastion（未暗号化・2本目）
+vol-083b97dc7d0eb66a4 100GB Encrypted:True  bastion（暗号化済・メイン）
+vol-0a904fbe22a1466f9 100GB Encrypted:False giftcard
+vol-0d9f3bc937a9e9212  20GB Encrypted:False web-fe
+vol-05550f5152c65b611  20GB Encrypted:False web-be
+```
+
+**所見:** bastionに100GBが2本アタッチ（暗号化済み1本・未暗号化1本）→ 古いボリュームのデタッチ漏れ疑い。giftcard/web-fe/web-beも未暗号化。
+
+---
+
+### [I-3] ACM証明書
+
+```
+ignicapos.com  ISSUED  有効期限: 2026-10-16  RenewalEligibility: ELIGIBLE（自動更新対象）
+```
+
+**所見:** 問題なし。約7ヶ月後まで有効・自動更新設定済み。
+
+---
+
+### [I-4] IAMパスワードポリシー
+
+```
+パスワードポリシー未設定
+```
+→ 改修依頼No.6（未実施継続）
+
+---
+
+### [I-5] IAMユーザー アクセスキー状況
+
+| ユーザー | Activeキー | 作成日 | 問題 |
+|---|---|---|---|
+| buithephong | 1本Active | 2026-02-12 | 最終使用日要確認 |
+| daisuke.sasaki_s3access | 1本Active | 2025-07-28 | 約7.5ヶ月経過 |
+| kiyohara_s3access | **2本Active** | 2025-11-07×2 | 🔴同日作成2本→古い方削除要 |
+| cfn_user | Inactive1本 | 2025-07-04 | 実質無効化済み |
+| dev | Inactive1本 | 2025-07-08 | 削除候補 |
+
+---
+
+### [I-6] SQS キュー詳細
+
+| キュー | メッセージ | 保持 | Visibility | DLQ |
+|---|---|---|---|---|
+| export-queue-sg.fifo | 0 | 4日 | 3600秒 | **未設定** |
+| store-code-queue-sg.fifo | 0 | 4日 | 300秒 | **未設定** |
+
+**所見:** 両キューともDLQ未設定。リトライ上限後にメッセージ消失リスクあり。
+
+---
+
+### [I-7] Route53
+
+```
+（出力なし）→ STGアカウントにホストゾーンなし
+```
+→ PRDアカウントのignicapos.comで一元管理。正常。
+
+---
+
+### [I-8] NAT Gateway
+
+```
+nat-0bdcfc7911587eb4c  available  52.196.152.170  10.239.2.55  subnet-030d02a05fcba055e  posstg-ngw-1a
+```
+→ 1台（AZ1aのみ）。AZ冗長化なし（コスト削減のため意図的と推定）。
+
+---
+
+### [I-9] VPC Flow Logs
+
+```
+（出力なし）→ Flow Logs未設定
+```
+→ 改修依頼No.7（未実施継続）
+
+---
+
+### [I-10] S3バケット バージョニング・暗号化・パブリックアクセス
+
+| バケット | バージョニング | 暗号化 | パブリックブロック |
+|---|---|---|---|
+| dev-ignica-ksm | **None** ⚠️ | AES256 | True |
+| stg-aeon-gift-card | **None** ⚠️ | AES256 | True |
+| stg-ignica-ksm | Enabled | AES256 | True |
+| stg-ignica-ksm-pmlogs | Enabled | AES256 | True |
+| stg-ignica-com-configrecord | Enabled | AES256 | True |
+| aws-quicksetup-* (3本) | Enabled | AES256 | True |
+
+**所見:** 全バケット暗号化・パブリックブロック済み。dev-ignica-ksm（JARファイル置き場）とstg-aeon-gift-cardのバージョニングが未設定。
+
+---
+
+### [I-11] CloudWatch アラーム
+
+**🔴 ec2-audit-log: ALARM（再発火）**  
+**🔴 ec2-messages: ALARM（再発火）**  
+その他17本: 全てOK
+
+→ 前回2026-03-10にリセット済みだったが再発火。フィルターパターン(`*fail*`)の誤検知が継続中。修正が必要。
+
+---
+
+### [I-12] SNS サブスクライバー
+
+| トピック | サブスクライバー |
+|---|---|
+| ksm-posspk-sns-topic-app-logs-dev | nguyenthanhloc@luvina.net / nguyenbaan2@luvina.net |
+| ksm-posstg-sns-topic-app-logs | pos-app-log-test@luvina.net / aws-pos-alert@luvina.net / 00918f5f...（Teams） |
+| ksm-posstg-sns-topic-app-logs-check-price | nguyenthanhloc / kiyohara / leducnang / nguyenbaan2 / tranvandat |
+| ksm-posstg-sns-topic-aws-logs | 00918f5f...（Teams） / pos-app-log-test@luvina.net |
+
+**所見:** ksm-posspk（削除候補）は Luvina2名のみ。ksm-posstg-lmd-function-sent-emailのENV SNS_TOPIC_ARNが このトピックを参照中→削除前に更新必須。
+
+---
+
+### [I-13] SSM Parameter Store
+
+```
+/ec2/keypair/key-086b7988621c86b7a  SecureString  2025-06-12
+```
+→ 1件のみ（EC2キーペア）。正常。
+
+---
+
+### [I-14] stg/Replica_Kasumi_RO 内容確認
+
+```json
+{
+  "HOST": "ksm-posstg-db-cluster.cluster-ro-cvmomy000wqn.ap-northeast-1.rds.amazonaws.com",
+  "PORT": "3306",
+  "DB_NAME": "Replica_Kasumi",
+  "USER_NAME": "admin"
+}
+```
+→ cluster-ro（読み取り専用）エンドポイントを正しく参照。get-sync-store / split-csv / monitoring系Lambdaが利用。
+
+---
+
+### [I-15] Client VPN
+
+```
+（出力なし）→ STGアカウントにClient VPNエンドポイントなし
+```
+→ 既知。STGへの個人PC接続経路はSite-to-Site VPN経由のみと推定。
+
+---
+
+### [I-16] Direct Connect
+
+```
+（出力なし）→ Direct Connectなし
+```
+→ STGはVPN経由のみ（PRD同様）。
+
+---
+
+### [I-17] Lambda 全関数 環境変数・設定
+
+主要所見:
+- **sent-email**: SNS_TOPIC_ARN=ksm-posspk（削除候補）参照中。CHANNEL_CONFIG=Azure Logic Apps署名付きURL（有効期限不明）。
+- **check-price**: FIRST_NAME_SCHEDULE=ksm-posspk-eb-rule-test-report-（pkプレフィックス残存）
+- **sent-txt-file / unzip-file / backup-file / create-file-end**: ENV:none（S3操作のみ or ハードコード）
+- **import-pos-master-sh**: DB_KASUMI=stg/Replica_Kasumi（Write Endpoint参照）→ タイムアウト障害中
+

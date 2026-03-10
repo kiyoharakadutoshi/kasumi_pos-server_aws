@@ -1,6 +1,6 @@
 # AWS現状サマリー STG
 
-最終更新: 2026-03-11  
+最終更新: 2026-03-11（第2回）  
 AWSアカウント: 750735758916  
 リージョン: ap-northeast-1（東京）  
 コンソール: https://ap-northeast-1.console.aws.amazon.com/console/home?region=ap-northeast-1
@@ -24,14 +24,27 @@ AWSアカウント: 750735758916
 
 ## 2. EC2
 
-| 名前 | プライベートIP | AZ | 用途 |
-|---|---|---|---|
-| bastion(STG) | 10.239.2.4 | 1a | 踏み台・Client VPN接続先 |
-| giftcard(STG) | 10.239.2.193 | 1a | Windows t2.large | ギフトカード決済処理 |
-| web-be | 10.239.2.195 | 1a | Linux t3.medium | ⚠️ 【STG独自】SG: ALL(-1)全通信許可（要修正）|
-| web-fe | 10.239.2.253 | 1a | Linux t3.medium | ⚠️ 【STG独自】|
+| 名前 | インスタンスID | タイプ | プライベートIP | AZ | 起動日 | IAMプロファイル | 備考 |
+|---|---|---|---|---|---|---|---|
+| bastion | i-0bd9a4db1b74b5a69 | t3.xlarge | 10.239.2.4 | 1a | 2025-07-31 | ksm-posstg-iam-ip | 踏み台・Client VPN接続先 |
+| web-be | i-06a74666e851e4d12 | t3.medium | 10.239.2.195 | 1a | 2025-09-17 | posstg-role-ec2-web-be | 🔴 SG: ALL(-1)全通信許可（改修No.5） |
+| web-fe | i-0fa4cf3cf5c1a8864 | t3.medium | 10.239.2.253 | 1a | 2025-09-17 | posstg-role-ec2-web-fe | 独自IAMプロファイルあり |
+| giftcard | i-0f8ededc7ae313cbe | t2.large | 10.239.2.193 | 1a | 2025-11-26 | **posstg-role-ec2-web-be（web-beと共用）** ⚠️ | Windows Server / 専用ロール未作成 |
 
 【PRD/STG差異】PRDはEC2 2台（bastion/giftcard）/ STGはEC2 4台（bastion/giftcard/web-be/web-fe）
+
+### EBSボリューム暗号化状況（2026-03-11確認）
+
+| ボリュームID | サイズ | 暗号化 | アタッチ先 | 評価 |
+|---|---|---|---|---|
+| vol-0543e2e85d267fed3 | 100GB | **False** 🔴 | bastion | 未暗号化ボリューム残存（2本目・要調査） |
+| vol-083b97dc7d0eb66a4 | 100GB | True ✅ | bastion | 暗号化済み（メインボリューム） |
+| vol-0a904fbe22a1466f9 | 100GB | **False** 🔴 | giftcard | 未暗号化 |
+| vol-0d9f3bc937a9e9212 | 20GB | **False** 🔴 | web-fe | 未暗号化 |
+| vol-05550f5152c65b611 | 20GB | **False** 🔴 | web-be | 未暗号化 |
+
+> ⚠️ bastionに100GBボリューム2本アタッチ（1本暗号化済み・1本未暗号化）→ 古いボリュームのデタッチ漏れの可能性。要確認・整理。  
+> ⚠️ giftcard/web-fe/web-beは未暗号化。KMSキー付きで再作成が理想だが、停止コストを考慮し要判断。
 
 ---
 
@@ -49,11 +62,36 @@ AWSアカウント: 750735758916
 
 ## 4. Lambda（23関数）
 
-**【PRD/STG差異】PRD=21関数 / STG=23関数（2関数多い）**
+**【PRD/STG差異】PRD=21関数 / STG=23関数（自動生成3本含む / アプリ関連20本）**
 
-主要関数（PRDと同等のものに加えて）:
-- PRDと同名のほぼ全関数が ksm-posstg- プレフィックスで存在
-- `night-export-sg` のターゲット Lambda は PRD/STG 同じ構成で ENABLED
+| 関数名 | Timeout | Memory | Runtime | ENV（主要） | 評価 |
+|---|---|---|---|---|---|
+| create-file-end-for-night | 300s | 512MB | java17 | DB_BATCH=stg/Batch_Kasumi, DB_KASUMI=stg/Replica_Kasumi | ✅ |
+| get-sync-store | 900s | 1024MB | java17 | DB_KASUMI=stg/Replica_Kasumi_RO | ✅ |
+| oc-import-data | 900s | 2048MB | java17 | DB_BATCH, DB_KASUMI=stg/Replica_Kasumi | ✅ |
+| unzip-file | 900s | 1024MB | java17 | **ENV:none** | ✅（S3操作のみ） |
+| import-pos-master-sh | 900s | 1024MB | java17 | DB_BATCH, DB_KASUMI=stg/Replica_Kasumi | 🔴 **タイムアウト障害中** |
+| **sent-txt-file** | 900s | 1024MB | java17 | **ENV:none** | 🔴 **接続先ハードコード・FAILED中** |
+| backup-file | 900s | 1024MB | java17 | **ENV:none** | ✅（S3操作のみ） |
+| sg-import-data | 900s | 2048MB | java17 | DB_BATCH, DB_KASUMI=stg/Replica_Kasumi | ✅ |
+| split-txt-by-sent-time | 900s | 1024MB | java17 | ROLE_ARN, TARGET_ARN（SF:sent-txt-file）, FIRST_NAME_SCHEDULE | ✅ |
+| create-file-end | 900s | 1024MB | java17 | **ENV:none** | ✅ |
+| split-csv | 900s | 1024MB | java17 | DB_KASUMI=stg/Replica_Kasumi_RO | ✅ |
+| export-polling | 300s | 128MB | python3.13 | SF_ARN（create-txt-file-sg） | ✅ |
+| zipfile-polling | 300s | 128MB | python3.13 | SF_ARN（receive-and-import-pos-master-sg） | ✅ |
+| copy-backup-sg | 15s | 512MB | java17 | DEST_BUCKET=stg-ignica-ksm | ✅ |
+| **sent-email** | 900s | 1024MB | java17 | SNS_TOPIC_ARN=**ksm-posspk**（削除候補）、CHANNEL_CONFIG=Azure Logic Apps URL（有効期限不明） | 🔴 **削除候補SNS参照中** |
+| itemmaster-import-monitoring | 900s | 512MB | java17 | DB_KASUMI=stg/Replica_Kasumi_RO | ✅ |
+| p001-import-monitoring | 900s | 512MB | java17 | DB_KASUMI=stg/Replica_Kasumi_RO, DATA_SOURCE=oc | ✅ |
+| trigger-sqs-export-sg | 300s | 128MB | python3.13 | QUEUE_URL（export-queue-sg.fifo） | ✅ |
+| trigger-sqs-import-sg | 300s | 128MB | python3.13 | QUEUE_URL（store-code-queue-sg.fifo） | ✅ |
+| check-price | 900s | 512MB | java17 | FIRST_NAME_SCHEDULE=**ksm-posspk**-eb-rule-test-report-, DB_KASUMI=stg/Replica_Kasumi | 🟡 posspk命名残存 |
+| aws-quicksetup-lifecycle-LA-89e4k | 900s | 128MB | python3.11 | REGION | AWS自動生成 |
+| baseline-overrides-a4fd-v4t88 | 300s | 128MB | python3.11 | REGION | AWS自動生成 |
+| delete-name-tags-ap-northeast-1-a4fd-v4t88 | 900s | 128MB | python3.11 | REGION | AWS自動生成 |
+
+> ⚠️ **sent-emailはksm-posspk-sns-topic-app-logs-devを参照中。このSNSトピック削除前に必ずENV更新すること。**  
+> ⚠️ **CHANNEL_CONFIGのAzure Logic Apps URLの有効期限・管理者を確認すること。**
 
 ---
 
@@ -61,23 +99,25 @@ AWSアカウント: 750735758916
 
 ### プロジェクト管理バケット（5本）
 
-| バケット名 | 用途 |
-|---|---|
-| stg-ignica-ksm | メイン（pos-original/oc・sg・sh） |
-| stg-ignica-ksm-pmlogs | PMログ |
-| stg-aeon-gift-card | ギフトカード |
-| stg-ignica-com-configrecord | 設定レコード |
-| dev-ignica-ksm | **Lambda JARファイル置き場**（PRDのprd-ignica-com-lmd-jarに相当）※名前がdevだが現役稼働中（16件・340MB・最終更新2026-03-06） |
+| バケット名 | 用途 | バージョニング | 暗号化 | パブリックブロック |
+|---|---|---|---|---|
+| stg-ignica-ksm | メイン（pos-original/oc・sg・sh） | ✅ Enabled | AES256 | ✅ |
+| stg-ignica-ksm-pmlogs | PMログ | ✅ Enabled | AES256 | ✅ |
+| stg-aeon-gift-card | ギフトカード | **⚠️ None** | AES256 | ✅ |
+| stg-ignica-com-configrecord | 設定レコード | ✅ Enabled | AES256 | ✅ |
+| dev-ignica-ksm | Lambda JARファイル置き場（名前はdevだが現役稼働中） | **⚠️ None** | AES256 | ✅ |
 
 ### AWSサービス自動生成バケット（3本）
 
-| バケット名 | 自動生成元 | 用途 |
+| バケット名 | 自動生成元 | バージョニング |
 |---|---|---|
-| aws-quicksetup-patchpolicy-750735758916-v4t88 | SSM Quick Setup | パッチポリシー設定用 |
-| aws-quicksetup-patchpolicy-access-log-750735758916-a4fd-v4t88 | SSM Quick Setup | アクセスログ用（上記のペア） |
-| do-not-delete-ssm-diagnosis-750735758916-ap-northeast-1-89e4k | SSM診断機能 | 削除禁止 |
+| aws-quicksetup-patchpolicy-750735758916-v4t88 | SSM Quick Setup | ✅ Enabled |
+| aws-quicksetup-patchpolicy-access-log-750735758916-a4fd-v4t88 | SSM Quick Setup | ✅ Enabled |
+| do-not-delete-ssm-diagnosis-750735758916-ap-northeast-1-89e4k | SSM診断機能 | ✅ Enabled |
 
-> **【削除済】2026-03-10** `phongbt-auditor-staging`（中身空・CloudTrail未使用バケット）を削除。PRDのphongbt-auditor-productionと同一パターン。
+> **【削除済】2026-03-10** `phongbt-auditor-staging`（中身空）削除済み。  
+> ⚠️ **dev-ignica-ksm と stg-aeon-gift-card はバージョニング未設定。** 誤上書き・誤削除時にロールバック不可。  
+> **ACM証明書（ignicapos.com）:** 有効期限 2026-10-16 / 自動更新対象（ELIGIBLE）✅
 
 ---
 
@@ -111,8 +151,12 @@ PRDと同等の7本（プレフィックスが ksm-posstg- に変わるのみ）
 
 ## 8. SQS（2 FIFOキュー）
 
-- ksm-posstg-sqs-export-queue-sg.fifo
-- ksm-posstg-sqs-store-code-queue-sg.fifo
+| キュー名 | メッセージ数 | 保持期間 | Visibility | DLQ | 評価 |
+|---|---|---|---|---|---|
+| ksm-posstg-sqs-export-queue-sg.fifo | 0 | 4日（345600秒） | 3600秒（1時間） | **未設定** 🟡 | 処理失敗時にメッセージ消失リスク |
+| ksm-posstg-sqs-store-code-queue-sg.fifo | 0 | 4日（345600秒） | 300秒（5分） | **未設定** 🟡 | 同上 |
+
+> ⚠️ 両キューともDLQ（デッドレターキュー）未設定。Lambda処理失敗時のメッセージがリトライ上限後に消失するリスクあり。設定推奨。
 
 ---
 
@@ -305,24 +349,37 @@ PRDと同等。バケット名・Lambda名のプレフィックスが stg- / pos
 
 ## 17. SNS（4トピック）
 
-| トピック名 | 備考 |
-|---|---|
-| ksm-posstg-sns-topic-app-logs | PRD同等 |
-| ksm-posstg-sns-topic-app-logs-check-price | STG独自（価格チェック専用） |
-| ksm-posstg-sns-topic-aws-logs | PRD同等 |
-| **ksm-posspk-sns-topic-app-logs-dev** | 🚨 **posspk とは？開発環境用の残留物？** |
+| トピック名 | サブスクライバー | 評価 |
+|---|---|---|
+| **ksm-posspk-sns-topic-app-logs-dev** | nguyenthanhloc@luvina.net / nguyenbaan2@luvina.net（Luvina2名のみ） | 🔴 **削除候補**（先にsent-email LambdaのENVを更新すること） |
+| ksm-posstg-sns-topic-app-logs | pos-app-log-test@luvina.net / aws-pos-alert@luvina.net / 00918f5f...（Teams） | ✅ アプリエラー通知先 |
+| ksm-posstg-sns-topic-app-logs-check-price | nguyenthanhloc / kiyohara / leducnang / nguyenbaan2 / tranvandat（5名） | ✅ STG独自・価格チェック通知 |
+| ksm-posstg-sns-topic-aws-logs | 00918f5f...（Teams） / pos-app-log-test@luvina.net | ✅ AWSサービス通知 |
+
+> ⚠️ **ksm-posspk削除前にksm-posstg-lmd-function-sent-emailのENV SNS_TOPIC_ARNを更新すること**（現在このトピックを参照中）
 
 ## 18. CloudWatch（アラーム19本 / ロググループ41本）
 
 **■ アラーム（PRDと同数19本）**
 
-| 状態 | アラーム名 |
-|---|---|
-| ✅ OK（手動リセット済） | ksm-posstg-cw-alarm-ec2-audit-log |
-| ✅ OK（手動リセット済） | ksm-posstg-cw-alarm-ec2-messages |
-| OK | その他17本（RDS・EC2・Transfer系） |
+| 状態 | アラーム名 | メトリクス | しきい値 | 通知先 |
+|---|---|---|---|---|
+| **🔴 ALARM（再発火）** | ec2-audit-log | ksm-posstg-cw-metric-ec2-audit-log | ≥1 | sns-topic-aws-logs |
+| **🔴 ALARM（再発火）** | ec2-messages | ksm-posstg-cw-metric-ec2-messages | ≥1 | sns-topic-aws-logs |
+| ✅ OK | db-aborted-clients-cluster/replica | AbortedClients | ≥1 | sns-topic-aws-logs |
+| ✅ OK | db-acu-cluster | ACUUtilization | ≥80% | sns-topic-aws-logs |
+| ✅ OK | db-cpu-cluster/replica | CPUUtilization | ≥80% | sns-topic-aws-logs |
+| ✅ OK | db-dml-rejected-writer-cluster/replica | AuroraDMLRejectedWriterFull | ≥1 | sns-topic-aws-logs |
+| ✅ OK | db-free-local-storage-replica | FreeLocalStorage | ≤700MB | sns-topic-aws-logs |
+| ✅ OK | db-freeable-memory-cluster/replica | FreeableMemory | ≤400MB | sns-topic-aws-logs |
+| ✅ OK | db-serverless-capacity-cluster | ServerlessDatabaseCapacity | ≥80% | sns-topic-aws-logs |
+| ✅ OK | ec2-dnf-log / ec2-secure | 各メトリクス | ≥1 | sns-topic-aws-logs |
+| ✅ OK | ec2-statuscheck-instance/system | StatusCheckFailed_* | ≥1 | sns-topic-aws-logs |
+| ✅ OK | tf-oc / tf-sg | 各メトリクス | ≥1 | sns-topic-aws-logs |
 
-> ✅ **2026-03-10 手動リセット済**。原因：2025-07-31のPAMセッション終了時 `res=failed` をフィルター `*fail*` が誤検知（False Positive）。bastionは正常稼働中。フィルターパターンの見直しはPending。
+> 🔴 **2026-03-11 ec2-audit-log / ec2-messages が再ALARM**  
+> 前回2026-03-10に手動リセット済みだったが再発火。bastionのPAMセッション終了時`res=failed`をフィルター`*fail*`が継続誤検知。  
+> **フィルターパターンの修正が必要（`res=failed` → 正確なパターンに絞り込み）。**
 
 **■ ロググループ（41本）保持期間まとめ**
 
@@ -368,24 +425,40 @@ PRDと同等。バケット名・Lambda名のプレフィックスが stg- / pos
 
 ## 21. IAMユーザー（15名）
 
-| ユーザー名 | PRD比較 |
-|---|---|
-| kiyohara / daisuke.sasaki_s3access / kiyohara_s3access | ✅ 同等 |
-| cfn_user / dattv / buithephong | ✅ 同等 |
-| dattv_cli_deploy / locnt_cli_deploy / nangld_admin / nangld_readonly | ✅ 同等 |
-| posusmhstg | ✅ STG用USMH連携 |
-| pos_stag_vangle_sonln / pos_stag_vangle_tuannv | ✅ STG用Vangle |
-| **locnt** | 🔍 STG独自（PRDにはlocnt_deployのみ） |
-| **dev** | 🔍 STG独自（開発用汎用アカウント？要確認） |
+| ユーザー名 | コンソールログイン | Activeキー数 | 評価 |
+|---|---|---|---|
+| kiyohara | ✅（2025-06-23作成） | 0 | - |
+| daisuke.sasaki_s3access | なし | 1本（2025-07-28作成）| 🟡 約7.5ヶ月経過。ローテーション推奨 |
+| kiyohara_s3access | なし | **2本（2025-11-07×2）** | 🔴 同日作成の2本が両方Active。古い方の削除要 |
+| cfn_user | なし | Inactive1本のみ | 実質無効化済み |
+| dattv | ✅（2025-07-28作成） | 0 | - |
+| dattv_cli_deploy | ✅（2026-03-09作成） | 0 | - |
+| buithephong | ✅（2026-01-07作成） | **1本Active**（2026-02-12作成） | 🟡 Activeキーあり。最終使用日要確認 |
+| dev | なし | Inactive1本（2025-07-08作成） | 🟢 削除候補（実質無効化済み） |
+| locnt | ✅（2025-08-27作成） | 0 | 🟡 フルアクセス権限あり→最小権限化推奨 |
+| locnt_cli_deploy | ✅（2026-03-09作成） | 0 | - |
+| nangld_admin | ✅（2026-03-02作成） | 0 | - |
+| nangld_readonly | ✅（2026-03-02作成） | 0 | - |
+| posusmhstg | ✅（2025-05-27作成） | 0 | STG用USMH連携 |
+| pos_stag_vangle_sonln | ✅（2026-01-23作成） | 0 | STG用Vangle |
+| pos_stag_vangle_tuannv | ✅（2026-01-23作成） | 0 | STG用Vangle |
 
-> PRDに比べ: manhnd-serviceaccess / locnt_deploy / pos_prd_vangle_* がSTGにはない
+> PRDに比べ: manhnd-serviceaccess / locnt_deploy / pos_prd_vangle_* がSTGにはない  
+> **パスワードポリシー未設定**（改修依頼No.6）
 
-## 22. Secrets Manager（7件 / PRD同等）
+## 22. Secrets Manager（7件）
 
-| シークレット名 | 対応 |
-|---|---|
-| ksm-posstg-sm-db / db-replica / sftp | ✅ PRD同等 |
-| stg/Mail_Kasumi / Batch_Kasumi / Replica_Kasumi / Replica_Kasumi_RO | ✅ PRD同等 |
+| シークレット名 | HOST | DB_NAME | 評価 |
+|---|---|---|---|
+| ksm-posstg-sm-db | - | - | RDS(writer)接続情報 |
+| ksm-posstg-sm-db-replica | - | - | RDS(replica)接続情報 |
+| ksm-posstg-sm-sftp | - | - | 🚨 SFTP_PRIVATE_KEY="test"（未設定） |
+| stg/Mail_Kasumi | Write Endpoint | Mail_Kasumi | ✅ |
+| stg/Batch_Kasumi | Write Endpoint | Batch_Kasumi | ✅ |
+| stg/Replica_Kasumi | **Write Endpoint（名前と不一致）** ⚠️ | Replica_Kasumi | 意図的か要確認 |
+| stg/Replica_Kasumi_RO | **cluster-ro Endpoint（読み取り専用）** ✅ | Replica_Kasumi | get-sync-store / split-csv / monitoring系が参照 |
+
+> stg/Replica_Kasumi_RO は正しくRead-only Endpointを参照。stg/Replica_Kasumi（通常版）のみWriteを参照している。
 
 ## 23. 未使用・空サービス（STG）
 
@@ -393,16 +466,18 @@ PRDと同等。バケット名・Lambda名のプレフィックスが stg- / pos
 |---|---|
 | Glue | ジョブなし（空）|
 | X-Ray | Defaultのみ（PRD同等）|
-| Location Service / Payment Cryptography / Direct Connect | 未確認だが空と推定 |
-
+| Direct Connect | なし（VPN経由のみ）|
+| Client VPN | **エンドポイントなし**（STGアカウントに未設定）→ STGへの個人PC接続経路確認要 |
+| Route53 | **ホストゾーンなし**（PRDアカウントのignicapos.comで一元管理）|
+| SSM Parameter Store | /ec2/keypair/key-086b7988621c86b7a（1件のみ）|
 
 ## 24. 不要リソース（削除候補・承認待ち）
 
-| リソース | 種別 | 理由 | 状態 |
-|---|---|---|---|
-| ksm-posspk-sns-topic-app-logs-dev | SNS | Luvina開発環境残留物（サブスクライバー: Luvina社員のみ） | 削除未実施 |
-| ksm-posstg-ecr-web-fe | ECR | イメージ0件・未使用 | 削除未実施 |
-| ksm-posstg-ecr-web-be | ECR | イメージ0件・未使用 | 削除未実施 |
+| リソース | 種別 | 理由 | 注意事項 | 状態 |
+|---|---|---|---|---|
+| ksm-posspk-sns-topic-app-logs-dev | SNS | Luvina開発環境残留物（Luvina2名のみ購読） | **削除前にksm-posstg-lmd-function-sent-emailのENV更新必須** | 削除未実施 |
+| ksm-posstg-ecr-web-fe | ECR | イメージ0件・未使用 | - | 削除未実施 |
+| ksm-posstg-ecr-web-be | ECR | イメージ0件・未使用 | - | 削除未実施 |
 
 ## 25. web-fe / web-be 詳細（STG独自Webアプリ）
 
