@@ -173,6 +173,9 @@ CFn: ksm-posprd-transfer（OC・SG）/ SHはタグなし手動追加
 ③ LuvinaAWS → VPN gateway → Direct Connect(100Mbps) → SmartVPN → USMH閉域網
 ```
 
+> ⚠️ **現状のOpenVPN（Bastion経由）は廃止予定。**
+> 廃止後は①②の構成に完全移行し、BastionのOpenVPN運用をなくす。
+
 ### ① Luvina個人PC → PRD（AWS Client VPN）
 
 | 項目 | 値 |
