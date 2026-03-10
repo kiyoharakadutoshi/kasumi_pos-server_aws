@@ -636,3 +636,78 @@ T1は UP しているため S2S VPN自体は生きている。
 
 **「ishida」はESL（電子棚札）のメーカー・石田のサーバー。VPN経由またはインターネット経由で送信している可能性。T2 DOWN の影響か、石田側サーバーの問題の可能性が高い。**
 
+
+---
+
+## [C] 接続疎通・DB状態確認（2026-03-11）
+
+### [C]-1 sent-txt-file ソースコード
+
+.classファイルのみ（コンパイル済みJAR）→ grepでの接続先特定不可。
+環境変数もnull → 接続先は Secrets Manager またはソースコード内定数の可能性。
+
+### [C]-2 import-pos-master-sh ソースコード
+
+同様に.classファイルのみ。設定値の直接確認不可。
+
+### [C]-3 Secrets Manager DB接続情報
+
+`ksm-posstg-sm-db` の安全フィールド: `{"MasterUsername": "admin"}` のみ返却。
+→ ホスト名・ポートはSecrets Managerに含まれず（別途Lambda環境変数 `DB_KASUMI` / `DB_BATCH` で参照）
+
+### [C]-4 Aurora DBエンドポイント
+
+| クラスター | Write Endpoint | Read Endpoint | Port |
+|---|---|---|---|
+| ksm-posstg-db-cluster | ksm-posstg-db-cluster.cluster-cvmomy000wqn.ap-northeast-1.rds.amazonaws.com | ksm-posstg-db-cluster.cluster-ro-cvmomy000wqn.ap-northeast-1.rds.amazonaws.com | 3306 |
+| ksm-posstg-db-cluster-replica | ksm-posstg-db-cluster-replica.cluster-cvmomy000wqn.ap-northeast-1.rds.amazonaws.com | ksm-posstg-db-cluster-replica.cluster-ro-... | 3306 |
+
+クラスターIDは共通: `cvmomy000wqn`
+
+### [C]-5 Aurora エラーログ
+
+- `error/mysql-error-running.log`: **サイズ0（現在エラーなし）**
+- `error/mysql-error.log`: **空（現在エラーなし）**
+- ログファイルは2026-02-08〜09の大量エラーが蓄積されているが、現在のrunningログは空
+
+**→ Aurora DB自体は現在正常。DB起因の障害ではない。**
+
+### [C]-6 CloudWatch メトリクス
+
+**DatabaseConnections（直近2日）:**
+- ほぼ全時間帯 **0.0接続**
+- 2026-03-09T23:10 に 1.0 のみ
+- **Lambda実行時（13:10〜13:26）も接続数0** 🚨
+
+**SelectLatency: 約0.16〜0.19ms（正常範囲）**
+**DMLLatency: 0.0（DML実行なし）**
+
+---
+
+### 🎯 障害原因 最終確定
+
+#### 障害① `sf-sm-import-pos-master-sh` — **DB接続自体が失敗している**
+
+| 証拠 | 内容 |
+|---|---|
+| DatabaseConnections | Lambda実行中（13:10〜13:26）も **0接続のまま** |
+| DMLLatency | 全時間帯 0.0 → **INSERT/UPDATE が1件も実行されていない** |
+| エラーログ | Aurora側にエラーなし |
+| 結論 | LambdaからAuroraへのTCP接続自体が確立できていない → **VPCネットワーク設定またはSG設定の問題** |
+
+**最有力仮説: Lambda の VPC/SG設定とAurora SGの間で疎通が取れなくなっている**
+→ `sg-0c2b1347aaadfdc83`（lambda-rds-1）と`sg-0ee95ce0bfe7c1d19`（rds-lambda-1）の接続許可設定を確認が必要
+
+#### 障害② `sf-sm-sent-txt-file` — **石田ESLサーバーへの接続断（ネットワーク経路障害）**
+
+| 証拠 | 内容 |
+|---|---|
+| ログ | `✅ Get InputStream`（S3取得成功）→ 直後に `Connection timed out` |
+| 接続先 | `pos-master/ishida/` 配下のファイルを送信 |
+| 環境変数 | null → 接続先はソースコード内定数 |
+| VPN状態 | T2 DOWN（2026-02-24 01:26から） |
+| 結論 | 石田ESLサーバーへのTCP接続が約18秒でタイムアウト |
+
+**VPN T2 DOWN（2026-02-24）のタイミングと障害発生が関連している可能性が高い。**
+ただしT1はUPのため S2S VPN自体は生きている。石田サーバーへの経路が T2 依存だった可能性あり。
+
