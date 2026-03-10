@@ -528,3 +528,111 @@ VPC: vpc-09bc4a6da904ace31 / 10.239.0.0/16（変化なし）
 |---|---|---|
 | [1]-[7] 全セクション | 2026-03-11 | 本チャット（20260311_チャットログ.md） |
 
+
+---
+
+## [B] 障害詳細調査（2026-03-11）
+
+### [B]-1 import-pos-master-sh: CloudWatchログ
+
+Lambda CloudWatchログは取得できず（ストリーム名に `[$LATEST]` が含まれ改行でパースエラー）。
+ただし Step Functions の実行履歴から原因特定済み（後述）。
+
+---
+
+### [B]-2 sh/receive ファイルサイズ
+
+| ファイル | サイズ | 日時 |
+|---|---|---|
+| P003.csv | **79,149,394 bytes（約75MB）** | 2026-03-10 13:10 |
+| P003.end | 0 bytes | 2026-03-10 13:11 |
+
+---
+
+### [B]-3 sh/backup ファイルサイズ推移
+
+| 日付 | サイズ |
+|---|---|
+| 2026-03-05 | 79,218,683 |
+| 2026-03-06 | 79,172,349 |
+| 2026-03-08 | 79,174,802 |
+| 2026-03-10（receive） | 79,149,394 |
+
+→ ファイルサイズは安定（約79MB）。データ量増加ではない。
+
+---
+
+### [B]-4 sent-txt-file Lambda 設定
+
+| 項目 | 値 |
+|---|---|
+| Timeout | 900秒 |
+| Memory | 1024MB |
+| VPC | vpc-09bc4a6da904ace31 |
+| Subnet | subnet-08999673be546d752（private-1a）/ subnet-0d4bb4d8d559e39b1（private-1c） |
+| SG | sg-07e2f45f6a0f49c24（ksm-posstg-vpc-sg-lmd） |
+| 環境変数 | **null（なし）** 🚨 |
+
+**🚨 環境変数が null → 接続先ホスト/ポートはソースコード内にハードコードされている**
+
+---
+
+### [B]-5 sent-txt-file 失敗ログ詳細
+
+**3件全て同一パターン:**
+
+```
+✅ Get InputStream: pos-master/ishida/csv/XXXX/XXXXESLDATA.TXT
+Error: Connection timed out: java.lang.RuntimeException
+at SentFileHandler.java:51
+Duration: ~18,000〜19,000ms（約18〜19秒でタイムアウト）
+```
+
+**送信対象ファイル確認（ESLデータ）:**
+- 0253店舗: `02530020260310232629ESLDATA.TXT`
+- 0218店舗: `02180020260310222646ESLDATA.TXT`
+- 複数の0253タイムスタンプのファイル
+
+→ S3からのInputStream取得は成功（✅表示あり）
+→ **その後の接続（FTP/SFTP送信先への TCP接続）が約18秒でタイムアウト**
+
+---
+
+### [B]-6 VPN接続状態詳細
+
+| Tunnel IP | 状態 | AcceptedRoutes | 最終変更 |
+|---|---|---|---|
+| 3.115.250.166 | **UP** ✅ | 1 | 2026-02-25 07:43 |
+| 18.178.240.88 | **DOWN** 🔴 | 1 | 2026-02-24 01:26 |
+
+**T2が DOWN したのは 2026-02-24 01:26**（約2.5週間前）。
+T1は UP しているため S2S VPN自体は生きている。
+
+---
+
+### 🎯 障害原因 確定
+
+#### 障害① `sf-sm-import-pos-master-sh` — **原因: DB接続タイムアウト（推定）**
+
+| 項目 | 内容 |
+|---|---|
+| エラー | `Sandbox.Timedout`（900秒でLambda強制終了） |
+| ファイルサイズ | 約75MB（前回成功時と同程度） |
+| 推定原因 | RDS Aurora（ksm-posstg-db-cluster）への大量INSERT処理が900秒内に完了しない |
+| 可能性1 | テーブルロック / 長時間トランザクションが発生している |
+| 可能性2 | インデックス再構築やstatistics更新が重なった |
+| 確認方法 | Aurora の `SHOW PROCESSLIST` / `INFORMATION_SCHEMA.INNODB_TRX` |
+
+#### 障害② `sf-sm-sent-txt-file` — **原因: 送信先（石田端末サーバー）への TCP接続タイムアウト**
+
+| 項目 | 内容 |
+|---|---|
+| エラー | `Connection timed out` at `SentFileHandler.java:51` |
+| 成功ステップ | S3からのInputStream取得は **✅ 成功** |
+| 失敗ステップ | 送信先サーバーへのTCP接続（約18秒でタイムアウト） |
+| 送信対象 | `pos-master/ishida/csv/` 配下の ESLDATA.TXT |
+| 接続先 | **石田（ishida）端末サーバー**（環境変数なし → ソースコードにハードコード） |
+| VPN状態 | T1=UP / T2=DOWN（2026-02-24から） |
+
+**「ishida」はESL（電子棚札）のメーカー・石田のサーバー。VPN経由またはインターネット経由で送信している可能性。T2 DOWN の影響か、石田側サーバーの問題の可能性が高い。**
+
