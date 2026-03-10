@@ -785,3 +785,64 @@ T1は UP しているため S2S VPN自体は生きている。
 
 **次の確認: Aurora クラスターに実際にアタッチされているSGが `rds-lambda-1` か `ksm-posstg-vpc-sg-db` かを確認する。**
 
+
+---
+
+## [E] Aurora SG・シークレット最終確認（2026-03-11）
+
+### [E]-1/2 Aurora クラスター・インスタンスにアタッチされているSG
+
+**ksm-posstg-db-cluster（プライマリ）:**
+- sg-02cd48ad974df77be（不明）
+- sg-006e18b25235d3a1d（ksm-posstg-vpc-sg-db）
+- **sg-0ee95ce0bfe7c1d19（rds-lambda-1）✅**
+
+**ksm-posstg-db-cluster-replica:**
+- sg-006e18b25235d3a1d（ksm-posstg-vpc-sg-db）のみ
+- **sg-0ee95ce0bfe7c1d19（rds-lambda-1）なし ❌**
+
+**インスタンス別:**
+| インスタンス | rds-lambda-1あり |
+|---|---|
+| db-instance-1（プライマリ Writer） | ✅ |
+| db-instance-2（プライマリ Reader） | ✅ |
+| db-instance-1-replica | ❌ |
+| db-instance-2-replica | ❌ |
+
+### [E]-3 stg/Mail_Kasumi
+
+- HOST: ksm-posstg-db-cluster.cluster-cvmomy000wqn（Write Endpoint）
+- PORT: 3306 / DB_NAME: Mail_Kasumi
+→ sent-txt-file の接続先ではない（DB接続用）
+
+### [E]-4 ksm-posstg-sm-sftp
+
+- SFTP_PRIVATE_KEY: "test"（テスト値のまま 🚨）
+→ 石田ESLサーバーへのSFTP接続キーがテスト値
+
+### [E]-5 sg-import-data Step Functions
+
+- `ksm-posstg-sf-sm-import-pos-master-sg` → **StateMachine存在しない**
+→ SGデータ取込はStep Functions経由ではなくEventBridge→Lambda直接起動と思われる
+
+---
+
+### 🎯 障害① 最終結論
+
+**SG設定は正しい。Lambda→AuroraのSG疎通は問題なし。**
+
+| 経路 | 状態 |
+|---|---|
+| lambda-rds-1（Lambda SG）→ アウトバウンド TCP3306 → rds-lambda-1 | ✅ |
+| rds-lambda-1 → インバウンド ← lambda-rds-1 | ✅ |
+| rds-lambda-1 が Aurora クラスター（プライマリ）にアタッチ | ✅ |
+
+**SG経路は問題なし → 障害①の原因を再検討**
+
+**新仮説: import-pos-master-sh が DB_KASUMI=stg/Replica_Kasumi を参照**
+- Replica_Kasumi の HOST が Write Endpoint（cluster）を向いている
+- しかし Lambda は `Replica_Kasumi` を使用 → Replicaクラスター（replica-cluster）のエンドポイントを見るべきか？
+- または Lambda 自体のコードに問題がある可能性
+
+**要確認: import-pos-master-sh が実際に何をしているか（DB書き込みか読み込みか）**
+
