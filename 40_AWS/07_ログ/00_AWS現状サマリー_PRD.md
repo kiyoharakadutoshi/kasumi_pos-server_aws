@@ -26,7 +26,7 @@ AWSアカウント: 332802448674
 
 | 名前 | インスタンスID | タイプ | プライベートIP | AZ | OS | 用途 |
 |---|---|---|---|---|---|---|
-| bastion | - | t3.xlarge | 10.238.2.39 | 1a | Linux | 踏み台・OpenVPN(UDP1194) |
+| bastion | - | t3.xlarge | 10.238.2.39 | 1a | Linux | 踏み台・Client VPN接続先 |
 | giftcard | i-03d6bf91c19385cdf | t2.large | 10.238.2.198 | 1a | **Windows Server 2022** | ギフトカード決済処理 |
 
 **giftcard EC2 詳細:**
@@ -165,15 +165,27 @@ CFn: ksm-posprd-transfer（OC・SG）/ SHはタグなし手動追加
 
 ## 10. ネットワーク接続
 
-### Luvina → PRD（OpenVPN）
-Bastion: 10.238.2.39（UDP 1194）
+### Luvina開発端末 → PRD（AWS Client VPN）
+```
+Luvina開発端末（対象端末①②③④）
+  → AWS Client VPN（Luvina TP-Link ER605: 14.224.146.153）
+  → PRD Bastion: 10.238.2.39
+```
+- 各端末へのIP振り分けはClient VPN内のルーティングにて行う
 
-### USMH閉域網 ↔ PRD（IPSec Site-to-Site VPN）
+### USMH閉域網 → PRD（AWS Direct Connect）
+```
+USMH閉域網
+  → SmartVPN → AWS Direct Connect（100Mbps）
+  → Gateway VPC → VPN gateway
+  → PRD VPC（10.238.0.0/16）
+```
 
 | 項目 | 値 |
 |---|---|
-| VPN ID | vpn-0ea9b7895f78e4c7e |
-| CGW IP | 14.224.146.153（Luvina TP-Link ER605） |
+| 接続方式 | AWS Direct Connect（100Mbps） |
+| VPN ID（AWS側） | vpn-0ea9b7895f78e4c7e |
+| VGW | vgw-06d8981903cf33c62 |
 | T1 | 35.79.95.18 — **UP** |
 | T2 | 52.192.144.197 — **DOWN**（2026-02-19から） |
 | USMH CIDR | 10.156.96.0/24 / 172.21.10.0/24 / 10.156.96.192/26 |
