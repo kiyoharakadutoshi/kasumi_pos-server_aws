@@ -3,7 +3,9 @@
 **作成日**: 2026-03-08  
 **作成者**: LUVINA  
 **優先度**: 中  
-**対象環境**: 本番（prd）
+**対象環境**: 本番（prd）/ STG（stg）
+
+> **2026-03-11 STG調査で確認**: STG環境でも同様の問題を確認。`stg/Replica_Kasumi` が Write Endpoint（`ksm-posstg-db-cluster.cluster-cvmomy000wqn...`）を参照しており、名前と接続先が不一致。STGの `create-file-end-for-night` も `DB_KASUMI=stg/Replica_Kasumi` で Writer を参照中。PRD/STG両環境で対応が必要。
 
 ---
 
