@@ -137,9 +137,44 @@ RDS: posspk-db-instance-1（Aurora MySQL / db.r5.large / posspk-vpc）
 
 ---
 
-## 未確認事項（次回調査項目）
+## ブロック⑥ 同一アカウント内 pos-dev-vpc へのアクセス可否確認
 
-- [ ] posspk-vpc ↔ pos-dev-vpc 間のVPCピアリング・ルートテーブル確認
-- [ ] pos-dev-vpc内のRDS（GIFT・棚札開発環境DB）へのアクセス可否確認
-- [ ] pos-dev-vpc SGルール詳細確認
-- [ ] posspk-vpcからpos-dev-vpc内DBへの到達可否確認
+**VPCピアリング確認結果: なし（同一アカウント内含む）**
+
+**pos-dev-vpc 内のRDS（開発DB）:**
+
+| ID | Engine | VPC |
+|---|---|---|
+| pos-dev-db-instance-1 | aurora-mysql | pos-dev-vpc |
+| inageya-staging | aurora-mysql | pos-dev-vpc |
+| pos-prod-instance-1 | aurora-mysql | pos-dev-vpc |
+| pos-prod-instance-read | aurora-mysql | pos-dev-vpc |
+
+**結論（確定）:**
+
+```
+posspk-vpc（チャージ）          pos-dev-vpc（GIFT・棚札開発DB）
+10.226.51.0/24                 10.226.50.0/24
+        × VPCピアリングなし・TGWなし・VPNなし ×
+→ 同一アカウント内でも完全にネットワーク分離済み
+→ チャージからGIFT・棚札開発DBへのアクセス不可（確定）
+```
+
+## 最終結論サマリー
+
+| 接続先 | アクセス可否 | 理由 |
+|---|---|---|
+| カスミPRD GIFT・棚札（332802448674） | **不可** | アカウント間ピアリング・TGW・VPNなし |
+| 開発環境 GIFT・棚札DB（pos-dev-vpc） | **不可** | 同一アカウント内でもVPCピアリングなし |
+| posspk-db-instance-1（チャージ専用DB） | **可** | 同一VPC内、正規の接続経路 |
+
+## 残存セキュリティ問題（改修必要）
+
+| 優先度 | SG名 | 問題 |
+|---|---|---|
+| 🔴 高 | `ec2-rds-1` | TCP 0-65535 / 0.0.0.0/0 全開放 |
+| 🔴 高 | `ksm-posprd-vpc-sg-ec2-web-be` | TCP 8080 / 0.0.0.0/0 全開放 |
+| 🔴 高 | `ksm-posstg-vpc-sg-alb-web-be` | 全トラフィック / 0.0.0.0/0 全開放 |
+| 🟡 中 | `posspk-sg-gitlap-runner` | 全トラフィック / 0.0.0.0/0 全開放 |
+
+※ 上記SGの改修はマルエツチャージの通信に影響しない（ALBからECSタスクへの8080通信はALB SG専用ルールで維持される）
