@@ -804,6 +804,129 @@ aws cloudtrail describe-trails --region $REGION --output table
 
 ---
 
+## ブロック⑦ CLI（AssumeRole）追加調査 — 2026-03-13
+
+> 以下はClaude Code CLI（`kasumi-dev-readonly`プロファイル = cli-readonlyロール経由）で取得。
+> 調査日: 2026-03-13、調査者: 清原（Claude Code CLI）
+
+### [D-6] EC2 インスタンス一覧（20台: running 12 / stopped 8）
+
+| 名前 | InstanceId | タイプ | 状態 | PrivateIP | AZ |
+|---|---|---|---|---|---|
+| pos-bastion | i-012d5522458eba141 | t2.micro | **running** | 10.226.50.24 | 1c |
+| stg-pos | i-03d61e966336c6bac | t2.medium | **running** | 10.226.50.136 | 1a |
+| stg-pos-system | i-083e64fbe8ed7f513 | t2.medium | **running** | 10.226.50.132 | 1a |
+| pos-server-distribute | i-0dddc4e7087f80519 | t2.medium | stopped | 10.226.50.137 | 1a |
+| prod-pos-server-distribute | i-0bbdc3958d769b652 | t2.medium | stopped | 10.226.50.133 | 1a |
+| prod-pos-server | i-0ce4bbfa56fea3b7b | t2.large | **running** | 10.226.50.134 | 1a |
+| (名前なし) | i-0372af0dc46e2237a | t2.medium | stopped | 10.226.50.141 | 1a |
+| (名前なし) | i-07aa32648d469e87a | t2.medium | stopped | 10.226.50.140 | 1a |
+| (名前なし) | i-0d744cdaec033ecd9 | t2.xlarge | stopped | 10.226.50.139 | 1a |
+| stg-pos-large | i-08359dc0f1260afef | t2.large | **running** | 10.226.50.142 | 1a |
+| stg-pos-server | i-0ae0fc303dc04b91b | t2.medium | **running** | 10.226.50.153 | 1c |
+| prod-pos-t2.xlarge | i-0e75523fb0b24388d | t2.xlarge | **running** | 10.226.50.148 | 1c |
+| (名前なし) | i-03e05b3f51a4e7130 | t2.medium | stopped | 10.226.50.149 | 1c |
+| (名前なし) | i-0e60a56a426c4db27 | t2.medium | stopped | 10.226.50.155 | 1c |
+| kafka | i-00149f9b42e54656c | t2.medium | **running** | 10.226.50.23 | 1c |
+| (名前なし) | i-0fdac0dc4c4754d1e | t2.large | stopped | 10.226.50.154 | 1c |
+| ksm-posspk-ec2-instance-web-fe | i-027af978d9452d713 | t3.medium | **running** | 10.226.51.15 | 1a |
+| posspk-ec2-bastion-public | i-0375a33ee8fcf3993 | t3.micro | **running** | 10.226.51.13 | 1a |
+| pos-runner | i-03e229bf2d6c3bd00 | t3.medium | **running** | 10.226.51.115 | 1a |
+| ksm-posspk-ec2-instance-web-be | i-05fdf2857655d4561 | t3.medium | **running** | 10.226.51.91 | 1a |
+
+> 🔴 **prod命名**: `prod-pos-server` / `prod-pos-server-distribute` / `prod-pos-t2.xlarge` が開発アカウントに存在
+> 🔴 **stg命名**: `stg-pos` / `stg-pos-system` / `stg-pos-large` / `stg-pos-server` が混在
+> ⚠️ **名前なしインスタンス5台**: 管理タグ未設定（棚卸し必要）
+> ⚠️ **stopped 8台**: 長期停止インスタンスの削除検討が必要
+> ✅ **ksm-posspk-系**: web-fe / web-be / bastion / runner（4台）が稼働中 = DEV新環境
+
+### [D-7] セキュリティグループ（VPC: vpc-07b182b381dc59573 / 24個）
+
+| SG ID | 名前 | Inbound | Outbound |
+|---|---|---|---|
+| sg-0b6aa5093cdfed7ca | default | 1 | 1 |
+| sg-0fe8e2f364388a886 | posspk-sg-bastion | 1 | 1 |
+| sg-0127217180e56d3f1 | posspk-sg-db | 1 | 1 |
+| sg-0ed4fa7cbd7b57f9d | posspk-sg-lambda | 0 | 1 |
+| sg-039e6f0fd1c1a1060 | posspk-sg-ecs | 0 | 1 |
+| sg-0ffac159ed30ec7a0 | posspk-sg-tf | 1 | 1 |
+| sg-0183508d0fd98cd83 | posspk-sg-client-vpn-endpoint | 0 | 1 |
+| sg-05832e61986292ae3 | posspk-sg-gitlap-runner | 2 | 1 |
+| sg-0aa807b8bbabf8e47 | posspk-ec2-sftp-test | 2 | 1 |
+| sg-09002eb900fad6bcb | posspk-master-batch | 0 | 1 |
+| sg-016eb443cdf00ec80 | posspk-sg-ep-cwm | 1 | 1 |
+| sg-06108fb1e1e259597 | posspk-sg-ep-cwl | 1 | 1 |
+| sg-0a43778eebb7bdd3e | posspk-sg-ep-sm | 1 | 1 |
+| sg-0898dd1eb56056104 | posspk-sg-ep-ssm | 2 | 1 |
+| sg-0d215bb6fb06cd0be | posspk-sg-ep-ecr | 1 | 1 |
+| sg-06a3d65d78614acd5 | posspk-sg-ep-kms | 1 | 1 |
+| sg-0a1b60facd9de3635 | posspk-vcp-sg-ep-ec2instanceconnect | 1 | 1 |
+| sg-049ad86ad4d29ce37 | ec2-rds-1 | 2 | 1 |
+| sg-00b263c4d419eee76 | rds-ec2-1 | 1 | 0 |
+| sg-0f2004c11f94f496b | lambda-rds-1 | 0 | 1 |
+| sg-06702361d579436c5 | rds-lambda-1 | 1 | 0 |
+| sg-0f8846ed58853aa3f | ksm-posprd-vpc-sg-ec2-web | 3 | 1 |
+| sg-0effaabe6a665297b | ksm-posstg-vpc-sg-alb-web-be | 1 | 1 |
+| sg-0a48afc898cb772e1 | ksm-posprd-vpc-sg-ec2-web-be | 4 | 2 |
+
+> ⚠️ **ksm-posprd- / ksm-posstg- 命名のSG**: prod/stg用SGが開発VPCに混在
+
+### [D-5] NAT Gateway（1台 available）
+
+| ID | 状態 | PublicIP | サブネット |
+|---|---|---|---|
+| nat-0afcb79dbd5562234 | available | 52.197.122.153 | subnet-0fc8bdab3418f855a |
+
+> ✅ NAT Gateway稼働中。前回の「private1a Via: null」は別ルートテーブルの問題の可能性。
+
+### [D-11] RDS クラスター詳細（4クラスター）
+
+| クラスター | Engine | バージョン | 状態 |
+|---|---|---|---|
+| inageya-staging-cluster | aurora-mysql | 8.0.mysql_aurora.3.08.2 | available |
+| pos-dev-db | aurora-mysql | 8.0.mysql_aurora.3.08.2 | available |
+| pos-prod | aurora-mysql | 8.0.mysql_aurora.3.08.2 | available |
+| posspk-db | aurora-mysql | 8.0.mysql_aurora.3.08.2 | available |
+
+> 全クラスター Aurora MySQL 8.0（バージョン統一）
+
+### [D-13] RDS パラメータグループ
+
+| パラメータグループ | ファミリー |
+|---|---|
+| default.aurora-mysql8.0 | aurora-mysql8.0 |
+| posspk-db-parameter-group | aurora-mysql8.0 |
+| setting-default-timezone-group | aurora-mysql8.0 |
+
+### [D-15] RDS スナップショット（直近5件）
+
+| スナップショット名 | クラスター | 状態 | 作成日 |
+|---|---|---|---|
+| rds-posspk-db-2026-01-30 | posspk-db | available | 2026-01-30 |
+| rds:posspk-db-2026-03-12 | posspk-db | available | 2026-03-12 |
+| rds:inageya-staging-cluster-2026-03-12 | inageya-staging-cluster | available | 2026-03-12 |
+| rds:pos-dev-db-2026-03-12 | pos-dev-db | available | 2026-03-12 |
+| rds:pos-prod-2026-03-12 | pos-prod | available | 2026-03-12 |
+
+> ✅ 自動スナップショットが本日取得済み（全4クラスター分）
+
+### [D-8追加] Step Functions sent-txt-file 連続FAILED
+
+| 実行ID | ステータス | 開始 | 終了 |
+|---|---|---|---|
+| 8169b2c6-... | **FAILED** | 2026-03-12 20:57:50 | 2026-03-12 20:58:07 |
+| 0a69b2c6-... | **FAILED** | 2026-03-12 20:57:35 | 2026-03-12 20:57:52 |
+| 4069b2c6-... | **FAILED** | 2026-03-12 20:57:18 | 2026-03-12 20:57:34 |
+
+> 🔴 **直近3回連続FAILED**（約15秒間隔でリトライ→全失敗）。CloudWatch Logsでの原因調査が必要。
+
+### ECS サービス
+
+- クラスター: ksm-posspk-ecs-cluster-web
+- サービス: ksm-posspk-task-definition-web-be-service-sg4hsjt1（1タスク稼働中）
+
+---
+
 ## まとめ・所見
 
 ### 確認済み事項（調査前から判明していた情報）
@@ -848,3 +971,7 @@ aws cloudtrail describe-trails --region $REGION --output table
 | DEV-14 | 🟡 | S3 | **phongbt-auditor-spike**（個人名バケット） | 用途・権限確認 |
 | DEV-15 | 🟡 | IAM | pos-server-logging / pos-server-s3-bucket のアクセスキーが長期間有効 | ローテーション実施 |
 | DEV-16 | 🟡 | Step Functions | -copy サフィックスSM（3本）が未実行のまま残留 | 不要であれば削除 |
+| DEV-17 | 🔴 | EC2 | **prod/stg命名のEC2が開発アカウントに多数混在**（prod-pos-server等） | 用途確認・分離 |
+| DEV-18 | ⚠️ | EC2 | **名前なしインスタンス5台 + stopped 8台**が放置 | 棚卸し・不要なら削除 |
+| DEV-19 | ⚠️ | SG | **ksm-posprd- / ksm-posstg- 命名のSG**が開発VPCに混在 | 用途確認 |
+| DEV-20 | 🔴 | Step Functions | **sent-txt-file が直近3回連続FAILED**（2026-03-12） | CloudWatch Logsで原因調査 |

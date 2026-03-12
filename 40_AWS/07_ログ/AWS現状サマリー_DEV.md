@@ -1,6 +1,6 @@
 # AWS現状サマリー DEV
 
-最終更新: 2026-03-12（初回調査）  
+最終更新: 2026-03-13（CLI追加調査完了）
 AWSアカウント: 891376952870  
 命名プレフィックス: ksm-posspk-  
 別称: スパイク環境 / 開発環境  
@@ -35,23 +35,50 @@ AWSアカウント: 891376952870
 | rtb-0e5064919aff8d8b0 | posspk-vpc-rtb-protect1a | ローカルのみ / S3EP |
 | rtb-09b9251ca249e51c9 | posspk-vpc-rtb-protect1c | ローカルのみ / S3EP |
 
-> ⚠️ private系RTの 0.0.0.0/0 の Via が null → NAT GW未設定/削除済みの可能性。要追加調査。
+> ✅ NAT Gateway: nat-0afcb79dbd5562234（available / PublicIP: 52.197.122.153 / subnet-0fc8bdab3418f855a）
+> ⚠️ private系RTの 0.0.0.0/0 の Via が null → ルートテーブルの設定確認が必要（NAT GW自体は存在）
 
-### サブネット（詳細未取得・追加調査推奨）
+### サブネット
 
 | サブネットID | 利用（推定） | 備考 |
 |---|---|---|
 | subnet-027bd3c83da4b6681 | private-1a | Lambda・ECS・TF VPC EP |
 | subnet-0557c68a1d6ba4382 | private-1c | 同上 |
 
+### セキュリティグループ（24個）
+
+posspk-sg-bastion / posspk-sg-db / posspk-sg-lambda / posspk-sg-ecs / posspk-sg-tf / posspk-sg-client-vpn-endpoint / posspk-sg-gitlap-runner / posspk-ec2-sftp-test / posspk-master-batch / posspk-sg-ep-cwm/cwl/sm/ssm/ecr/kms/ec2instanceconnect / ec2-rds-1 / rds-ec2-1 / lambda-rds-1 / rds-lambda-1 / ksm-posprd-vpc-sg-ec2-web / ksm-posprd-vpc-sg-ec2-web-be / ksm-posstg-vpc-sg-alb-web-be / default
+
+> ⚠️ **ksm-posprd- / ksm-posstg- 命名のSGが開発VPCに混在**
+
 ---
 
-## 2. EC2（詳細未取得・追加調査推奨）
+## 2. EC2（20台: running 12 / stopped 8）
 
-EBSボリューム20本が確認されており、少なくとも複数のEC2インスタンスが稼働中。  
-AMI: prod-prod / pos-ec2 / Pos-prodv1 / posserverv2 の4本が自作AMIとして存在。
+| 名前 | InstanceId | タイプ | 状態 | PrivateIP | AZ |
+|---|---|---|---|---|---|
+| pos-bastion | i-012d5522458eba141 | t2.micro | running | 10.226.50.24 | 1c |
+| stg-pos | i-03d61e966336c6bac | t2.medium | running | 10.226.50.136 | 1a |
+| stg-pos-system | i-083e64fbe8ed7f513 | t2.medium | running | 10.226.50.132 | 1a |
+| pos-server-distribute | i-0dddc4e7087f80519 | t2.medium | stopped | 10.226.50.137 | 1a |
+| prod-pos-server-distribute | i-0bbdc3958d769b652 | t2.medium | stopped | 10.226.50.133 | 1a |
+| prod-pos-server | i-0ce4bbfa56fea3b7b | t2.large | running | 10.226.50.134 | 1a |
+| (名前なし)×3 | - | t2.medium/xlarge | stopped | 10.226.50.139-141 | 1a |
+| stg-pos-large | i-08359dc0f1260afef | t2.large | running | 10.226.50.142 | 1a |
+| stg-pos-server | i-0ae0fc303dc04b91b | t2.medium | running | 10.226.50.153 | 1c |
+| prod-pos-t2.xlarge | i-0e75523fb0b24388d | t2.xlarge | running | 10.226.50.148 | 1c |
+| (名前なし)×2 | - | t2.medium/large | stopped | 10.226.50.149-155 | 1c |
+| kafka | i-00149f9b42e54656c | t2.medium | running | 10.226.50.23 | 1c |
+| **ksm-posspk-ec2-instance-web-fe** | i-027af978d9452d713 | t3.medium | running | 10.226.51.15 | 1a |
+| **posspk-ec2-bastion-public** | i-0375a33ee8fcf3993 | t3.micro | running | 10.226.51.13 | 1a |
+| **pos-runner** | i-03e229bf2d6c3bd00 | t3.medium | running | 10.226.51.115 | 1a |
+| **ksm-posspk-ec2-instance-web-be** | i-05fdf2857655d4561 | t3.medium | running | 10.226.51.91 | 1a |
 
+> 🔴 **prod/stg命名のEC2が開発アカウントに多数混在**
+> ⚠️ **名前なしインスタンス5台 + stopped 8台**が放置（棚卸し必要）
+> ✅ **ksm-posspk-系 4台が DEV新環境として稼働中**（10.226.51.x サブネット）
 > 🔴 **全20本のEBSボリュームが未暗号化**（2026-03-12確認）
+> AMI: prod-prod / pos-ec2 / Pos-prodv1 / posserverv2 の4本が自作AMIとして存在
 
 ---
 
@@ -288,6 +315,10 @@ DEV環境に **4系統のクラスターが混在**。
 | DEV-9 | ⚠️ | ECR全リポジトリ scanOnPush=False | 有効化 |
 | DEV-10 | ⚠️ | TargetTracking ALARM×4（ASG残骸疑い） | ASG存在確認後削除 |
 | DEV-11 | ⚠️ | STG→DEV クロスアカウント設計の意図確認 | Luvinaチームへ確認 |
+| DEV-12 | 🔴 | prod/stg命名のEC2が開発アカウントに多数混在 | 用途確認・分離 |
+| DEV-13 | ⚠️ | 名前なしEC2 5台 + stopped 8台が放置 | 棚卸し・不要なら削除 |
+| DEV-14 | ⚠️ | ksm-posprd-/ksm-posstg-命名のSGが開発VPCに混在 | 用途確認 |
+| DEV-15 | 🔴 | sf-sm-sent-txt-file 直近3回連続FAILED（2026-03-12） | CloudWatch Logs調査 |
 
 ---
 
@@ -299,7 +330,7 @@ DEV環境に **4系統のクラスターが混在**。
 | 別称 | スパイク環境・開発環境 | - | - |
 | 命名プレフィックス | ksm-posspk- | ksm-posstg- | ksm-posprd- |
 | VPC CIDR | 10.226.51.0/24 | 10.239.0.0/16 | 10.238.0.0/16 |
-| EC2 | 詳細未取得（EBS 20本確認） | 4台 | 2台 |
+| EC2 | **20台**（running 12 / stopped 8） | 4台 | 2台 |
 | RDS | 4系統混在（posspk/pos-dev/pos-prod/inageya） | 2クラスター | 2クラスター |
 | Lambda | **26関数** | 23関数 | 21関数 |
 | Step Functions | **10SM** | 7SM | 7SM |
