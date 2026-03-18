@@ -1,0 +1,33 @@
+{
+  "label.employeeCode": "Employee Code",
+  "label.employeeName": "Employee Name",
+  "label.store": "Store",
+  "label.employeeDescription": "Employee Classification Description",
+  "employeeSetting": {
+    "title": "Employee Settings",
+    "employee": "従業",
+    "employeeCode": "Employee Code",
+    "employeeName": "Employee Name",
+    "employeeTypeDefault": "Include",
+    "dropdown": {
+      "contains": "Contains",
+      "startsWith": "Starts with",
+      "endsWith": "Ends with"
+    },
+    "table": {
+      "store": "Store",
+      "employeeCode": "Employee Code",
+      "employeeName": "Employee Name",
+      "employeeDescription": "Employee Classification Description",
+      "printBarcode": "Print Employee Barcode"
+    },
+    "button": {
+      "create": "Create",
+      "update": "Edit",
+      "search": "F12: Search",
+      "print": "F07:Print",
+      "delete": "F08:Delete",
+      "confirm": "F09:Confirm"
+    }
+  }
+}

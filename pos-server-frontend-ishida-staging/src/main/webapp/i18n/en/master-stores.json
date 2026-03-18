@@ -1,0 +1,45 @@
+{
+  "masterStores": {
+    "headerTitle": "店舗マスタ設定",
+    "conditionLabel": {
+      "storeCode": "Store Code",
+      "storeName": "Store Name"
+    },
+
+    "tableText": {
+      "storeCode": "Store Code",
+      "storeName": "Store Name",
+      "storeAbbreviation": "Store Abbreviation",
+      "postCode": "Postal Code",
+      "address": "Address",
+      "phone": "Phone Number",
+      "basicPoint": "Basic Point",
+      "paymentMethod": "Payment Method"
+    },
+
+    "modal": {
+      "storeCode": "Store Code",
+      "storeName": "Store Name",
+      "storeAbbreviation": "Store Abbreviation",
+      "postCode": "Postal Code",
+      "address": "Address",
+      "address2": "Address Line 2",
+      "address3": "Address Line 3",
+      "phone": "Phone Number",
+      "businessType": "Business Type",
+      "basicPoint": "Base Points",
+      "regularCashRegister": "Regular Cash Register",
+      "cashlessSelf": "Cashless Self-Service",
+      "serviceCounter": "Service Counter",
+      "pointsUsage": "Point Usage Unit",
+      "achievementCreationStartDate": "Achievement Creation Start Date",
+      "achievementCreationEndDate": "Achievement Creation End Date",
+      "storeClosureStartDate": "Store Closure Start Date",
+      "closedDay": "Store Closure End Date",
+      "openTime": "Opening Time",
+      "closeTime": "Closing Time",
+      "copiedFromStore": "Copied From Store",
+      "paymentMethod": "Payment Method"
+    }
+  }
+}

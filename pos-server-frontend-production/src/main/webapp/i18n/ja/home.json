@@ -1,0 +1,17 @@
+{
+  "home": {
+    "title": "商品採用店舖確認",
+    "PLUCode": "PLUコード",
+    "productName": "商品名称",
+    "condition": "状態",
+    "store": "取扱店舖",
+    "radio": {
+      "value_1": "カスミ",
+      "value_2": "ウエルシア"
+    },
+    "button": {
+      "clear": "F04:クリア",
+      "confirm": "F09:確定"
+    }
+  }
+}

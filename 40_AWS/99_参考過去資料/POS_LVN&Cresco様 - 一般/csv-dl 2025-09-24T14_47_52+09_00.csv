@@ -1,0 +1,67 @@
+﻿ID,タイトル,コントロールステータス,重大度,不合格のチェック,不明なチェック,利用不可のチェック,合格したチェック,カスタムパラメータ
+IAM.6,Hardware MFA should be enabled for the root user,失敗,重要,1,0,0,0,UNSUPPORTED
+ECS.5,ECS containers should be limited to read-only access to root filesystems,失敗,高,4,0,0,0,UNSUPPORTED
+RDS.13,RDS automatic minor version upgrades should be enabled,失敗,高,4,0,0,0,UNSUPPORTED
+EC2.2,VPC default security groups should not allow inbound or outbound traffic,失敗,高,2,0,0,0,UNSUPPORTED
+EC2.9,EC2 instances should not have a public IPv4 address,失敗,高,2,0,0,0,UNSUPPORTED
+CloudTrail.1,CloudTrail should be enabled and configured with at least one multi-Region trail that includes read and write management events,失敗,高,1,0,0,0,UNSUPPORTED
+EC2.25,EC2 launch templates should not assign public IPs to network interfaces,失敗,高,1,0,0,0,UNSUPPORTED
+GuardDuty.1,GuardDuty should be enabled,失敗,高,1,0,0,0,UNSUPPORTED
+Inspector.3,Amazon Inspector Lambda code scanning should be enabled,失敗,高,1,0,0,0,UNSUPPORTED
+S3.9,S3 general purpose buckets should have server access logging enabled,失敗,中,7,0,0,1,UNSUPPORTED
+SecretsManager.1,Secrets Manager secrets should have automatic rotation enabled,失敗,中,7,0,0,0,SUPPORTED
+StepFunctions.1,Step Functions state machines should have logging turned on,失敗,中,6,0,0,0,SUPPORTED
+S3.5,S3 general purpose buckets should require requests to use SSL,失敗,中,5,0,0,3,UNSUPPORTED
+ECR.2,ECR private repositories should have tag immutability configured,失敗,中,4,0,0,0,UNSUPPORTED
+ECR.3,ECR repositories should have at least one lifecycle policy configured,失敗,中,4,0,0,0,UNSUPPORTED
+RDS.10,IAM authentication should be configured for RDS instances,失敗,中,4,0,0,0,UNSUPPORTED
+RDS.11,RDS instances should have automatic backups enabled,失敗,中,4,0,0,0,SUPPORTED
+EC2.15,EC2 subnets should not automatically assign public IP addresses,失敗,中,3,0,0,8,UNSUPPORTED
+SecretsManager.4,Secrets Manager secrets should be rotated within a specified number of days,失敗,中,3,0,0,4,SUPPORTED
+EC2.10,Amazon EC2 should be configured to use VPC endpoints that are created for the Amazon EC2 service,失敗,中,2,0,0,0,UNSUPPORTED
+EC2.3,Attached EBS volumes should be encrypted at-rest,失敗,中,2,0,0,1,UNSUPPORTED
+EC2.57,VPCs should be configured with an interface endpoint for Systems Manager,失敗,中,2,0,0,0,SUPPORTED
+EC2.58,VPCs should be configured with an interface endpoint for Systems Manager Incident Manager Contacts,失敗,中,2,0,0,0,SUPPORTED
+EC2.60,VPCs should be configured with an interface endpoint for Systems Manager Incident Manager,失敗,中,2,0,0,0,SUPPORTED
+RDS.12,IAM authentication should be configured for RDS clusters,失敗,中,2,0,0,0,UNSUPPORTED
+RDS.14,Amazon Aurora clusters should have backtracking enabled,失敗,中,2,0,0,0,SUPPORTED
+RDS.24,RDS Database Clusters should use a custom administrator username,失敗,中,2,0,0,0,UNSUPPORTED
+RDS.45,Aurora MySQL DB clusters should have audit logging enabled,失敗,中,2,0,0,0,UNSUPPORTED
+Account.1,Security contact information should be provided for an AWS account.,失敗,中,1,0,0,0,UNSUPPORTED
+EC2.172,EC2 VPC Block Public Access settings should block internet gateway traffic,失敗,中,1,0,0,0,SUPPORTED
+EC2.55,VPCs should be configured with an interface endpoint for ECR API,失敗,中,1,0,0,1,SUPPORTED
+EC2.56,VPCs should be configured with an interface endpoint for Docker Registry,失敗,中,1,0,0,1,SUPPORTED
+EC2.6,VPC flow logging should be enabled in all VPCs,失敗,中,1,0,0,1,UNSUPPORTED
+EC2.7,EBS default encryption should be enabled,失敗,中,1,0,0,0,UNSUPPORTED
+IAM.11,Ensure IAM password policy requires at least one uppercase letter,失敗,中,1,0,0,0,UNSUPPORTED
+IAM.12,Ensure IAM password policy requires at least one lowercase letter,失敗,中,1,0,0,0,UNSUPPORTED
+IAM.13,Ensure IAM password policy requires at least one symbol,失敗,中,1,0,0,0,UNSUPPORTED
+IAM.14,Ensure IAM password policy requires at least one number,失敗,中,1,0,0,0,UNSUPPORTED
+IAM.15,Ensure IAM password policy requires minimum password length of 14 or greater,失敗,中,1,0,0,0,UNSUPPORTED
+IAM.7,Password policies for IAM users should have strong configurations,失敗,中,1,0,0,0,SUPPORTED
+KMS.1,IAM customer managed policies should not allow decryption actions on all KMS keys,失敗,中,1,0,0,10,UNSUPPORTED
+Macie.1,Macie should be enabled,失敗,中,1,0,0,0,UNSUPPORTED
+S3.1,S3 general purpose buckets should have block public access settings enabled,失敗,中,1,0,0,0,UNSUPPORTED
+SSM.6,SSM Automation should have CloudWatch logging enabled,失敗,中,1,0,0,0,UNSUPPORTED
+SecretsManager.3,Remove unused Secrets Manager secrets,失敗,中,1,0,0,6,SUPPORTED
+IAM.2,IAM users should not have IAM policies attached,失敗,低,11,0,0,7,UNSUPPORTED
+S3.13,S3 general purpose buckets should have Lifecycle configurations,失敗,低,4,0,0,4,SUPPORTED
+CloudWatch.1,"A log metric filter and alarm should exist for usage of the root"" user""",失敗,低,1,0,0,0,UNSUPPORTED
+CloudWatch.10,Ensure a log metric filter and alarm exist for security group changes,失敗,低,1,0,0,0,UNSUPPORTED
+CloudWatch.11,Ensure a log metric filter and alarm exist for changes to Network Access Control Lists (NACL),失敗,低,1,0,0,0,UNSUPPORTED
+CloudWatch.12,Ensure a log metric filter and alarm exist for changes to network gateways,失敗,低,1,0,0,0,UNSUPPORTED
+CloudWatch.13,Ensure a log metric filter and alarm exist for route table changes,失敗,低,1,0,0,0,UNSUPPORTED
+CloudWatch.14,Ensure a log metric filter and alarm exist for VPC changes,失敗,低,1,0,0,0,UNSUPPORTED
+CloudWatch.2,Ensure a log metric filter and alarm exist for unauthorized API calls,失敗,低,1,0,0,0,UNSUPPORTED
+CloudWatch.3,Ensure a log metric filter and alarm exist for Management Console sign-in without MFA,失敗,低,1,0,0,0,UNSUPPORTED
+CloudWatch.4,Ensure a log metric filter and alarm exist for IAM policy changes,失敗,低,1,0,0,0,UNSUPPORTED
+CloudWatch.5,Ensure a log metric filter and alarm exist for CloudTrail configuration changes,失敗,低,1,0,0,0,UNSUPPORTED
+CloudWatch.6,Ensure a log metric filter and alarm exist for AWS Management Console authentication failures,失敗,低,1,0,0,0,UNSUPPORTED
+CloudWatch.7,Ensure a log metric filter and alarm exist for disabling or scheduled deletion of customer created CMKs,失敗,低,1,0,0,0,UNSUPPORTED
+CloudWatch.8,Ensure a log metric filter and alarm exist for S3 bucket policy changes,失敗,低,1,0,0,0,UNSUPPORTED
+CloudWatch.9,Ensure a log metric filter and alarm exist for AWS Config configuration changes,失敗,低,1,0,0,0,UNSUPPORTED
+EC2.170,EC2 launch templates should use Instance Metadata Service Version 2 (IMDSv2),失敗,低,1,0,0,0,UNSUPPORTED
+IAM.16,Ensure IAM password policy prevents password reuse,失敗,低,1,0,0,0,UNSUPPORTED
+IAM.17,Ensure IAM password policy expires passwords within 90 days or less,失敗,低,1,0,0,0,UNSUPPORTED
+IAM.18,Ensure a support role has been created to manage incidents with AWS Support,失敗,低,1,0,0,0,UNSUPPORTED
+IAM.21,IAM customer managed policies that you create should not allow wildcard actions for services,失敗,低,1,0,0,10,UNSUPPORTED

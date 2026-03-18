@@ -1,0 +1,135 @@
+@import '../../styles/mixins';
+@import '../../styles/variable';
+
+.button-normal__blue {
+  background: $blue545F95;
+  cursor: pointer;
+
+  .button-icon-text {
+    cursor: pointer;
+  }
+
+  background: $blue545F95;
+
+  &:hover {
+    background: $blue636FAC;
+  }
+
+  &:active {
+    background: $blue35417D;
+  }
+
+  &:disabled {
+    background: $grey9FA3B9;
+  }
+}
+
+.btn-primary {
+  height: var(--height-btn, 50px);
+  width: var(--width-btn, fit-content);
+  font-size: var(--fontSize, 24px);
+  background-color: var(--backgroundColor, $blue545F95);
+  border-radius: var(--button-border-radius, 12px);
+  border: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: $white;
+  padding: 12px;
+  overflow: hidden;
+  flex-shrink: 0;
+
+  &:hover {
+    background: $blue636FAC;
+  }
+
+  &__text {
+    flex-shrink: 0;
+    cursor: pointer;
+  }
+
+  &:active {
+    background: $blue35417D;
+  }
+
+  &:disabled {
+    background: $grey9FA3B9;
+    cursor: not-allowed;
+
+    .btn-primary {
+      &__icon,
+      &__text {
+        cursor: not-allowed;
+      }
+    }
+  }
+
+  &__icon {
+    width: 30px;
+    height: 30px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-right: 12px;
+    &.icon-end {
+      margin-right: 0;
+      margin-left: 12px;
+    }
+  }
+
+  &__icon.btn-primary-no-text {
+    margin-right: 0;
+  }
+}
+
+.box-button-header {
+  margin: 0 8px;
+
+  .btn-header {
+    background-color: $white;
+    color: $blue545F95;
+    border: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 12px;
+    overflow: hidden;
+    height: var(--height-btn, 50px);
+    border-radius: var(--button-border-radius, 15px);
+    width: fit-content;
+    min-width: 50px;
+    font-size: 24px;
+
+    &:hover {
+      background-color: $blueE3E5F6;
+      color: $blue545F95;
+    }
+
+    &:active {
+      background-color: $blue545F95;
+      color: $white;
+
+      .btn-header__icon {
+        fill: $white;
+      }
+    }
+
+    &:disabled {
+      opacity: 30%;
+      pointer-events: none;
+    }
+
+    &__icon {
+      width: 30px;
+      height: 30px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      fill: $blue545F95;
+    }
+
+    &__icon.iconMagrin {
+      margin-right: 12px;
+    }
+  }
+}

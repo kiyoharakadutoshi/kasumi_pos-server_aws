@@ -1,0 +1,80 @@
+@import '../../../styles/styles';
+
+.employee-table-container {
+  .red-text {
+    color: $redE62C2C;
+  }
+
+  tr.record-remove td:before {
+    content: " ";
+    position: absolute;
+    top: 50%;
+    left: 0;
+    border-bottom: 3px solid $redE62C2C;
+    width: 100%;
+  }
+}
+
+.table-notice {
+  height: 34px;
+  color: $redFA5151;
+  margin-top: 12px;
+  display: flex;
+  justify-content: end;
+}
+
+.table-employee-setting {
+  border-left: 1px solid $greyE5E5E5;
+  margin-bottom: 0;
+
+  .title-table {
+    border-bottom: 1px solid $greyE5E5E5;
+
+    .header-table {
+      vertical-align: middle;
+      text-align: center;
+    }
+  }
+
+  .data-table {
+    display: block;
+    position: relative;
+    width: 100%;
+    overflow-y: scroll;
+    max-height: calc(100vh - 370px);
+
+    tr {
+      td:nth-child(1) {
+        padding-left: 32px;
+      }
+    }
+  }
+
+  tr {
+    width: 100%;
+    display: flex;
+  }
+
+  td,
+  th {
+    flex-basis: 100%;
+    flex-grow: 2;
+    display: block;
+    padding: 8px;
+    text-align: left;
+  }
+
+  th {
+    text-align: center;
+  }
+
+  .data-item {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .update-text {
+    padding-top: 36px;
+  }
+}

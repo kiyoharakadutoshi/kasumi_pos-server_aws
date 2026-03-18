@@ -1,0 +1,52 @@
+@import '../../../styles/styles';
+
+.sidebar-store-menu {
+  position: fixed;
+  top: calc($heightHeader + 16px);
+  left: -$widthSidebar;
+  bottom: 0;
+  z-index: 90;
+  transition: all 0.3s ease;
+  @include center();
+
+  @media (max-width: 1600px) {
+    --width-sidebar: 300px;
+    left: -300px;
+  }
+
+  &__expand-button {
+    width: 24px;
+    height: 100px;
+    padding: 4px;
+    background-color: $blue545F95;
+    cursor: pointer;
+    border-top-left-radius: 0;
+    border-bottom-left-radius: 0;
+
+    path {
+      fill: $white;
+    }
+  }
+
+  &__expanded {
+    left: 0;
+    padding-right: 20px;
+
+    .sidebar-store-menu__expand-button {
+      svg {
+        rotate: 180deg;
+      }
+    }
+  }
+}
+
+.sidebar-store-background {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: $black464646;
+  opacity: 0.2;
+  z-index: 90;
+}

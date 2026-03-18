@@ -1,0 +1,34 @@
+{
+  "userSetting": {
+    "label": {
+      "title": "Site login user master settings",
+      "userId": "UserID",
+      "userName": "User Name",
+      "userRole": "User Role"
+    },
+    "table": {
+      "userId": "UserID",
+      "userName": "User Name",
+      "userRole": "User Role",
+      "store": "Store",
+      "updateDate": "Update Date",
+      "updateBy": "Update by"
+    },
+    "store": "Store",
+    "userRole": "User Role"
+  },
+  "modalUser": {
+   "title": {
+      "editMode": "Edit modal",
+      "createMode": "Create modal"
+    },
+    "label": {
+      "userId": "UserID",
+      "userName": "User Name",
+      "userRole": "User Role",
+      "store": "Store",
+      "password": "Password",
+      "confirmPassword": "Password(Confirm)"
+    }
+  }
+}

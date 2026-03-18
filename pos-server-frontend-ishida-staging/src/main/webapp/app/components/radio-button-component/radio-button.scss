@@ -1,0 +1,111 @@
+@import "src/main/webapp/app/styles/styles";
+
+.radio-button-container-vertical {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  flex-direction: column;
+}
+
+.radio-button-container-horizontal {
+  @include center(flex-start, $spacing: 24px);
+}
+
+.radio-button {
+  cursor: pointer;
+  @include center(flex-start);
+  font: normal normal $medium-weight 24px/36px 'Noto Sans JP', sans-serif;
+  flex-shrink: 0;
+
+  &__text-value {
+    flex: 1;
+    padding-left: 8px;
+    color: $black464646;
+    font-weight: $medium-weight;
+    cursor: pointer;
+    margin-bottom: 2px;
+    white-space: pre-wrap;
+    overflow-wrap: break-word;
+    word-break: break-word;
+  }
+
+  &__text-value-disabled {
+    cursor: initial;
+  }
+
+  &__input {
+    appearance: none;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    width: 22px;
+    height: 22px;
+    margin: 0;
+    border-radius: 50%;
+    outline: none;
+    transition: border-color 0.3s;
+    position: relative;
+    cursor: pointer;
+    border: 3px solid $blue545F95;
+    box-sizing: border-box;
+
+    &:before {
+      box-sizing: border-box;
+      content: '';
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: 11px;
+      height: 11px;
+      border-radius: 50%;
+      transition: background-color 0.2s;
+      background: transparent;
+    }
+
+    &:hover, &:focus {
+      border-color: $blue001440;
+    }
+
+    &:active {
+      border-color: $blue35417D;
+    }
+
+    &:disabled {
+      cursor: not-allowed;
+      border-color: $grey9FA3B9;
+    }
+
+    &:checked {
+      border: 3px solid $blue545F95;
+
+      &:before {
+        background: $blue545F95 0 0 no-repeat padding-box;
+      }
+
+      &:hover,&:focus {
+        border-color: $blue001440;
+
+        &:before {
+          background-color: $blue001440;
+        }
+      }
+
+      &:active {
+        border-color: $blue35417D;
+
+        &:before {
+          background-color: $blue35417D;
+        }
+      }
+
+      &:disabled {
+        cursor: not-allowed;
+        border-color: $grey9FA3B9;
+
+        &:before {
+          background-color: $grey9FA3B9;
+        }
+      }
+    }
+  }
+}

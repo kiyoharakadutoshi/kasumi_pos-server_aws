@@ -1,0 +1,21 @@
+@use "mixin-deposit-withdraw" as mixin-deposit-withdraw;
+
+
+.header-pin {
+  background-color: #B0B9D7;
+  width: 100%;
+  max-width: calc(100dvw - 48px);
+  height: 52px;
+  border-radius: 16px 16px 0 0;
+  user-select: none;
+
+  @include mixin-deposit-withdraw.grid-header-table;
+  align-items: center;
+
+  &--text-align-center {
+    text-align: center;
+    color: #001440;
+    font: normal normal 500 var(--input-font-size, 24px) / var(--line-height, 36px) "Noto Sans JP", sans-serif;
+  }
+}
+

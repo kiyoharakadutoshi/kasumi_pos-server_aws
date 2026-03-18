@@ -1,0 +1,84 @@
+@import '../../styles/styles';
+
+.cash-register-main {
+  padding-left: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  --input-height: 50px;
+  --input-horizontal-padding: 10px;
+
+  .radio-button-container-horizontal {
+    gap: 2vw;
+  }
+
+  &__search-radio {
+    margin-top: 2px;
+    display: flex;
+    align-items: center;
+  }
+
+  &__required {
+    color: $redBC1C42;
+  }
+
+  &__type-label {
+    display: flex;
+    align-items: center;
+    color: $black464646;
+    margin-bottom: 2px;
+    font-weight: $medium-weight;
+  }
+
+  &__list-type-item {
+    background-color: $white;
+    display: flex;
+    padding: 0 16px;
+    align-items: center;
+    height: 100%;
+    gap: 32px;
+  }
+
+  &__search {
+    align-items: center;
+    display: flex;
+    gap: 32px;
+    padding: 16px;
+    background-color: $white;
+    border-radius: 15px;
+    flex-wrap: wrap;
+    z-index: 2;
+  }
+
+  .no-record {
+    color: $redBC1C42;
+    text-align: center;
+    border-radius: 20px;
+    background-color: white;
+    padding: 24px 8px 36px;
+    font-weight: $medium-weight;
+  }
+
+  .date-container {
+    display: flex;
+    gap: 16px;
+    align-items: center;
+
+    .date-picker {
+      width: 310px;
+
+      .wrap-label {
+        flex-shrink: 0;
+      }
+    }
+
+    .date-tilde {
+      font-weight: $medium-weight;
+      color: $black464646;
+    }
+
+    .date-picker:last-of-type {
+      width: 180px;
+    }
+  }
+}

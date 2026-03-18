@@ -1,0 +1,29 @@
+{
+  "addPaymentMachine": {
+    "searchCriteria": "検索条件",
+    "cashRegisterType": "レジ種別",
+    "placeholder": "レジ種別",
+    "button": {
+      "search": "検索",
+      "delete": "削除",
+      "update": "編集",
+      "create": "新規",
+      "decide": "確定"
+    },
+    "table": {
+      "no": "No",
+      "code": "コード",
+      "typeCashRegister": "レジ種別"
+    },
+    "modal": {
+      "store": "取消",
+      "register": "登録",
+      "update": "更新"
+    },
+    "errorMsg": {
+      "MSG_ERR_010": "データが見つかりませんでした",
+      "MSG_VAL_002": "名前は50文字以内でなければなりません。",
+      "maxLengthRecord": "検索結果が100件を超えたため、最初の100件を表示しています。"
+    }
+  }
+}

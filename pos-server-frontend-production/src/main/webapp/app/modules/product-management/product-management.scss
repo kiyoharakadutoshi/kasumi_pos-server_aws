@@ -1,0 +1,114 @@
+@import 'src/main/webapp/app/styles/styles';
+
+.app-container .view-container:has(.product-management) {
+  padding-top: 16px;
+}
+
+.product-management {
+  padding-left: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  --input-horizontal-padding: 18px;
+
+  .table-scroll {
+    height: calc(100vh - 308px);
+  }
+
+  .promotion-table {
+    padding-bottom: 0;
+  }
+
+  &__item-name-error {
+    .popover-text-label {
+      &__text {
+        color: $redBC1C42;
+      }
+    }
+  }
+
+  .table-data__table-main-body td {
+    padding-top: 5px;
+    padding-bottom: 5px;
+  }
+
+  &__search {
+    --label-width: min(11.6vw, 220px);
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    padding: 16px;
+    border-radius: 15px;
+    background-color: $white;
+  }
+
+  &__inline {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+  }
+
+  &__product {
+    width: 22%;
+    min-width: 400px;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+  }
+
+  &__group-code {
+    --label-width: 186px;
+  }
+
+  &__product-code {
+    width: 35%;
+    height: 50px;
+  }
+
+  &__item-name {
+    width: calc(50% + 16px);
+    flex-grow: 0;
+
+    .popover-text-label__lable {
+      width: 186px;
+      flex-shrink: 0;
+    }
+  }
+
+  .popover-text-label__lable {
+    flex-shrink: 0;
+  }
+
+  &__unit-price,
+  &__force-price {
+    width: 15%;
+    min-width: 270px;
+    flex-grow: 0;
+
+    .popover-text-label__text {
+      justify-content: end;
+    }
+  }
+
+  .table-common {
+    height: 500px;
+
+    &__table-body {
+      max-height: 510px !important;
+    }
+  }
+
+  .table-data__table-body {
+    [data-index] .mix-matchs-row {
+      td {
+        background-color: $greenDAF5CD;
+      }
+    }
+
+    [data-index] .special-promotion-row {
+      td {
+        background-color: $pinkFFDCFA;
+      }
+    }
+  }
+}

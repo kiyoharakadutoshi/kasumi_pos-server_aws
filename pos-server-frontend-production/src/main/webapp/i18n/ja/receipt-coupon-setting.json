@@ -1,0 +1,8 @@
+{
+  "receiptCouponSetting.title": "レシートクーポン設定",
+  "receiptCouponSetting.table.storeCode": "店舗コード",
+  "receiptCouponSetting.table.title": "タイトル",
+  "receiptCouponSetting.table.printingAgency": "印字機関",
+  "receiptCouponSetting.table.availablePeriod": "利用可能期間",
+  "receiptCouponSetting.table.couponCode": "クーポン券コード"
+}

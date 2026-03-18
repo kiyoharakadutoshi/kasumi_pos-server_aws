@@ -1,0 +1,76 @@
+@import '../../styles/styles';
+
+.register-settlement {
+  padding-left: 24px;
+
+  .container-category-modal {
+    .default-modal-container {
+      &__modal-body-content {
+        overflow-x: inherit;
+      }
+
+      &__modal-body-scroll {
+        overflow-y: inherit;
+      }
+    }
+
+    .modal-content-register {
+      .modal-content-infor {
+        padding-top: 25px;
+      }
+    }
+  }
+
+  .date-picker {
+    .wrap-input-text-mark {
+      height: 50px;
+
+      .input-date-picker {
+        width: 165px;
+      }
+    }
+  }
+
+  &__search {
+    background-color: $white;
+    display: flex;
+    padding: 8px;
+    border-radius: 15px;
+    gap: 10px;
+  }
+
+  &__list {
+    margin-top: 16px;
+
+    .table-data {
+      .table-scroll {
+        height: calc(100vh - 298px);
+      }
+
+      &__table-body {
+        .proceed {
+          .cash_register_status {
+            .popover-text__content {
+              background-color: #f4b084;
+              width: 100%;
+              height: 84%;
+              border-radius: 5px;
+            }
+          }
+        }
+
+        .completed,
+        .auto-settled {
+          .cash_register_status {
+            .popover-text__content {
+              background-color: #8ea9db;
+              width: 100%;
+              height: 84%;
+              border-radius: 5px;
+            }
+          }
+        }
+      }
+    }
+  }
+}

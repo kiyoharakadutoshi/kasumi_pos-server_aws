@@ -1,0 +1,15 @@
+.master-ticket__main {
+  .ticket-modal {
+    $height-record: 44px;
+
+    .table-scroll {
+      height: calc(var(--table-row) * $height-record + 18px);
+      max-height: 150px;
+    }
+
+    .default-modal-container__modal-body-padding {
+      padding-bottom: 24px;
+    }
+  }
+}
+

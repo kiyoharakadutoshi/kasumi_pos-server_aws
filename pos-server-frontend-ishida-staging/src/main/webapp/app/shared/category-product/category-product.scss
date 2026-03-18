@@ -1,0 +1,44 @@
+@import '../../styles/styles';
+
+.no-bullets {
+  list-style-type: none;
+  padding: 0;
+  margin: 0;
+}
+
+.content-checkbox {
+  margin-top: 5%;
+  margin-bottom: 5%;
+}
+
+.font_style {
+  font-family: 'Noto Sans JP', sans-serif;
+  font-weight: normal;
+  font-stretch: normal;
+  font-size: 24px;
+  line-height: 36px;
+}
+
+.name_search {
+  color: $blue001440;
+  font-weight: $medium-weight;
+}
+
+.group-button-header-content {
+  width: 50vw;
+  @include center(start);
+  gap: 8px;
+  margin-bottom: 10px;
+}
+
+.input-wrapper {
+  height: 48px;
+  display: flex;
+  align-items: center;
+}
+
+.button-wrapper {
+  height: 48px;
+  display: flex;
+  align-items: center;
+}

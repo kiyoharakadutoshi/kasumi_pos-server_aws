@@ -1,0 +1,85 @@
+@use 'src/main/webapp/app/styles/mixins' as mixins;
+@use 'src/main/webapp/app/styles/variable' as variables;
+
+@mixin ButtonPagination {
+  height: var(--height-btn, 50px);
+  width: var(--width-btn, fit-content);
+  font-size: var(--fontSize, 24px);
+  background-color: var(--backgroundColor, variables.$blue545F95);
+  border-radius: var(--button-border-radius, 12px);
+  border: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: variables.$white;
+  padding: 12px;
+  overflow: hidden;
+  flex-shrink: 0;
+
+  &:hover {
+    background: variables.$blue636FAC;
+  }
+
+  &__text {
+    flex-shrink: 0;
+    cursor: pointer;
+  }
+
+  &:active {
+    background: variables.$blue35417D;
+  }
+
+  &:disabled {
+    background: variables.$grey9FA3B9;
+    cursor: not-allowed;
+
+    .btn-primary {
+      &__icon,
+      &__text {
+        cursor: not-allowed;
+      }
+    }
+  }
+
+  &__icon {
+    width: 30px;
+    height: 30px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-right: 12px;
+  }
+
+  &__icon.btn-primary-no-text {
+    margin-right: 0;
+  }
+}
+
+
+#cash-pagination-29 {
+
+  .pagination-container {
+    position: fixed;
+    bottom: 0;
+    background: #B1B9D7;
+    width: 100%;
+    border-radius: 50px 0 0 0;
+    display: flex;
+    justify-content: end;
+    padding: 9px 48px 9px 9px;
+  }
+
+  .label_paging {
+    margin-left: 38px;
+  }
+
+  .group-button-pagination {
+    display: flex;
+    gap: 4px;
+  }
+
+  .button-pagination {
+    @include ButtonPagination;
+  }
+}
+

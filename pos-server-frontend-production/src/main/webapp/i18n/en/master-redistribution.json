@@ -1,0 +1,11 @@
+{
+  "master-redistribution": {
+    "headerTitle": "Scan&Go product master redistribution",
+    "product_code": "Product code",
+    "plu_code": "PLU code",
+    "product_name": "Product name",
+    "standard_price": "Standard price",
+    "productCodeSwitching": "Product code switching",
+    "pluCodeSwitching" : "PLU code switching"
+  }
+}

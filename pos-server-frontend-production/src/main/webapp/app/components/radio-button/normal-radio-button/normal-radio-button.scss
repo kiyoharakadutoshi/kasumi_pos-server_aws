@@ -1,0 +1,11 @@
+@import '../../../styles/mixins';
+
+.radio-button-container {
+  .required {
+    color: #FA1E1E;
+  }
+
+  .radio-list {
+    margin-right: 40px;
+  }
+}

@@ -1,0 +1,10 @@
+{
+  "paging": {
+    "currentlyPage": "件中",
+    "recordNumber": "件",
+    "firstRow": "先頭行",
+    "lastRow": "最終行",
+    "previousPage": "▲前頁",
+    "nextPage": "▼次頁"
+  }
+}

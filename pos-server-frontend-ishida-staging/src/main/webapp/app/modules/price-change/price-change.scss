@@ -1,0 +1,312 @@
+@import '../../styles/styles';
+
+.price-change {
+  .bottom-button {
+    left: 25px;
+
+    .button-normal {
+      position: relative;
+    }
+
+    &__label-page-container {
+      position: absolute;
+      left: -980px;
+    }
+  }
+
+  &__main {
+    display: flex;
+    flex-direction: column;
+    padding-left: 24px;
+
+    .id_delete_flag {
+      .promotion-table {
+        &__cell-data {
+          justify-content: center;
+        }
+      }
+    }
+  }
+
+  &__search {
+    background-color: $white;
+    border-radius: 15px;
+    padding: 8px;
+    gap: 30px;
+    display: flex;
+    margin-bottom: 16px;
+
+    .price-change-button {
+      display: flex;
+      gap: 10px;
+
+      .btn-primary {
+        &:first-child {
+          width: 192px;
+        }
+
+        &__text {
+          user-select: none;
+        }
+      }
+    }
+  }
+
+  &__code {
+    display: flex;
+    gap: 20px;
+
+    &__title {
+      font-weight: 500;
+    }
+
+    &__item {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+
+      &:last-child {
+        .input-container {
+          cursor: auto !important;
+        }
+      }
+
+      &__group-code-name {
+        width: 34vw;
+        flex-shrink: 0;
+        background-color: $greyD9DCE1;
+        border-radius: 0.78125vw;
+        line-height: 2.2vw;
+        font-weight: $medium-weight;
+        flex-grow: unset;
+
+        @media (min-width: 1920px) {
+          border-radius: 15px;
+          height: 50px;
+          line-height: 50px;
+        }
+      }
+    }
+  }
+
+  &__table {
+    .table-scroll {
+      height: calc(100vh - 222px);
+
+      .tooltip-number-input-text {
+        border-radius: 10px;
+      }
+
+      .description-err {
+        .item_name {
+          .popover-text__content {
+            color: $redBC1C42;
+          }
+        }
+      }
+
+      .table-data {
+        &__cell {
+          padding: 0 8px;
+        }
+      }
+    }
+  }
+}
+
+@media (max-width: 1746px) {
+  .price-change {
+    &__search {
+      gap: 15px;
+    }
+
+    &__table {
+      .promotion-table {
+        &__row-data {
+          .tooltip-number-input-text {
+            height: 35px;
+          }
+
+          .promotion-table {
+            &__cell {
+              padding: 5px 3px;
+            }
+          }
+        }
+      }
+    }
+  }
+}
+
+@media (max-width: 1536px) {
+  .price-change {
+    &__search {
+      padding: 6px;
+
+      .label-text,
+      .btn-primary,
+      span,
+      input {
+        font-size: 18px;
+      }
+
+      .btn-primary {
+        width: 150px;
+      }
+    }
+
+    .price-change {
+      &__code {
+        .input-container:last-child {
+          width: 500px;
+        }
+      }
+    }
+
+    &__table {
+      .promotion-table {
+        &__table-header {
+          .table-header-sort {
+            font-size: 20px;
+          }
+        }
+
+        &__cell {
+          padding: 2.5px 3px;
+          font-size: 20px;
+        }
+      }
+    }
+
+    .bottom-button {
+      height: 40px;
+
+      .btn-primary {
+        height: 32px;
+      }
+    }
+
+    .promotion-table {
+      &__cell-text {
+        font-size: 20px;
+      }
+    }
+  }
+  .price-change__table {
+    .promotion-table {
+      &__row-data {
+        .tooltip-number-input-text {
+          font-size: 20px;
+        }
+      }
+
+      .promotion-table {
+        &__cell {
+          padding: 3px 3px;
+        }
+      }
+    }
+  }
+}
+
+@media (max-width: 1281px) {
+  .price-change {
+    &__table {
+      .promotion-table {
+        &__row-data {
+          td {
+            font-size: 21px;
+          }
+        }
+
+        tr {
+          padding: 0 3px;
+
+          th {
+            font-size: 20px;
+          }
+        }
+
+        &__table-scroll {
+          .table {
+            td {
+              font-size: 15px;
+              padding: 1px 3px;
+
+              input {
+                font-size: 15px;
+              }
+            }
+          }
+        }
+
+        &__table-header {
+          th {
+            padding: 0 2px;
+          }
+        }
+
+        .tooltip-number-input-text {
+          height: 25px;
+        }
+      }
+    }
+  }
+
+  .price-change {
+    .promotion-table {
+      &__cell-text {
+        font-size: 16px;
+        line-height: normal;
+      }
+    }
+  }
+
+  .price-change {
+    &__table {
+      .promotion-table {
+        &__table-header {
+          .table-header-sort {
+            font-size: 15px;
+          }
+        }
+      }
+    }
+  }
+
+  .price-change {
+    &__main {
+      margin-top: -15px;
+    }
+
+    &__search {
+      margin: 5px;
+
+      .btn-primary {
+        height: 30px;
+      }
+    }
+
+    &__code {
+      .input-container {
+        &:last-child {
+          width: 278px;
+        }
+      }
+    }
+
+    &__table {
+      .promotion-table {
+        &__cell {
+          padding: 0 3px;
+        }
+      }
+    }
+
+    .input-container {
+      .wrap-input-text {
+        height: 30px;
+      }
+    }
+  }
+}

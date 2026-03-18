@@ -1,0 +1,48 @@
+@import '../../../styles/styles';
+
+.register-settlement-detail {
+  &__main {
+    padding-left: 24px;
+  }
+
+  &__infor {
+    display: flex;
+    gap: 16px;
+    margin-bottom: 16px;
+    background-color: $white;
+    padding: 16px;
+    border-radius: 15px;
+  }
+
+  &__table {
+    display: flex;
+    gap: 15px;
+
+    .table-scroll {
+      height: calc(100vh - 310px);
+    }
+
+    [data-index] {
+      tr.children {
+        td.item_name {
+          padding-left: 60px;
+        }
+      }
+    }
+
+    .tooltip-number-input-text {
+      text-align: right;
+      border-radius: 10px;
+    }
+  }
+
+  .date-picker {
+    .wrap-input-text-mark {
+      height: 50px;
+
+      .input-date-picker {
+        width: 162px;
+      }
+    }
+  }
+}

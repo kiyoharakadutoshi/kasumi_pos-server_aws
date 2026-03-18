@@ -1,0 +1,152 @@
+@import '../../../styles/variable';
+@import '../../../styles/mixins';
+
+.container-modal {
+  .default-modal-container {
+    &__modal-body-content {
+      min-width: 840px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      scrollbar-width: none;
+    }
+
+    .input-container {
+      .wrap-label-text {
+        min-width: 195px;
+      }
+    }
+
+    .dropdown-container {
+      &__dropdown-title {
+        min-width: 195px;
+      }
+
+      &__dropdown-list {
+        --dropdown-height: -220px;
+      }
+    }
+
+    .container-time-picker {
+      width: 35%;
+      display: flex;
+      align-items: center;
+      border: 3px solid #b0b9d7;
+      border-radius: 15px;
+      height: 50px;
+      box-sizing: border-box;
+
+      &:hover {
+        border-color: $blue001440;
+
+        .input-text {
+          background-color: $white;
+        }
+      }
+
+      &:focus-within {
+        border-color: $blue001440;
+      }
+
+      .input-text {
+        &:active {
+          background-color: $blueE7EAF0;
+        }
+      }
+
+      .wrap-input-text {
+        border: none;
+      }
+
+      &.disabled {
+        border: none;
+
+        .input-text {
+          background-color: $greyD9DCE1;
+        }
+      }
+
+      // css for titile picker
+      .time-picker-title {
+        font-size: 24px;
+        font-weight: 500;
+        color: #0f192f;
+        min-width: 195px;
+        margin-bottom: 0;
+        background-color: $blueB0B9D7;
+        padding-left: 24px;
+        border-top-left-radius: 10px;
+        border-bottom-left-radius: 10px;
+        height: 100%;
+        display: flex;
+        align-items: center;
+      }
+
+      // css for time picker
+      .drop-down-container {
+        flex: 1;
+        height: 100%;
+
+        .drop-down-form {
+          height: 100%;
+
+          .input-time-picker {
+            border-top-left-radius: 0;
+            border-bottom-left-radius: 0;
+            border-top-right-radius: 10px;
+            border-bottom-right-radius: 10px;
+            border: none;
+            width: 100% !important;
+            padding: 0;
+
+            &:focus-within {
+              border-color: $blue001440;
+
+              .form-control {
+                background-color: $white;
+              }
+            }
+
+            &:focus {
+              background-color: $white;
+
+              .form-control {
+                background-color: $white;
+              }
+            }
+
+            &:active {
+              background-color: $blueE7EAF0;
+
+              .form-control {
+                background-color: $blueE7EAF0;
+              }
+            }
+
+            .input-picker-style {
+              height: 100%;
+              border-top-right-radius: 15px;
+              border-bottom-right-radius: 15px;
+              color: $black464646;
+              font:
+                normal normal $medium-weight 24px/36px 'Noto Sans JP',
+                sans-serif;
+            }
+          }
+
+          .time-picker-menu {
+            width: 100px;
+            left: 50%;
+            transform: translateX(-50%);
+            top: -152px;
+          }
+        }
+      }
+    }
+
+    .default-modal-container__modal-body-scroll {
+      overflow-x: hidden;
+      overflow-y: auto;
+    }
+  }
+}

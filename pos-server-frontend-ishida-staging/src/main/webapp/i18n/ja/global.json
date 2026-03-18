@@ -1,0 +1,259 @@
+{
+  "label.groupCode": "部門コード",
+  "label.productionCode": "商品コード",
+  "label.pluCode": "PLUコード",
+  "label.productionName": "商品名称",
+  "label.todayPrice": "本日売価",
+  "label.standardPrice": "定番売価",
+  "label.detail": "詳細",
+  "label.startDate": "開始日",
+  "label.endDate": "終了日",
+  "label.startTime": "開始時",
+  "label.endTime": "終了時",
+  "label.title": "タイトル",
+  "label.printingPeriod": "印字期間",
+  "label.availabilityPeriod": "利用可能期間",
+  "label.couponCode": "クーポン券コード",
+  "label.message": "メッセージ",
+  "label.updateDate": "更新日",
+  "label.updateBy": "更新者",
+  "label.excludedStores": "除外店舗",
+  "label.createMode": "新規",
+  "label.editMode": "編集",
+  "label.f10Delete": "F10 : 削除",
+  "label.f7Edit": "F7 : 編集",
+  "label.f11Create": "F11 : 新規",
+  "label.f8Copy": "F8 : コピー",
+  "label.f9Confirm": "F9 : 確定",
+  "label.f4Clear": "F4 : クリア",
+  "global": {
+    "title": "商品採用店舖確認",
+    "browsehappy": "<strong>古い</strong>ブラウザーが使われています。より良い体験を得るために<a href=\"http://browsehappy.com/?locale=en\">ブラウザをアップデート</a>してください。",
+    "menu": {
+      "home": "ホーム",
+      "mainMenu": "ﾒｲﾝﾒﾆｭｰ",
+      "jhipster-needle-menu-add-element": "JHipster will add additional menu entries here (do not translate!)",
+      "entities": {
+        "main": "エンティティ",
+        "jhipster-needle-menu-add-entry": "JHipster will add additional entities here (do not translate!)"
+      },
+      "account": {
+        "main": "アカウント",
+        "settings": "設定",
+        "password": "パスワード",
+        "sessions": "セッション",
+        "login": "ログイン",
+        "logout": "ログアウト",
+        "register": "登録"
+      },
+      "admin": {
+        "main": "管理",
+        "userManagement": "ユーザー管理",
+        "tracker": "ユーザートラッカー",
+        "metrics": "メトリクス",
+        "health": "ヘルスステータス",
+        "configuration": "設定",
+        "logs": "ログ",
+        "apidocs": "API",
+        "database": "データベース",
+        "jhipster-needle-menu-add-admin-element": "JHipster will add additional menu entries here (do not translate!)"
+      },
+      "language": "言語"
+    },
+    "form": {
+      "username.label": "ユーザー名",
+      "username.placeholder": "ユーザー名",
+      "currentpassword.label": "現在のパスワード",
+      "currentpassword.placeholder": "現在のパスワード",
+      "newpassword.label": "新しいパスワード",
+      "newpassword.placeholder": "新しいパスワード",
+      "confirmpassword.label": "新しいパスワード(確認)",
+      "confirmpassword.placeholder": "新しいパスワード(確認)",
+      "email.label": "メールアドレス",
+      "email.placeholder": "あなたのメールアドレス"
+    },
+    "messages": {
+      "info": {
+        "authenticated": {
+          "prefix": "",
+          "link": "ログイン",
+          "suffix": "を試したければ, デフォルトアカウント:<br/>- 管理者 (ユーザー名=\"admin\", パスワード=\"admin\") <br/>- ユーザー (login=\"user\", password=\"user\")."
+        },
+        "register": {
+          "noaccount": "アカウントをまだお持ちでないですか?",
+          "link": "アカウントを登録する"
+        }
+      },
+      "error": {
+        "dontmatch": "パスワードが一致しません!"
+      },
+      "validate": {
+        "newpassword": {
+          "required": "パスワードを入力してください。",
+          "minlength": "パスワードは4文字以上で入力してください。",
+          "maxlength": "パスワードは50文字以下で入力してください。",
+          "strength": "パスワード強度:"
+        },
+        "confirmpassword": {
+          "required": "パスワード(確認)を入力してください。",
+          "minlength": "パスワード(確認)は4文字以上で入力してください。",
+          "maxlength": "パスワード(確認)は50文字以下で入力してください。"
+        },
+        "email": {
+          "required": "メールアドレスを入力してください。",
+          "invalid": "正しいメールアドレスを入力してください。",
+          "minlength": "メールアドレスは5文字以上で入力してください。",
+          "maxlength": "メールアドレスは50文字以下で入力してください。"
+        }
+      }
+    },
+    "field": {
+      "id": "ID"
+    },
+    "ribbon": {
+      "dev": "Development"
+    },
+    "item-count": "{{total}}件中 {{first}} - {{second}}件目を表示しています。",
+    "f04Clear": "F04: クリア",
+    "f09Confirm": "F09: 確定",
+    "selectDropdown": "---選択---"
+  },
+  "action": {
+    "cancel": "取消",
+    "delete": "削除",
+    "copy": "コピー",
+    "addMain": "新規",
+    "edit": "編集",
+    "confirm": "確定",
+    "update": "更新",
+    "register": "登録",
+    "decide": "決定",
+    "select": "選択",
+    "logout": "ログアウト",
+    "f12Search": "F12：検索",
+    "search": "検索",
+    "add": "補充リスト",
+    "f10Delete": "F10：削除",
+    "f03Copy": "F3：コピー",
+    "f02Add": "F2：新規",
+    "f01Edit": "F1：編集",
+    "f11Confirm": "F11：確定",
+    "esc": "前画面",
+    "previous": "前画面",
+    "home": "メインメニューへ",
+    "addCashRegister": "レジ種別設定",
+    "importCSV": "CSV取込",
+    "exportCSV": "CSV出力",
+    "f04Clear": "F4：クリア",
+    "f08Clear": "F8：クリア",
+    "F09:確定": "F9:確定",
+    "F08:商品コード切替": "F8:商品コード切替",
+    "F08:PLUコード切替": "F8:PLUコード切替",
+    "F1:前ページ": "F1 : 前ページ",
+    "F2:次ページ": "F2 : 次ページ"
+  },
+  "entity": {
+    "action": {
+      "addblob": "Blobの追加",
+      "addimage": "イメージの追加",
+      "back": "戻る",
+      "cancel": "取消",
+      "delete": "削除",
+      "edit": "編集",
+      "open": "開く",
+      "new": "新規",
+      "confirm": "確定",
+      "save": "保存",
+      "view": "表示",
+      "show": "表示 {{otherEntity}}",
+      "search": "検索",
+      "register": "登録"
+    },
+    "detail": {
+      "field": "フィールド",
+      "value": "値"
+    },
+    "delete": {
+      "title": "削除の確認"
+    },
+    "validation": {
+      "required": "このフィールドを入力してください。",
+      "minlength": "このフィールドは{{min}}文字以上で入力してください。",
+      "maxlength": "このフィールドは{{max}}文字以下で入力してください。",
+      "min": "このフィールドは{{min}}以上で入力してください。",
+      "max": "このフィールドは{{max}}以下で入力してください。",
+      "minbytes": "このフィールドは{{min}}バイト以上で入力してください。",
+      "maxbytes": "このフィールドは{{max}}バイト以下で入力してください。",
+      "pattern": "このフィールドはパターン{{pattern}}に従い入力してください。",
+      "number": "このフィールドは数値を入力してください。",
+      "datetimelocal": "このフィールドは日付と時刻を入力してください。"
+    },
+    "filters": {
+      "set": "次のフィルタが設定されています。",
+      "clear": "フィルタのクリア",
+      "clearAll": "すべてのフィルタのクリア"
+    }
+  },
+  "error": {
+    "MSG_ERR_001": "データが見つかりませんでした。",
+    "internalServerError": "サーバ内部エラー",
+    "server.not.reachable": "サーバーに到達できません。",
+    "url.not.found": "見つかりません",
+    "NotNull": "フィールド{{fieldName}}を空にすることはできません。",
+    "Size": "フィールド{{fieldName}}が最小/最大サイズ要件を満たしていません。",
+    "userexists": "ログイン名はすでに使用されています!",
+    "emailexists": "電子メールは既に使用されています。",
+    "idexists": "新しい{{entityName}}にIDを設定することはできません。",
+    "idnull": "IDがありません。",
+    "idinvalid": "無効なIDです。",
+    "idnotfound": "IDが見つかりません。",
+    "file": {
+      "could.not.extract": "ファイルを抽出できませんでした。",
+      "not.image": "ファイルはイメージ形式である必要がありますが、\"{{ fileType }}\" 形式がアップロードされました。"
+    }
+  },
+  "footer": "フッターです",
+  "header": {
+    "new": "新規",
+    "edit": "編集"
+  },
+  "matching": {
+    "start": "から始まる",
+    "include": "を含む",
+    "end": "で終わる"
+  },
+  "apply-store": {
+    "title": "対象店舗",
+    "unselectAll": "F1：全解除",
+    "selectAll": "F2：全選択",
+    "decide": "決定"
+  },
+  "dayOfWeek": {
+    "is_monday": "月",
+    "is_tuesday": "火",
+    "is_wednesday": "水",
+    "is_thursday": "木",
+    "is_friday": "金",
+    "is_saturday": "土",
+    "is_sunday": "日"
+  },
+  "sidebar": {
+    "result": "店舗 選択中",
+    "searchPlaceholder": "店番 または 店名で検索",
+    "store": "店舗選択",
+    "search": "検索条件",
+    "placeholderText": "店番または店名で検索"
+  },
+  "pagingTable": {
+    "in": "件中",
+    "item": "件",
+    "firstRow": "F3：先頭行",
+    "lastRow": "F4：最終行",
+    "prevPage": "F1：前頁",
+    "nextPage": "F2：次頁"
+  },
+  "dateTimeLabel": {
+    "year": "年",
+    "month": "月"
+  }
+}

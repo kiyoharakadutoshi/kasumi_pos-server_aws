@@ -1,0 +1,89 @@
+﻿# A5:ER FORMAT:15
+# A5:ER ENCODING:UTF8
+# A5:ER Mk-1 Copyright © 2007 m.matsubara
+# A5:SQL Mk-2 Version 2.16.2 Copyright © 1997 - 2021 m.matsubara
+#  https://a5m2.mmatsubara.com
+
+[Manager]
+ProjectName=現金専用簡易セルプPOS
+Author=
+MaxEntityRowShow=1000
+ReadOnlyRecommend=0
+Page=Main
+PageInfo="Main",2,"A3Landscape",$FFFFFF
+LogicalView=1
+DecodeDomain=0
+ViewModePageIndividually=1
+ViewMode=2
+ViewFormat=0
+UseNondependenceDashLine=0
+FontName=Segoe UI
+FontSize=8
+PaperSize=A4Landscape
+HeaderLeft=
+HeaderCenter=
+HeaderRight=
+FooterLeft=
+FooterCenter=
+FooterRight=
+ShowPageoutRelation=1
+RDBMSType=5
+RDBMSTypeName=MySQL
+DefaultPkName=%0:s_PKC
+DefaultPkIndexName=%0:s_PKI
+DefaultIndexName=%0:s_IX%1:d
+DefaultFkName=%0:s_FK%1:d
+SqlSeparator=0
+UpperCaseKeyword=0
+ShowTag=1
+ShowCommonAttributes=0
+
+[Entity]
+PName=Device_Connection_Information
+LName=機器接続情報
+Comment=
+TableOption=各接続機器の接続状況、設定の情報を保存する
+Page=Main
+Left=200
+Top=100
+Field="レコードID","レコードID","BIGINT","NOT NULL",0,"","",$FFFFFFFF,""
+Field="レコード作成日付","レコード作成日付","DATE","NOT NULL",,"","",$FFFFFFFF,""
+Field="レコード作成時間","レコード作成時間","TIME","NOT NULL",,"","",$FFFFFFFF,""
+Field="レコード更新日付","レコード更新日付","DATE","NOT NULL",,"","",$FFFFFFFF,""
+Field="レコード更新時間","レコード更新時間","TIME","NOT NULL",,"","",$FFFFFFFF,""
+Field="レコード無効フラグ","レコード無効フラグ","TINYINT","NOT NULL",,"1","\Q1\Q:有効 / \Q0\Q:無効",$FFFFFFFF,""
+Field="自動釣銭機","自動釣銭機","TINYINT",,,"","正常：\Q1\Q、エラー：\Q2\Q、未接続：\Q9\Q",$FFFFFFFF,""
+Field="スキャナー","スキャナー","TINYINT",,,"","正常：\Q1\Q、エラー：\Q2\Q、未接続：\Q9\Q",$FFFFFFFF,""
+Field="セカンドディスプレイ","セカンドディスプレイ","TINYINT",,,"","正常：\Q1\Q、エラー：\Q2\Q、未接続：\Q9\Q",$FFFFFFFF,""
+Field="プリンター","プリンター","TINYINT",,,"","正常：\Q1\Q、エラー：\Q2\Q、未接続：\Q9\Q",$FFFFFFFF,""
+Field="カメラ","カメラ","TINYINT",,,"","正常：\Q1\Q、エラー：\Q2\Q、未接続：\Q9\Q",$FFFFFFFF,""
+Field="ネットワーク","ネットワーク","TINYINT",,,"","正常：\Q1\Q、エラー：\Q2\Q、未接続：\Q9\Q",$FFFFFFFF,""
+EffectMode=None
+Tag=2_7_設定機能
+Color=$000000
+BkColor=$FFFFFF
+ModifiedDateTime=20220402031941
+Position="Main",200,100,365,445
+ZOrder=1
+
+[Entity]
+PName=マスター
+LName=MASTER
+Comment=
+TableOption=各接続機器の接続状況、設定の情報を保存する
+Page=Main
+Left=200
+Top=725
+Field="レコードID","レコードID","BIGINT","NOT NULL",0,"","",$FFFFFFFF,""
+Field="レコード作成日付","レコード作成日付","DATE","NOT NULL",,"","",$FFFFFFFF,""
+Field="レコード作成時間","レコード作成時間","TIME","NOT NULL",,"","",$FFFFFFFF,""
+Field="レコード更新日付","レコード更新日付","DATE","NOT NULL",,"","",$FFFFFFFF,""
+Field="レコード更新時間","レコード更新時間","TIME","NOT NULL",,"","",$FFFFFFFF,""
+Field="レコード無効フラグ","レコード無効フラグ","TINYINT","NOT NULL",,"1","\Q1\Q:有効 / \Q0\Q:無効",$FFFFFFFF,""
+EffectMode=None
+Tag=99
+Color=$000000
+BkColor=$FFFFFF
+ModifiedDateTime=20220402032013
+Position="Main",200,725,375,475
+ZOrder=2

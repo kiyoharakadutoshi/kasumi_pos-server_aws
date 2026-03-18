@@ -1,0 +1,54 @@
+@import "../../../../styles/variable";
+
+.modal-copy-preset {
+  --input-height: 60px;
+  --input-horizontal-padding: 16px;
+
+  .item-modal {
+    display: flex;
+    padding-bottom: 10px;
+
+    &:focus-within {
+      border-color: $blue001440;
+
+      .input-text {
+        background-color: $blueE7EAF0;
+      }
+    }
+
+    input {
+      background-color: $white;
+    }
+  }
+
+  .button-select {
+    display: flex;
+    padding-bottom: 20px;
+  }
+
+  .title-name {
+    color: $grey666666;
+  }
+
+  .checkbox-store {
+    height: 180px;
+    overflow-y: auto;
+    overflow-x: hidden;
+    margin-bottom: 20px;
+
+    .list-unstyled {
+      .text-store {
+        cursor: pointer;
+        color: $black464646;
+      }
+    }
+
+    .list-store-item {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+    }
+  }
+}
+
+

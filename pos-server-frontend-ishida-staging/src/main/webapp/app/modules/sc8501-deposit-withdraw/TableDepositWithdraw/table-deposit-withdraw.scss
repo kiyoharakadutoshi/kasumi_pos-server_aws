@@ -1,0 +1,25 @@
+@use "table-header" as table-header;
+@use "table-body" as table-body;
+@use "mixin-deposit-withdraw" as mixin-deposit-withdraw;
+
+
+#table-deposit-withdraw {
+  margin-left: 24px;
+  margin-top: 16px;
+
+  .no-data-found {
+    height: 44px;
+  }
+
+  .message-no-data {
+    color: #bc1c42;
+    text-align: center;
+    margin-top: 32px;
+    font-weight: 500;
+  }
+}
+
+.column-width {
+  @include mixin-deposit-withdraw.column-width;
+}
+

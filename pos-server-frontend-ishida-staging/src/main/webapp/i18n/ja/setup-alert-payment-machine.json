@@ -1,0 +1,23 @@
+{
+  "setupAlertPaymentMachine": {
+    "title": "釣銭機警告設定",
+    "conditionSearchLabel":{
+      "type": "種別",
+      "replenishmentBaseValue": "補充基本値",
+      "recoveryStandardValue": "回収基準値"
+    },
+    "table": {
+      "cashier_no": "レジNo.",
+      "ten_thousand_count": "¥10,000",
+      "five_thousand_count": "¥5,000",
+      "two_thousand_count": "¥2,000",
+      "one_thousand_count": "¥1,000",
+      "five_hundred_count": "¥500",
+      "one_hundred_count": "¥100",
+      "fifty_count": "¥50",
+      "ten_count": "¥10",
+      "five_count": "¥5",
+      "one_count": "¥1"
+    }
+  }
+}

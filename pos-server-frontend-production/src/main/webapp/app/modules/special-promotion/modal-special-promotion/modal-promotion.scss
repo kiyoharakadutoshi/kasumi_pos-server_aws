@@ -1,0 +1,88 @@
+@import 'src/main/webapp/app/styles/styles';
+
+.modal-promotion {
+  --modal-hozirontal-padding: min(1.875vw, 36px);
+  --horizontal-table-padding: 6px;
+
+  .default-modal-container__modal-header {
+    height: fit-content;
+    max-height: 68px;
+
+    .btn-header {
+      width: fit-content !important;
+
+      .iconMagrin {
+        margin-right: min(0.625vw, 12px);
+      }
+
+      svg {
+        width: 1.17vw;
+        height: 1.17vw;
+        max-height: 22.5px;
+        max-width: 22.5px;
+      }
+    }
+  }
+
+  .promotion-table__cell-button {
+    height: 2.2vw;
+    max-height: 40px;
+  }
+
+  .table-common {
+    width: 60vw;
+  }
+
+  .default-modal-container__modal-body {
+    min-height: 65vh;
+  }
+
+  .default-modal-container__modal-content {
+    width: 80vw;
+
+    @media (min-width: 1600px) {
+      width: 70vw;
+    }
+
+    .promotion-table__table-scroll {
+      max-height: 45vh;
+    }
+  }
+
+  &__search-promtion {
+    --input-text-width: min(8vw, 150px);
+    --horizontal-pading: 8px;
+    @include center(flex-start, $spacing: 16px);
+    margin-bottom: 16px;
+    padding-top: 3px;
+  }
+
+  &__table-product-container {
+    height: fit-content;
+    border-radius: 15px;
+    overflow: hidden;
+    border: 3px solid $blueB0B9D7;;
+    margin-bottom: 16px;
+  }
+
+  &__table-product {
+    margin: 0;
+    .table-row {
+      border-width: 0;
+      border-color: white;
+      border-style: none;
+
+      .table-cell {
+        color: $black464646;
+        text-align: center;
+        font: normal normal $medium-weight var(--input-font-size, 24px) / 36px 'Noto Sans JP';
+
+        .popover-text {
+          &__content {
+            word-break: break-all;
+          }
+        }
+      }
+    }
+  }
+}

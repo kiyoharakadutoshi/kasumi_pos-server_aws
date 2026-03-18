@@ -1,0 +1,523 @@
+@import "../../styles/styles";
+// CSS popover
+body:has(.special-promotion) {
+  overflow: hidden;
+
+  .popover-body {
+    font-size: 1.25vw;
+    line-height: 1.875vw;
+
+    @media (min-width: 1920px) {
+      font-size: 24px;
+      line-height: 36px;
+    }
+  }
+
+  .date-picker {
+    &__popover-date-picker {
+      height: 22vw;
+      max-height: 387px;
+    }
+  }
+}
+
+.app-container:has(.special-promotion) {
+  @media (max-width: 1920px) {
+    --app-padding-top: 3.4vw;
+
+    .view-container {
+      padding-top: 0.5vw;
+    }
+  }
+}
+
+.special-promotion {
+  margin-left: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  --horizontal-pading: 4px;
+  --input-border-radius: 15px;
+  --button-border-radius: 15px;
+  --input-height: 50px;
+  --dropdown-height: 50px;
+
+  ::-webkit-scrollbar {
+    width: 0.68vw;
+    max-width: 13px;
+    height: 0.68vw;
+    max-height: 13px;
+  }
+
+  .wrap-input-text {
+    .input-text {
+      &:disabled {
+        color: $black464646;
+      }
+    }
+  }
+
+  @media (max-width: 1919px) {
+    gap: 0.4vw;
+    font-size: 1.25vw;
+    --input-font-size: 1.25vw;
+    --input-height: 2.2vw;
+    --dropdown-height: 2.2vw;
+    --height-btn: 2.2vw;
+    --height-icon: 1.25vw;
+    --input-border: min(0.15625vw, 3px);
+    --input-border-radius: 0.78125vw;
+    --button-border-radius: 0.78125vw;
+
+    .dropdown-container {
+      &__button-text {
+        height: 1.6vw;
+        max-height: 34px;
+        line-height: min(1.75vw, 36px);
+      }
+
+      &__dropdown-item {
+        font-size: 1.25vw;
+      }
+
+      &__dropdown-button {
+        gap: min(0.4vw, 8px);
+      }
+    }
+
+    .sidebar-store-promotion {
+      top: 4vw;
+    }
+
+    .sidebar-store {
+      &__container {
+        height: calc(100vh - 4vw);
+      }
+
+      &__tab-menu {
+        height: 3.125vw;
+      }
+
+      &__tab-item-container {
+        height: 3.125vw;
+      }
+
+      &__content {
+        padding: 1.67vw 1.25vw 0 1.25vw;
+      }
+
+      &__list-store {
+        margin-top: 1.8vw;
+      }
+
+      &__list-store-radio-hidden-search {
+        height: calc(100vh - 19.5vw);
+      }
+    }
+
+    button, input, label, th, td, div {
+      font-size: 1.25vw !important;
+      line-height: min(1.875vw, 36px);
+    }
+
+    .header-container {
+      padding-top: 0.42vw;
+      padding-bottom: 0.42vw;
+
+      &__brand-title {
+        line-height: min(2.5vw, 48px);
+        font-size: 1.875vw;
+      }
+
+      &__box-icon {
+        height: fit-content;
+        width: fit-content;
+
+        svg {
+          height: 1.6vw;
+          max-height: 34px;
+        }
+      }
+
+      &__user-detail {
+        gap: 1.1vw;
+      }
+
+      &__icon {
+        height: fit-content;
+        width: fit-content;
+
+        svg {
+          height: 2.1vw;
+          max-height: 40px;
+        }
+      }
+    }
+
+    .bottom-button {
+      height: 3.2vw;
+      max-height: 68px;
+
+      &__action-button {
+        gap: 4px;
+      }
+    }
+  }
+
+  .bottom-button {
+    justify-content: flex-end;
+    left: 24px;
+
+    &__action-button {
+      width: 100%;
+    }
+  }
+
+  &____table-main-apply-all {
+    width: 100%;
+    table-layout: fixed;
+  }
+
+  .time-picker-menu {
+    right: 0;
+    left: auto;
+  }
+
+  /*
+    Start Search View
+   */
+  &__search {
+    display: flex;
+    justify-content: space-between;
+    gap: 8px;
+    background-color: $blueF6F8FD;
+    width: 100%;
+    border-radius: min(1.05vw, 20px);
+    padding: 0.1vw 0.42vw 0.42vw 0.42vw;
+
+    @media (min-width: 1920px) {
+      padding: 2px 8px 8px 8px;
+    }
+
+    @media (min-width: 1600px) {
+      gap: 16px;
+      padding: 0.1vw 0.42vw 0.42vw 0.42vw;
+    }
+
+    @media (max-width: 1280px) {
+      border-radius: 10px;
+    }
+  }
+
+  &__promotion-title {
+    display: flex;
+    flex-shrink: 0;
+    color: $blue0f192f;
+    font-weight: $medium-weight;
+  }
+
+  &__promotion-content {
+    display: flex;
+    align-items: center;
+
+    .special-promotion {
+      &__promotion-input-code {
+        text-align: center;
+        --input-horizontal-padding: 8px;
+        --input-text-width: 5.2vw;
+        border-top-right-radius: 0;
+        border-bottom-right-radius: 0;
+        border-right-width: 0;
+      }
+
+      &__promotion-input-discount {
+        --input-text-width: 3vw;
+        text-align: center;
+        border-top-right-radius: 0;
+        border-bottom-right-radius: 0;
+        border-right-width: 0;
+      }
+    }
+  }
+
+  &__promotion-right-button {
+    display: flex;
+    align-items: end;
+    justify-content: flex-end;
+    gap: 5px;
+  }
+
+  &__promotion-input-search {
+    .wrap-input-text {
+      border-top-right-radius: 0;
+      border-bottom-right-radius: 0;
+      border-right-width: 0;
+    }
+  }
+
+  &__promotion-name {
+    margin-left: 5px;
+    width: 22vw;
+    flex-shrink: 0;
+    background-color: $greyD9DCE1;
+    border-radius: 0.78125vw;
+    height: 2.2vw;
+    line-height: 2.2vw;
+    padding: 0 min(0.84vw, 16px);
+
+    @media (min-width: 1920px) {
+      border-radius: 15px;
+      height: 50px;
+      line-height: 50px;
+    }
+  }
+
+  &__promotion-name-error {
+    color: $redBC1C42;
+  }
+
+  &__promotion-search-button {
+    border-top-left-radius: 0;
+    border-bottom-left-radius: 0;
+  }
+
+  &__date-time-separation {
+    color: $grey9E9E9E;
+    font-weight: $medium-weight;
+    margin: 0 2px;
+  }
+
+  &__promotion-input-group-code {
+    --input-text-width: 4vw;
+    text-align: center;
+  }
+
+  &__search-right-button {
+    display: flex;
+    flex-direction: column;
+    align-items: end;
+    justify-content: flex-end;
+    gap: 4px;
+  }
+
+  /*
+  End Search view
+   */
+
+  /*
+  Start Apply all view
+   */
+  &__aplly-all {
+    display: flex;
+    justify-content: space-between;
+    gap: 4px;
+  }
+
+  &__aplly-all-status {
+    gap: min(0.15625vw, 3px);
+    padding: 0.42vw;
+    background-color: $blueF6F8FD;
+    border-radius: min(1.05vw, 20px);
+    display: flex;
+    align-items: center;
+
+    @media (max-width: 1280px) {
+      border-radius: 10px;
+    }
+
+    @media (min-width: 1920px) {
+      padding: 8px;
+    }
+  }
+
+  &__aplly-all-left {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+
+    @media (min-width: 1600px) {
+      gap: 16px;
+    }
+  }
+
+  &__promotion-input-status {
+    --input-text-width: 6vw;
+
+    border-top-right-radius: 0;
+    border-bottom-right-radius: 0;
+    border-right-width: 0;
+
+    .dropdown-container__dropdown-button {
+      border-top-right-radius: 0;
+      border-bottom-right-radius: 0;
+      border-right-width: 0;
+    }
+
+    .input-text {
+      text-align: center;
+    }
+  }
+
+
+  &__promotion-input-time-service {
+    width: 14.5vw;
+    max-width: 280px;
+
+    .input-text {
+      text-align: center;
+    }
+  }
+
+  .input-date-picker {
+    text-align: center;
+  }
+
+  .time-picker {
+    &__time-picker-input {
+      .input-text {
+        text-align: center;
+      }
+    }
+  }
+
+  &__plu-group-code {
+    width: min(10vw, 192px);
+  }
+
+  /*
+  End Apply all view
+   */
+
+  .promotion-table {
+    --input-border-radius: 0.26vw;
+    --horizontal-pading: 2px;
+    --input-horizontal-padding: 2px;
+
+    th {
+      letter-spacing: -1px;
+    }
+
+    @media (max-width: 1280px) {
+      --input-border-radius: 5px;
+    }
+
+    @media (min-width: 1920px) {
+      letter-spacing: 0;
+      --input-border-radius: 10px;
+    }
+
+    &__table-scroll {
+      max-height: calc(100vh - 360px);
+    }
+
+    --input-height: 38px;
+
+    @media (max-width: 1919px) {
+      --input-height: clamp(26px, 1.8vw, 40px) !important;
+      --line-height: 1.875vw;
+
+      &__table-scroll {
+        max-height: calc(100vh - 16.6vw - 32px);
+      }
+    }
+
+    @media (max-width: 1600px) {
+      &__table-scroll {
+        max-height: calc(100vh - 16.6vw - 28px);
+      }
+    }
+
+    .valid {
+      width: 4.4vw;
+      max-width: 92px;
+    }
+
+    .status {
+      width: 2.7vw;
+      max-width: 52px;
+
+      .tooltip-number-input-text {
+        --input-text-width: 1.7vw;
+        max-width: 28px;
+      }
+    }
+
+    .my_company_code {
+      width: 7.9vw;
+      max-width: 146px;
+    }
+
+    .item_code {
+      width: 10.7vw;
+      max-width: 210px;
+    }
+
+    .item_name {
+      letter-spacing: -1px;
+
+      @media (min-width: 1600px) {
+        letter-spacing: -0.5px;
+      }
+
+      @media (min-width: 1920px) {
+        letter-spacing: 0;
+      }
+    }
+
+    .special_price,
+    .discount_value {
+      width: 5.82vw;
+      max-width: 112px;
+    }
+
+    .unit_price,
+    .current_price {
+      width: 5.3vw;
+      max-width: 110px
+    }
+
+    .type_code {
+      width: 2vw;
+      max-width: 46px;
+
+      .tooltip-number-input-text {
+        --input-text-width: 1.4vw;
+        max-width: 28px;
+      }
+    }
+
+    .start_date,
+    .end_date {
+      width: 8.9vw;
+      max-width: 176px;
+    }
+
+    .start_time,
+    .end_time {
+      width: 4.5vw;
+      max-width: 84px;
+    }
+  }
+
+  .date-picker {
+    &__calendar {
+      height: 21vw;
+      max-height: 387px;
+    }
+
+    &__calendar-day {
+      width: 1.875vw;
+      height: 1.875vw;
+      max-width: 36px;
+      max-height: 36px;
+      min-width: 28px;
+      min-height: 28px;
+    }
+  }
+
+  .header-container {
+    .iconMagrin {
+      display: none;
+    }
+  }
+}

@@ -1,0 +1,53 @@
+{
+  "productReport": {
+    "title": "Quick report/product daily report",
+    "conditionSearchLabel":{
+      "businessType": "Business type",
+      "exportUnit": "Export unit",
+      "level": "Category",
+      "reportStartDate": "Start date",
+      "reportEndDate": "End date",
+      "limitRecord": "Display number",
+      "sortBy": "Sort", 
+      "breakingNews": "Breaking news",
+      "dailyReport": "Daily",
+      "categorySpecification": "Category specification",
+      "productSpecification": "Product specification",
+      "search": "Search",
+      "productCode": "Product code"
+    },
+    "table": {
+      "no": "順位",
+      "productCode": "商品コード",
+      "pluCode": "PLUコード",
+      "name": "名称",
+      "avgPrice": "平均売価",
+      "revenue": "売上",
+      "specialPrice": "特売",
+      "mixMatch": "組合せ",
+      "set": "セット",
+      "discount": "値引",
+      "lastSaleTime": "最終売時",
+      "amount": "金額",
+      "points": "点数"
+    },
+    "modal":{
+      "title": "分類フォルダ検索",
+      "department": "部門",
+      "group": "品群",
+      "kind": "品種",
+      "classification": "分類",
+      "code": "コード", 
+      "name": "名称",
+      "choice": "選択"
+    },
+    "mappingError":{
+      "reportStartDate": "Start date",
+      "reportEndDate": "End date",
+      "limitRecord": "Display number",
+      "codeLevel": "Group code",
+      "productCode": "Product code",
+      "pluCode": "PLU code"
+    }
+  }
+}

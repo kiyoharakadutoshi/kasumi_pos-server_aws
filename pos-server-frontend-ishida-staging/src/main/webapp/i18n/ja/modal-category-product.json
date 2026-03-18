@@ -1,0 +1,18 @@
+{
+  "modalCategoryProduct": {
+    "title": "品種検索",
+    "name_search": "品種名称",
+    "warning": "検索結果が100件を超えたため、最初の100件を表示しています。",
+    "table": {
+      "col_title": "選択",
+      "button_choose": "選択",
+      "col_group_product": "品種コード",
+      "col_name_product": "品種名称",
+      "col_date": "適用日"
+    },
+    "button": {
+      "search": "検索",
+      "cancel": "取消"
+    }
+  }
+}

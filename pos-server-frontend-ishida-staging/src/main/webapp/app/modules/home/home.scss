@@ -1,0 +1,24 @@
+/* ==========================================================================
+Main page styles
+========================================================================== */
+.hipster {
+  display: inline-block;
+  width: 100%;
+  height: 497px;
+  background: url('/content/images/jhipster_family_member_3.svg') no-repeat center top;
+  background-size: contain;
+}
+
+.input-group {
+  padding-top: 80px;
+  display: block;
+}
+
+.group-button {
+  display: flex;
+  justify-content: end;
+  gap: 8px;
+  position: absolute;
+  bottom: 20px;
+  right: 16px;
+}

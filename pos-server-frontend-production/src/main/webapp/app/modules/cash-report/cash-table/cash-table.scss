@@ -1,0 +1,235 @@
+@import '../../../styles/styles';
+
+.cash-report {
+  width: 100%;
+  height: 100%;
+  max-height: 74vh;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 5px;
+  position: relative;
+  padding-left: 30px;
+  font-size: 1.25vw;
+
+  table.table-responsive.table-cash-setting {
+    font-size: 1.25vw;
+    margin-bottom: 0;
+  }
+
+  table.scroll {
+    width: 100%;
+    border-spacing: 0;
+  }
+
+  table.scroll thead {
+    border-top-right-radius: 16px;
+    border-top-left-radius: 16px;
+    background-color: #b0b9d7;
+    padding-right: 2px;
+
+    &.pr-16 {
+      padding-right: 16px;
+    }
+  }
+
+  table.scroll tbody,
+  table.scroll thead {
+    display: block;
+  }
+
+  thead tr th {
+    height: 30px;
+    line-height: 30px;
+  }
+
+  table.scroll tbody {
+    max-height: 68.5vh;
+    overflow-y: auto;
+    overflow-x: hidden;
+    border-bottom-left-radius: 16px;
+    border-bottom-right-radius: unset;
+
+    &.is-exceed-records {
+      max-height: 65.5vh;
+    }
+  }
+
+  @media (min-resolution: 97dpi) and (max-resolution: 144dpi) {
+    table.scroll tbody {
+      max-height: 60vh;
+    }
+  }
+
+  tbody td:last-child,
+  thead th:last-child {
+    border-right: none;
+  }
+
+  td.row_no-data {
+    border-width: 0;
+    padding: 0;
+    font-weight: 500;
+    padding-bottom: 16px;
+  }
+
+  &__table-header-background {
+    position: absolute;
+    top: 0;
+    width: 100%;
+    height: 100px;
+    background-color: $blueB0B9D7;
+    border-top-left-radius: 20px;
+    border-top-right-radius: 20px;
+  }
+
+  .color-additional-cash {
+    display: flex;
+    justify-content: flex-end;
+    margin-top: 10px;
+    gap: 42px;
+    position: fixed;
+    bottom: 0;
+    right: 24px;
+    padding: 16px 0;
+
+    @media (max-width: 870px) {
+      position: fixed;
+      bottom: 24px;
+      right: 24px;
+    }
+
+    @media (max-height: 760px) {
+      padding: 8px 0;
+    }
+
+    .not-add-cash {
+      background-color: $orangeFFEEB9;
+      display: inline-block;
+      width: 120px;
+      border: 1px solid $grey707070;
+      height: 42px;
+
+      @media (max-width: 970px) {
+        width: 80px;
+      }
+    }
+
+    .add-cash {
+      background-color: $yellowFFFF99;
+      display: inline-block;
+      width: 120px;
+      border: 1px solid $grey707070;
+      height: 42px;
+
+      @media (max-width: 970px) {
+        width: 80px;
+      }
+    }
+
+    .padding-left {
+      padding-left: 11px;
+    }
+
+    .set-cash {
+      display: flex;
+      align-items: center;
+    }
+  }
+
+  .cash-table-container {
+    width: calc(100vw - 60px);
+    background-color: $blueF6F8FD;
+    border-radius: 20px;
+    // overflow: auto;
+
+    .table-cash-setting {
+      border-collapse: collapse;
+      min-width: 1180px;
+
+      .title-table {
+        position: sticky;
+        top: 0;
+      }
+
+      .header-table {
+        vertical-align: middle;
+        text-align: center;
+        display: flex;
+      }
+
+      .header-setting {
+        background-color: $blueB0B9D7;
+        border: none;
+        color: $blue001440;
+        font-weight: $medium-weight;
+        height: fit-content;
+        flex-grow: 1;
+        box-sizing: border-box;
+
+        &:first-of-type {
+          border-top-left-radius: 20px;
+        }
+        &:last-of-type {
+          border-top-right-radius: 20px;
+        }
+      }
+
+      .cash-no {
+        padding-left: 15px;
+        vertical-align: middle;
+        max-width: 200px;
+      }
+
+      .cash-type {
+        padding-left: 10px;
+        vertical-align: middle;
+        border-left: 3px solid $blueB0B9D7;
+        max-width: 200px;
+      }
+
+      .cash-thousand-count {
+        text-align: end;
+        padding-right: 14px;
+        vertical-align: middle;
+        border-left: 3px solid $blueB0B9D7;
+        max-width: 200px;
+      }
+
+      .cash-last-accessed-date {
+        text-align: center;
+        vertical-align: middle;
+        border-left: 3px solid $blueB0B9D7;
+        // max-width: 200px;
+      }
+
+      .data-item {
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        color: $black464646;
+        font-weight: $medium-weight;
+      }
+
+      .row-table {
+        &:nth-last-of-type(3) {
+          .cash-no {
+            border-bottom-left-radius: 20px;
+          }
+
+          .cash-last-accessed-date {
+            border-bottom-right-radius: 20px;
+          }
+        }
+      }
+
+      .box-needs-refill {
+        background-color: $orangeFFEEB9;
+      }
+
+      .box-no-refill-required {
+        background-color: $yellowFFFF99;
+      }
+    }
+  }
+}

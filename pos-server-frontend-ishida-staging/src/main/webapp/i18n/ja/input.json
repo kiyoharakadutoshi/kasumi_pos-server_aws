@@ -1,0 +1,8 @@
+{
+  "inputs": {
+    "placeholder1": "コードを入力",
+    "placeholder2": "店番 または 店名で検索",
+    "placeholder3": "店番 または 店名で検索",
+    "label": "店舗"
+  }
+}

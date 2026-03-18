@@ -1,0 +1,26 @@
+{
+  "promotion-maintenance": {
+    "title": "Promotion Maintenance",
+    "promotion_code": "Promotion code",
+    "F9_confirm": "F9 : Confirmed"
+  },
+  "promotionMaintenance": {
+    "id_delete_flag": "Delete",
+    "promotion_code": "Code",
+    "promotion_name": "Name",
+    "promotion_cate": "Category",
+    "start_date": "Start Date",
+    "end_date": "End Date",
+    "start_time": "Start Time",
+    "end_time": "End Time"
+  },
+  "dataList": {
+    "promotion_code": "Code",
+    "promotion_name": "Name",
+    "promotion_cate": "Category",
+    "start_date": "Start Date",
+    "end_date": "End Date",
+    "start_time": "Start Time",
+    "end_time": "End Time"
+  }
+}

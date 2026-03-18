@@ -1,0 +1,1364 @@
+﻿<!DOCTYPE html>
+<html lang="ja">
+	<head>
+		<meta http-equiv="Content-type" content="text/html; charset=UTF-8">
+		<title>テーブル定義書</title>
+		<link rel="stylesheet" href="a5m2.css">
+	</head>
+	<body>
+	<div class="tableinfo-caption" style="width: 912px;">
+		<table>
+			<colgroup>
+				<col width="300">
+				<col width="300">
+			</colgroup>
+			<tr>
+			<th>V-POINT取引情報</th>
+			<td>SMART_T3 . T_TPOINT</td>
+			</tr>
+		</table>
+	</div>
+	<div class="tableinfo-caption-stuffing"></div>
+
+	<table>
+		<caption>テーブル情報</caption>
+			<colgroup>
+				<col width="150">
+				<col width="305">
+				<col width="150">
+				<col width="305">
+			</colgroup>
+			<th>システム名</th>
+			<td></td>
+			<th>作成者</th>
+			<td>POS-USER</td>
+		</tr>
+		<tr>
+			<th>サブシステム名</th>
+			<td></td>
+			<th>作成日</th>
+			<td>2025/02/11</td>
+		</tr>
+		<tr>
+			<th>RDBMS</th>
+			<td colspan="3">Oracle Database 19c Standard Edition 2 Release 19.0.0.0.0 - Production 19.0.0.0.0</td>
+		</tr>
+		<tr>
+			<td colspan="4"><b>備考</b><br></td>
+		</tr>
+	</table>
+
+<br>
+	<table>
+		<caption>カラム情報</caption>
+			<colgroup>
+				<col width="30">
+				<col width="170">
+				<col width="170">
+				<col width="200">
+				<col width="80">
+				<col width="120">
+				<col width="140">
+			</colgroup>
+		<tr>
+			<th>No.</th>
+			<th>論理名</th>
+			<th>物理名</th>
+			<th>データ型</th>
+			<th>Not Null</th>
+			<th>デフォルト</th>
+			<th>備考</th>
+		</tr>
+		<tr>
+			<td class="number-format">1</td>
+			<td>取引日時</td>
+			<td>RECORD_DT</td>
+			<td>TIMESTAMP(3)</td>
+			<td>Yes (PK)</td>
+			<td></td>
+			<td></td>
+		</tr>
+		<tr>
+			<td class="number-format">2</td>
+			<td>企業コード</td>
+			<td>COMPANY_CODE</td>
+			<td>NVARCHAR2(10)</td>
+			<td>Yes (PK)</td>
+			<td></td>
+			<td></td>
+		</tr>
+		<tr>
+			<td class="number-format">3</td>
+			<td>店舗コード</td>
+			<td>STORE_CODE</td>
+			<td>NVARCHAR2(10)</td>
+			<td>Yes (PK)</td>
+			<td></td>
+			<td></td>
+		</tr>
+		<tr>
+			<td class="number-format">4</td>
+			<td>店舗内コード</td>
+			<td>INSTORE_CODE</td>
+			<td>NVARCHAR2(10)</td>
+			<td>Yes (PK)</td>
+			<td></td>
+			<td></td>
+		</tr>
+		<tr>
+			<td class="number-format">5</td>
+			<td>アカウントID</td>
+			<td>ACCOUNT_ID</td>
+			<td>NVARCHAR2(9)</td>
+			<td>Yes (PK)</td>
+			<td></td>
+			<td></td>
+		</tr>
+		<tr>
+			<td class="number-format">6</td>
+			<td>ジャーナル通番</td>
+			<td>JOURNAL_NO</td>
+			<td>NUMBER(9,&#32;0)</td>
+			<td>Yes (PK)</td>
+			<td></td>
+			<td></td>
+		</tr>
+		<tr>
+			<td class="number-format">7</td>
+			<td>システムID</td>
+			<td>SYSTEM_ID</td>
+			<td>NVARCHAR2(10)</td>
+			<td>Yes</td>
+			<td></td>
+			<td></td>
+		</tr>
+		<tr>
+			<td class="number-format">8</td>
+			<td>アライアンス企業コード</td>
+			<td>ALIANCECODE</td>
+			<td>NVARCHAR2(4)</td>
+			<td></td>
+			<td></td>
+			<td></td>
+		</tr>
+		<tr>
+			<td class="number-format">9</td>
+			<td>業態コード</td>
+			<td>BUSINESSCONDITIONSCODE</td>
+			<td>NVARCHAR2(8)</td>
+			<td></td>
+			<td></td>
+			<td></td>
+		</tr>
+		<tr>
+			<td class="number-format">10</td>
+			<td>シリアル番号</td>
+			<td>PTOPSERIALNO</td>
+			<td>NVARCHAR2(20)</td>
+			<td></td>
+			<td></td>
+			<td></td>
+		</tr>
+		<tr>
+			<td class="number-format">11</td>
+			<td>会員ID区分</td>
+			<td>MEMBERIDCLASS</td>
+			<td>NVARCHAR2(2)</td>
+			<td></td>
+			<td></td>
+			<td></td>
+		</tr>
+		<tr>
+			<td class="number-format">12</td>
+			<td>累計ポイント数</td>
+			<td>TOTALPOINT</td>
+			<td>NVARCHAR2(9)</td>
+			<td></td>
+			<td></td>
+			<td></td>
+		</tr>
+		<tr>
+			<td class="number-format">13</td>
+			<td>連携応答_連携状況結果</td>
+			<td>COOPERATIONRESULT</td>
+			<td>NVARCHAR2(2)</td>
+			<td></td>
+			<td></td>
+			<td></td>
+		</tr>
+		<tr>
+			<td class="number-format">14</td>
+			<td>会員照会リターンコード</td>
+			<td>RETURNCD</td>
+			<td>NVARCHAR2(2)</td>
+			<td></td>
+			<td></td>
+			<td></td>
+		</tr>
+		<tr>
+			<td class="number-format">15</td>
+			<td>店舗コード</td>
+			<td>PTOPSTORECODE</td>
+			<td>NVARCHAR2(13)</td>
+			<td></td>
+			<td></td>
+			<td></td>
+		</tr>
+		<tr>
+			<td class="number-format">16</td>
+			<td>認証区分</td>
+			<td>PTOPAUTHCLASS</td>
+			<td>NVARCHAR2(1)</td>
+			<td></td>
+			<td></td>
+			<td></td>
+		</tr>
+		<tr>
+			<td class="number-format">17</td>
+			<td>認証コード</td>
+			<td>PTOPAUTHCODE</td>
+			<td>NVARCHAR2(32)</td>
+			<td></td>
+			<td></td>
+			<td></td>
+		</tr>
+		<tr>
+			<td class="number-format">18</td>
+			<td>使用年月日</td>
+			<td>PTOPUSEDATE</td>
+			<td>NVARCHAR2(8)</td>
+			<td></td>
+			<td></td>
+			<td></td>
+		</tr>
+		<tr>
+			<td class="number-format">19</td>
+			<td>使用時刻</td>
+			<td>PTOPUSETIME</td>
+			<td>NVARCHAR2(6)</td>
+			<td></td>
+			<td></td>
+			<td></td>
+		</tr>
+		<tr>
+			<td class="number-format">20</td>
+			<td>営業年月日</td>
+			<td>PTOPBUSINESSDATE</td>
+			<td>NVARCHAR2(8)</td>
+			<td></td>
+			<td></td>
+			<td></td>
+		</tr>
+		<tr>
+			<td class="number-format">21</td>
+			<td>レジNo</td>
+			<td>PTOPTERMINALNO</td>
+			<td>NVARCHAR2(6)</td>
+			<td></td>
+			<td></td>
+			<td></td>
+		</tr>
+		<tr>
+			<td class="number-format">22</td>
+			<td>伝票No</td>
+			<td>PTOPSLIPNO</td>
+			<td>NVARCHAR2(20)</td>
+			<td></td>
+			<td></td>
+			<td></td>
+		</tr>
+		<tr>
+			<td class="number-format">23</td>
+			<td>リトライ区分</td>
+			<td>PTOPRETRYCLASS</td>
+			<td>NVARCHAR2(1)</td>
+			<td></td>
+			<td></td>
+			<td></td>
+		</tr>
+		<tr>
+			<td class="number-format">24</td>
+			<td>ポイント操作区分</td>
+			<td>PTOPPOINTPROCCLASS</td>
+			<td>NVARCHAR2(2)</td>
+			<td></td>
+			<td></td>
+			<td></td>
+		</tr>
+		<tr>
+			<td class="number-format">25</td>
+			<td>キャンセル区分</td>
+			<td>PTOPCANCELCLASS</td>
+			<td>NVARCHAR2(1)</td>
+			<td></td>
+			<td></td>
+			<td></td>
+		</tr>
+		<tr>
+			<td class="number-format">26</td>
+			<td>元取引使用年月日</td>
+			<td>PTOPORIGUSEDATE</td>
+			<td>NVARCHAR2(8)</td>
+			<td></td>
+			<td></td>
+			<td></td>
+		</tr>
+		<tr>
+			<td class="number-format">27</td>
+			<td>元取引シリアル番号</td>
+			<td>PTOPORIGSERIALNO</td>
+			<td>NVARCHAR2(20)</td>
+			<td></td>
+			<td></td>
+			<td></td>
+		</tr>
+		<tr>
+			<td class="number-format">28</td>
+			<td>還元ポイント数</td>
+			<td>PTOPREDPOINTS</td>
+			<td>NVARCHAR2(8)</td>
+			<td></td>
+			<td></td>
+			<td></td>
+		</tr>
+		<tr>
+			<td class="number-format">29</td>
+			<td>売上金額</td>
+			<td>PTOPSALESAMOUNT</td>
+			<td>NVARCHAR2(8)</td>
+			<td></td>
+			<td></td>
+			<td></td>
+		</tr>
+		<tr>
+			<td class="number-format">30</td>
+			<td>リターンコード</td>
+			<td>PTOPRESRETURNCODE</td>
+			<td>NVARCHAR2(2)</td>
+			<td></td>
+			<td></td>
+			<td></td>
+		</tr>
+		<tr>
+			<td class="number-format">31</td>
+			<td>エラーポイント数</td>
+			<td>PTOPRESERRORPOINTS</td>
+			<td>NVARCHAR2(8)</td>
+			<td></td>
+			<td></td>
+			<td></td>
+		</tr>
+		<tr>
+			<td class="number-format">32</td>
+			<td>利用可能Ｖポイント数</td>
+			<td>PTOPRESAVAIPOINTS</td>
+			<td>NVARCHAR2(9)</td>
+			<td></td>
+			<td></td>
+			<td></td>
+		</tr>
+		<tr>
+			<td class="number-format">33</td>
+			<td>取引日付</td>
+			<td>PTOPRESTRANSACTIONDATE</td>
+			<td>NVARCHAR2(8)</td>
+			<td></td>
+			<td></td>
+			<td></td>
+		</tr>
+		<tr>
+			<td class="number-format">34</td>
+			<td>今回ポイント対象金額</td>
+			<td>AMOUNTFORPOINT</td>
+			<td>NUMBER(8,&#32;0)</td>
+			<td></td>
+			<td></td>
+			<td></td>
+		</tr>
+		<tr>
+			<td class="number-format">35</td>
+			<td>今回ポイント対象点数</td>
+			<td>TARGETQUANTITY</td>
+			<td>NUMBER(8,&#32;0)</td>
+			<td></td>
+			<td></td>
+			<td></td>
+		</tr>
+		<tr>
+			<td class="number-format">36</td>
+			<td>今回付加基本ポイント数</td>
+			<td>POINTBYSALE</td>
+			<td>NUMBER(8,&#32;0)</td>
+			<td></td>
+			<td></td>
+			<td></td>
+		</tr>
+		<tr>
+			<td class="number-format">37</td>
+			<td>今回付加ボーナスポイント数</td>
+			<td>BONUSPOINT</td>
+			<td>NUMBER(8,&#32;0)</td>
+			<td></td>
+			<td></td>
+			<td></td>
+		</tr>
+		<tr>
+			<td class="number-format">38</td>
+			<td>店変倍企画NO</td>
+			<td>PROMOTIONCODEBYSTORE</td>
+			<td>NVARCHAR2(10)</td>
+			<td></td>
+			<td></td>
+			<td></td>
+		</tr>
+		<tr>
+			<td class="number-format">39</td>
+			<td>店変倍種別</td>
+			<td>TYPECODEBYSTORE</td>
+			<td>NVARCHAR2(1)</td>
+			<td></td>
+			<td></td>
+			<td></td>
+		</tr>
+		<tr>
+			<td class="number-format">40</td>
+			<td>店変倍率or固定ポイント</td>
+			<td>POINTRATEBYSTORE</td>
+			<td>NUMBER(8,&#32;0)</td>
+			<td></td>
+			<td></td>
+			<td></td>
+		</tr>
+		<tr>
+			<td class="number-format">41</td>
+			<td>店変倍付与ポイント</td>
+			<td>POINTBYSTORE</td>
+			<td>NUMBER(8,&#32;0)</td>
+			<td></td>
+			<td></td>
+			<td></td>
+		</tr>
+		<tr>
+			<td class="number-format">42</td>
+			<td>予備項目1</td>
+			<td>RESERVE1</td>
+			<td>NVARCHAR2(100)</td>
+			<td></td>
+			<td></td>
+			<td></td>
+		</tr>
+		<tr>
+			<td class="number-format">43</td>
+			<td>予備項目2</td>
+			<td>RESERVE2</td>
+			<td>NVARCHAR2(100)</td>
+			<td></td>
+			<td></td>
+			<td></td>
+		</tr>
+		<tr>
+			<td class="number-format">44</td>
+			<td>予備項目3</td>
+			<td>RESERVE3</td>
+			<td>NVARCHAR2(100)</td>
+			<td></td>
+			<td></td>
+			<td></td>
+		</tr>
+		<tr>
+			<td class="number-format">45</td>
+			<td>予備項目4</td>
+			<td>RESERVE4</td>
+			<td>NVARCHAR2(100)</td>
+			<td></td>
+			<td></td>
+			<td></td>
+		</tr>
+		<tr>
+			<td class="number-format">46</td>
+			<td>予備項目5</td>
+			<td>RESERVE5</td>
+			<td>NVARCHAR2(100)</td>
+			<td></td>
+			<td></td>
+			<td></td>
+		</tr>
+		<tr>
+			<td class="number-format">47</td>
+			<td>予備項目6</td>
+			<td>RESERVE6</td>
+			<td>NVARCHAR2(100)</td>
+			<td></td>
+			<td></td>
+			<td></td>
+		</tr>
+		<tr>
+			<td class="number-format">48</td>
+			<td>予備項目7</td>
+			<td>RESERVE7</td>
+			<td>NVARCHAR2(100)</td>
+			<td></td>
+			<td></td>
+			<td></td>
+		</tr>
+		<tr>
+			<td class="number-format">49</td>
+			<td>予備項目8</td>
+			<td>RESERVE8</td>
+			<td>NVARCHAR2(100)</td>
+			<td></td>
+			<td></td>
+			<td></td>
+		</tr>
+		<tr>
+			<td class="number-format">50</td>
+			<td>予備項目9</td>
+			<td>RESERVE9</td>
+			<td>NVARCHAR2(100)</td>
+			<td></td>
+			<td></td>
+			<td></td>
+		</tr>
+		<tr>
+			<td class="number-format">51</td>
+			<td>予備項目10</td>
+			<td>RESERVE10</td>
+			<td>NVARCHAR2(100)</td>
+			<td></td>
+			<td></td>
+			<td></td>
+		</tr>
+		<tr>
+			<td class="number-format">52</td>
+			<td>予備項目11</td>
+			<td>RESERVE11</td>
+			<td>NUMBER(9,&#32;0)</td>
+			<td></td>
+			<td></td>
+			<td></td>
+		</tr>
+		<tr>
+			<td class="number-format">53</td>
+			<td>予備項目12</td>
+			<td>RESERVE12</td>
+			<td>NUMBER(9,&#32;0)</td>
+			<td></td>
+			<td></td>
+			<td></td>
+		</tr>
+		<tr>
+			<td class="number-format">54</td>
+			<td>予備項目13</td>
+			<td>RESERVE13</td>
+			<td>NUMBER(9,&#32;0)</td>
+			<td></td>
+			<td></td>
+			<td></td>
+		</tr>
+		<tr>
+			<td class="number-format">55</td>
+			<td>予備項目14</td>
+			<td>RESERVE14</td>
+			<td>NUMBER(9,&#32;0)</td>
+			<td></td>
+			<td></td>
+			<td></td>
+		</tr>
+		<tr>
+			<td class="number-format">56</td>
+			<td>予備項目15</td>
+			<td>RESERVE15</td>
+			<td>NUMBER(9,&#32;0)</td>
+			<td></td>
+			<td></td>
+			<td></td>
+		</tr>
+		<tr>
+			<td class="number-format">57</td>
+			<td>予備項目16</td>
+			<td>RESERVE16</td>
+			<td>NUMBER(9,&#32;0)</td>
+			<td></td>
+			<td></td>
+			<td></td>
+		</tr>
+		<tr>
+			<td class="number-format">58</td>
+			<td>予備項目17</td>
+			<td>RESERVE17</td>
+			<td>NUMBER(9,&#32;0)</td>
+			<td></td>
+			<td></td>
+			<td></td>
+		</tr>
+		<tr>
+			<td class="number-format">59</td>
+			<td>予備項目18</td>
+			<td>RESERVE18</td>
+			<td>NUMBER(9,&#32;0)</td>
+			<td></td>
+			<td></td>
+			<td></td>
+		</tr>
+		<tr>
+			<td class="number-format">60</td>
+			<td>予備項目19</td>
+			<td>RESERVE19</td>
+			<td>NUMBER(9,&#32;0)</td>
+			<td></td>
+			<td></td>
+			<td></td>
+		</tr>
+		<tr>
+			<td class="number-format">61</td>
+			<td>予備項目20</td>
+			<td>RESERVE20</td>
+			<td>NUMBER(9,&#32;0)</td>
+			<td></td>
+			<td></td>
+			<td></td>
+		</tr>
+		<tr>
+			<td class="number-format">62</td>
+			<td>予備項目21</td>
+			<td>RESERVE21</td>
+			<td>NUMBER(12,&#32;4)</td>
+			<td></td>
+			<td></td>
+			<td></td>
+		</tr>
+		<tr>
+			<td class="number-format">63</td>
+			<td>予備項目22</td>
+			<td>RESERVE22</td>
+			<td>NUMBER(12,&#32;4)</td>
+			<td></td>
+			<td></td>
+			<td></td>
+		</tr>
+		<tr>
+			<td class="number-format">64</td>
+			<td>予備項目23</td>
+			<td>RESERVE23</td>
+			<td>NUMBER(12,&#32;4)</td>
+			<td></td>
+			<td></td>
+			<td></td>
+		</tr>
+		<tr>
+			<td class="number-format">65</td>
+			<td>予備項目24</td>
+			<td>RESERVE24</td>
+			<td>NUMBER(12,&#32;4)</td>
+			<td></td>
+			<td></td>
+			<td></td>
+		</tr>
+		<tr>
+			<td class="number-format">66</td>
+			<td>予備項目25</td>
+			<td>RESERVE25</td>
+			<td>NUMBER(12,&#32;4)</td>
+			<td></td>
+			<td></td>
+			<td></td>
+		</tr>
+		<tr>
+			<td class="number-format">67</td>
+			<td>予備項目26</td>
+			<td>RESERVE26</td>
+			<td>TIMESTAMP(3)</td>
+			<td></td>
+			<td></td>
+			<td></td>
+		</tr>
+		<tr>
+			<td class="number-format">68</td>
+			<td>予備項目27</td>
+			<td>RESERVE27</td>
+			<td>TIMESTAMP(3)</td>
+			<td></td>
+			<td></td>
+			<td></td>
+		</tr>
+		<tr>
+			<td class="number-format">69</td>
+			<td>予備項目28</td>
+			<td>RESERVE28</td>
+			<td>TIMESTAMP(3)</td>
+			<td></td>
+			<td></td>
+			<td></td>
+		</tr>
+		<tr>
+			<td class="number-format">70</td>
+			<td>予備項目29</td>
+			<td>RESERVE29</td>
+			<td>TIMESTAMP(3)</td>
+			<td></td>
+			<td></td>
+			<td></td>
+		</tr>
+		<tr>
+			<td class="number-format">71</td>
+			<td>予備項目30</td>
+			<td>RESERVE30</td>
+			<td>TIMESTAMP(3)</td>
+			<td></td>
+			<td></td>
+			<td></td>
+		</tr>
+		<tr>
+			<td class="number-format">72</td>
+			<td>登録日時</td>
+			<td>REGISTER_DT</td>
+			<td>TIMESTAMP(3)</td>
+			<td>Yes</td>
+			<td></td>
+			<td></td>
+		</tr>
+		<tr>
+			<td class="number-format">73</td>
+			<td>登録プログラムID</td>
+			<td>REGISTER_PGID</td>
+			<td>NVARCHAR2(20)</td>
+			<td>Yes</td>
+			<td></td>
+			<td></td>
+		</tr>
+		<tr>
+			<td class="number-format">74</td>
+			<td>更新日時</td>
+			<td>UPDATE_DT</td>
+			<td>TIMESTAMP(3)</td>
+			<td>Yes</td>
+			<td></td>
+			<td></td>
+		</tr>
+		<tr>
+			<td class="number-format">75</td>
+			<td>更新プログラムID</td>
+			<td>UPDATE_PGID</td>
+			<td>NVARCHAR2(20)</td>
+			<td>Yes</td>
+			<td></td>
+			<td></td>
+		</tr>
+	</table>
+
+<br>
+	<table>
+		<caption>インデックス情報</caption>
+			<colgroup>
+				<col width="30">
+				<col width="170">
+				<col width="170">
+				<col width="70">
+				<col width="470">
+			</colgroup>
+		<tr>
+			<th>No.</th>
+			<th>インデックス名</th>
+			<th>カラムリスト</th>
+			<th>ユニーク</th>
+			<th>オプション</th>
+		</tr>
+		<tr>
+			<td class="number-format">1</td>
+			<td>PK_T_TPOINT</td>
+			<td>RECORD_DT,COMPANY_CODE,STORE_CODE,INSTORE_CODE,ACCOUNT_ID,JOURNAL_NO</td>
+			<td>Yes</td>
+			<td></td>
+		</tr>
+	</table>
+
+<br>
+	<table>
+		<caption>制約情報</caption>
+			<colgroup>
+				<col width="30">
+				<col width="170">
+				<col width="170">
+				<col width="540">
+			</colgroup>
+		<tr>
+			<th>No.</th>
+			<th>制約名</th>
+			<th>種類</th>
+			<th>制約定義</th>
+		</tr>
+		<tr>
+			<td class="number-format">1</td>
+			<td>PK_T_TPOINT</td>
+			<td>PRIMARY&#32;KEY</td>
+			<td>RECORD_DT,COMPANY_CODE,STORE_CODE,INSTORE_CODE,ACCOUNT_ID,JOURNAL_NO</td>
+		</tr>
+		<tr>
+			<td class="number-format">2</td>
+			<td>SYS_C0051650</td>
+			<td>CHECK</td>
+			<td>&quot;RECORD_DT&quot;&#32;IS&#32;NOT&#32;NULL</td>
+		</tr>
+		<tr>
+			<td class="number-format">3</td>
+			<td>SYS_C0051651</td>
+			<td>CHECK</td>
+			<td>&quot;COMPANY_CODE&quot;&#32;IS&#32;NOT&#32;NULL</td>
+		</tr>
+		<tr>
+			<td class="number-format">4</td>
+			<td>SYS_C0051652</td>
+			<td>CHECK</td>
+			<td>&quot;STORE_CODE&quot;&#32;IS&#32;NOT&#32;NULL</td>
+		</tr>
+		<tr>
+			<td class="number-format">5</td>
+			<td>SYS_C0051653</td>
+			<td>CHECK</td>
+			<td>&quot;INSTORE_CODE&quot;&#32;IS&#32;NOT&#32;NULL</td>
+		</tr>
+		<tr>
+			<td class="number-format">6</td>
+			<td>SYS_C0051654</td>
+			<td>CHECK</td>
+			<td>&quot;ACCOUNT_ID&quot;&#32;IS&#32;NOT&#32;NULL</td>
+		</tr>
+		<tr>
+			<td class="number-format">7</td>
+			<td>SYS_C0051655</td>
+			<td>CHECK</td>
+			<td>&quot;JOURNAL_NO&quot;&#32;IS&#32;NOT&#32;NULL</td>
+		</tr>
+		<tr>
+			<td class="number-format">8</td>
+			<td>SYS_C0051656</td>
+			<td>CHECK</td>
+			<td>&quot;SYSTEM_ID&quot;&#32;IS&#32;NOT&#32;NULL</td>
+		</tr>
+		<tr>
+			<td class="number-format">9</td>
+			<td>SYS_C0051657</td>
+			<td>CHECK</td>
+			<td>&quot;REGISTER_DT&quot;&#32;IS&#32;NOT&#32;NULL</td>
+		</tr>
+		<tr>
+			<td class="number-format">10</td>
+			<td>SYS_C0051658</td>
+			<td>CHECK</td>
+			<td>&quot;REGISTER_PGID&quot;&#32;IS&#32;NOT&#32;NULL</td>
+		</tr>
+		<tr>
+			<td class="number-format">11</td>
+			<td>SYS_C0051659</td>
+			<td>CHECK</td>
+			<td>&quot;UPDATE_DT&quot;&#32;IS&#32;NOT&#32;NULL</td>
+		</tr>
+		<tr>
+			<td class="number-format">12</td>
+			<td>SYS_C0051660</td>
+			<td>CHECK</td>
+			<td>&quot;UPDATE_PGID&quot;&#32;IS&#32;NOT&#32;NULL</td>
+		</tr>
+	</table>
+
+<br>
+	<table>
+		<caption>外部キー情報</caption>
+			<colgroup>
+				<col width="30">
+				<col width="170">
+				<col width="170">
+				<col width="170">
+				<col width="170">
+				<col width="100">
+				<col width="100">
+			</colgroup>
+			<th>No.</th>
+			<th>外部キー名</th>
+			<th>カラムリスト</th>
+			<th>参照先</th>
+			<th>参照先カラムリスト</th>
+			<th>ON DELETE</th>
+			<th>ON UPDATE</th>
+		</tr>
+	</table>
+
+<br>
+	<table>
+		<caption>外部キー情報(PK側)</caption>
+			<colgroup>
+				<col width="30">
+				<col width="170">
+				<col width="170">
+				<col width="170">
+				<col width="170">
+				<col width="100">
+				<col width="100">
+			</colgroup>
+		<tr>
+			<th>No.</th>
+			<th>外部キー名</th>
+			<th>カラムリスト</th>
+			<th>参照元</th>
+			<th>参照元カラムリスト</th>
+			<th>ON DELETE</th>
+			<th>ON UPDATE</th>
+		</tr>
+	</table>
+
+<br>
+	<table>
+		<caption>トリガー情報</caption>
+			<colgroup>
+				<col width="30">
+				<col width="170">
+				<col width="170">
+				<col width="170">
+				<col width="370">
+			</colgroup>
+			<th>No.</th>
+			<th>トリガー名</th>
+			<th>イベント</th>
+			<th>タイミング</th>
+			<th>条件</th>
+		</tr>
+	</table>
+
+<br>
+	<table>
+		<caption>RDBMS固有の情報</caption>
+			<colgroup>
+				<col width="30">
+				<col width="250">
+				<col width="630">
+			</colgroup>
+		<tr>
+			<th>No.</th>
+			<th>プロパティ名</th>
+			<th>プロパティ値</th>
+		</tr>
+		<tr>
+			<td class="number-format">1</td>
+			<td>OWNER</td>
+			<td>SMART_T3</td>
+		</tr>
+		<tr>
+			<td class="number-format">2</td>
+			<td>TABLE_NAME</td>
+			<td>T_TPOINT</td>
+		</tr>
+		<tr>
+			<td class="number-format">3</td>
+			<td>TABLESPACE_NAME</td>
+			<td>USERS</td>
+		</tr>
+		<tr>
+			<td class="number-format">4</td>
+			<td>CLUSTER_NAME</td>
+			<td></td>
+		</tr>
+		<tr>
+			<td class="number-format">5</td>
+			<td>IOT_NAME</td>
+			<td></td>
+		</tr>
+		<tr>
+			<td class="number-format">6</td>
+			<td>STATUS</td>
+			<td>VALID</td>
+		</tr>
+		<tr>
+			<td class="number-format">7</td>
+			<td>PCT_FREE</td>
+			<td>10</td>
+		</tr>
+		<tr>
+			<td class="number-format">8</td>
+			<td>PCT_USED</td>
+			<td></td>
+		</tr>
+		<tr>
+			<td class="number-format">9</td>
+			<td>INI_TRANS</td>
+			<td>1</td>
+		</tr>
+		<tr>
+			<td class="number-format">10</td>
+			<td>MAX_TRANS</td>
+			<td>255</td>
+		</tr>
+		<tr>
+			<td class="number-format">11</td>
+			<td>INITIAL_EXTENT</td>
+			<td>65536</td>
+		</tr>
+		<tr>
+			<td class="number-format">12</td>
+			<td>NEXT_EXTENT</td>
+			<td>1048576</td>
+		</tr>
+		<tr>
+			<td class="number-format">13</td>
+			<td>MIN_EXTENTS</td>
+			<td>1</td>
+		</tr>
+		<tr>
+			<td class="number-format">14</td>
+			<td>MAX_EXTENTS</td>
+			<td>2147483645</td>
+		</tr>
+		<tr>
+			<td class="number-format">15</td>
+			<td>PCT_INCREASE</td>
+			<td></td>
+		</tr>
+		<tr>
+			<td class="number-format">16</td>
+			<td>FREELISTS</td>
+			<td></td>
+		</tr>
+		<tr>
+			<td class="number-format">17</td>
+			<td>FREELIST_GROUPS</td>
+			<td></td>
+		</tr>
+		<tr>
+			<td class="number-format">18</td>
+			<td>LOGGING</td>
+			<td>YES</td>
+		</tr>
+		<tr>
+			<td class="number-format">19</td>
+			<td>BACKED_UP</td>
+			<td>N</td>
+		</tr>
+		<tr>
+			<td class="number-format">20</td>
+			<td>NUM_ROWS</td>
+			<td>0</td>
+		</tr>
+		<tr>
+			<td class="number-format">21</td>
+			<td>BLOCKS</td>
+			<td>0</td>
+		</tr>
+		<tr>
+			<td class="number-format">22</td>
+			<td>EMPTY_BLOCKS</td>
+			<td>0</td>
+		</tr>
+		<tr>
+			<td class="number-format">23</td>
+			<td>AVG_SPACE</td>
+			<td>0</td>
+		</tr>
+		<tr>
+			<td class="number-format">24</td>
+			<td>CHAIN_CNT</td>
+			<td>0</td>
+		</tr>
+		<tr>
+			<td class="number-format">25</td>
+			<td>AVG_ROW_LEN</td>
+			<td>0</td>
+		</tr>
+		<tr>
+			<td class="number-format">26</td>
+			<td>AVG_SPACE_FREELIST_BLOCKS</td>
+			<td>0</td>
+		</tr>
+		<tr>
+			<td class="number-format">27</td>
+			<td>NUM_FREELIST_BLOCKS</td>
+			<td>0</td>
+		</tr>
+		<tr>
+			<td class="number-format">28</td>
+			<td>DEGREE</td>
+			<td>&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;1</td>
+		</tr>
+		<tr>
+			<td class="number-format">29</td>
+			<td>INSTANCES</td>
+			<td>&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;&#32;1</td>
+		</tr>
+		<tr>
+			<td class="number-format">30</td>
+			<td>CACHE</td>
+			<td>&#32;&#32;&#32;&#32;N</td>
+		</tr>
+		<tr>
+			<td class="number-format">31</td>
+			<td>TABLE_LOCK</td>
+			<td>ENABLED</td>
+		</tr>
+		<tr>
+			<td class="number-format">32</td>
+			<td>SAMPLE_SIZE</td>
+			<td>0</td>
+		</tr>
+		<tr>
+			<td class="number-format">33</td>
+			<td>LAST_ANALYZED</td>
+			<td>2021/02/13&#32;12:00:13</td>
+		</tr>
+		<tr>
+			<td class="number-format">34</td>
+			<td>PARTITIONED</td>
+			<td>NO</td>
+		</tr>
+		<tr>
+			<td class="number-format">35</td>
+			<td>IOT_TYPE</td>
+			<td></td>
+		</tr>
+		<tr>
+			<td class="number-format">36</td>
+			<td>TEMPORARY</td>
+			<td>N</td>
+		</tr>
+		<tr>
+			<td class="number-format">37</td>
+			<td>SECONDARY</td>
+			<td>N</td>
+		</tr>
+		<tr>
+			<td class="number-format">38</td>
+			<td>NESTED</td>
+			<td>NO</td>
+		</tr>
+		<tr>
+			<td class="number-format">39</td>
+			<td>BUFFER_POOL</td>
+			<td>DEFAULT</td>
+		</tr>
+		<tr>
+			<td class="number-format">40</td>
+			<td>FLASH_CACHE</td>
+			<td>DEFAULT</td>
+		</tr>
+		<tr>
+			<td class="number-format">41</td>
+			<td>CELL_FLASH_CACHE</td>
+			<td>DEFAULT</td>
+		</tr>
+		<tr>
+			<td class="number-format">42</td>
+			<td>ROW_MOVEMENT</td>
+			<td>DISABLED</td>
+		</tr>
+		<tr>
+			<td class="number-format">43</td>
+			<td>GLOBAL_STATS</td>
+			<td>YES</td>
+		</tr>
+		<tr>
+			<td class="number-format">44</td>
+			<td>USER_STATS</td>
+			<td>NO</td>
+		</tr>
+		<tr>
+			<td class="number-format">45</td>
+			<td>DURATION</td>
+			<td></td>
+		</tr>
+		<tr>
+			<td class="number-format">46</td>
+			<td>SKIP_CORRUPT</td>
+			<td>DISABLED</td>
+		</tr>
+		<tr>
+			<td class="number-format">47</td>
+			<td>MONITORING</td>
+			<td>YES</td>
+		</tr>
+		<tr>
+			<td class="number-format">48</td>
+			<td>CLUSTER_OWNER</td>
+			<td></td>
+		</tr>
+		<tr>
+			<td class="number-format">49</td>
+			<td>DEPENDENCIES</td>
+			<td>DISABLED</td>
+		</tr>
+		<tr>
+			<td class="number-format">50</td>
+			<td>COMPRESSION</td>
+			<td>DISABLED</td>
+		</tr>
+		<tr>
+			<td class="number-format">51</td>
+			<td>COMPRESS_FOR</td>
+			<td></td>
+		</tr>
+		<tr>
+			<td class="number-format">52</td>
+			<td>DROPPED</td>
+			<td>NO</td>
+		</tr>
+		<tr>
+			<td class="number-format">53</td>
+			<td>READ_ONLY</td>
+			<td>NO</td>
+		</tr>
+		<tr>
+			<td class="number-format">54</td>
+			<td>SEGMENT_CREATED</td>
+			<td>YES</td>
+		</tr>
+		<tr>
+			<td class="number-format">55</td>
+			<td>RESULT_CACHE</td>
+			<td>DEFAULT</td>
+		</tr>
+		<tr>
+			<td class="number-format">56</td>
+			<td>CLUSTERING</td>
+			<td>NO</td>
+		</tr>
+		<tr>
+			<td class="number-format">57</td>
+			<td>ACTIVITY_TRACKING</td>
+			<td></td>
+		</tr>
+		<tr>
+			<td class="number-format">58</td>
+			<td>DML_TIMESTAMP</td>
+			<td></td>
+		</tr>
+		<tr>
+			<td class="number-format">59</td>
+			<td>HAS_IDENTITY</td>
+			<td>NO</td>
+		</tr>
+		<tr>
+			<td class="number-format">60</td>
+			<td>CONTAINER_DATA</td>
+			<td>NO</td>
+		</tr>
+		<tr>
+			<td class="number-format">61</td>
+			<td>INMEMORY</td>
+			<td>DISABLED</td>
+		</tr>
+		<tr>
+			<td class="number-format">62</td>
+			<td>INMEMORY_PRIORITY</td>
+			<td></td>
+		</tr>
+		<tr>
+			<td class="number-format">63</td>
+			<td>INMEMORY_DISTRIBUTE</td>
+			<td></td>
+		</tr>
+		<tr>
+			<td class="number-format">64</td>
+			<td>INMEMORY_COMPRESSION</td>
+			<td></td>
+		</tr>
+		<tr>
+			<td class="number-format">65</td>
+			<td>INMEMORY_DUPLICATE</td>
+			<td></td>
+		</tr>
+		<tr>
+			<td class="number-format">66</td>
+			<td>DEFAULT_COLLATION</td>
+			<td>USING_NLS_COMP</td>
+		</tr>
+		<tr>
+			<td class="number-format">67</td>
+			<td>DUPLICATED</td>
+			<td>N</td>
+		</tr>
+		<tr>
+			<td class="number-format">68</td>
+			<td>SHARDED</td>
+			<td>N</td>
+		</tr>
+		<tr>
+			<td class="number-format">69</td>
+			<td>EXTERNAL</td>
+			<td>NO</td>
+		</tr>
+		<tr>
+			<td class="number-format">70</td>
+			<td>HYBRID</td>
+			<td>NO</td>
+		</tr>
+		<tr>
+			<td class="number-format">71</td>
+			<td>CELLMEMORY</td>
+			<td></td>
+		</tr>
+		<tr>
+			<td class="number-format">72</td>
+			<td>CONTAINERS_DEFAULT</td>
+			<td>NO</td>
+		</tr>
+		<tr>
+			<td class="number-format">73</td>
+			<td>CONTAINER_MAP</td>
+			<td>NO</td>
+		</tr>
+		<tr>
+			<td class="number-format">74</td>
+			<td>EXTENDED_DATA_LINK</td>
+			<td>NO</td>
+		</tr>
+		<tr>
+			<td class="number-format">75</td>
+			<td>EXTENDED_DATA_LINK_MAP</td>
+			<td>NO</td>
+		</tr>
+		<tr>
+			<td class="number-format">76</td>
+			<td>INMEMORY_SERVICE</td>
+			<td></td>
+		</tr>
+		<tr>
+			<td class="number-format">77</td>
+			<td>INMEMORY_SERVICE_NAME</td>
+			<td></td>
+		</tr>
+		<tr>
+			<td class="number-format">78</td>
+			<td>CONTAINER_MAP_OBJECT</td>
+			<td>NO</td>
+		</tr>
+		<tr>
+			<td class="number-format">79</td>
+			<td>MEMOPTIMIZE_READ</td>
+			<td>DISABLED</td>
+		</tr>
+		<tr>
+			<td class="number-format">80</td>
+			<td>MEMOPTIMIZE_WRITE</td>
+			<td>DISABLED</td>
+		</tr>
+		<tr>
+			<td class="number-format">81</td>
+			<td>HAS_SENSITIVE_COLUMN</td>
+			<td>NO</td>
+		</tr>
+		<tr>
+			<td class="number-format">82</td>
+			<td>ADMIT_NULL</td>
+			<td>NO</td>
+		</tr>
+		<tr>
+			<td class="number-format">83</td>
+			<td>DATA_LINK_DML_ENABLED</td>
+			<td>NO</td>
+		</tr>
+		<tr>
+			<td class="number-format">84</td>
+			<td>LOGICAL_REPLICATION</td>
+			<td>ENABLED</td>
+		</tr>
+	</table>
+
+
+	</body>
+</html>

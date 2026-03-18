@@ -1,0 +1,12 @@
+export const BLUE_001440 = '#001440';
+export const BLUE_545F95 = '#545F95';
+export const BLUE_D0DBF3 = '#D0DBF3';
+export const GREEN_4CAF50 = '#4CAF50';
+export const GREEN_639554 = '#639554';
+export const GREEN_DBEFDC = '#DBEFDC';
+export const YELLOW_FFFFEF = '#FFFFEF';
+export const YELLOW_FEFBBB = '#FEFBBB';
+export const WHITE = '#FFF';
+export const GREY_EDEDED = '#ededed';
+export const RED_ff003a = '#ff003a';
+export const PINK_FFDBF9 = '#FFDBF9';

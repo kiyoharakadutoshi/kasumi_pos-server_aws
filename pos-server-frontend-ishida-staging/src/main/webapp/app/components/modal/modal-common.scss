@@ -1,0 +1,31 @@
+@import "../../styles/styles";
+
+.modal-common {
+  display: flex;
+  word-break: break-all;
+
+  &__dialog-header {
+    height: 60px;
+    border-top-right-radius: 5px;
+    border-top-left-radius: 5px;
+  }
+
+  &__dialog-body {
+    margin: 20px;
+    font-family: 'Noto Sans JP', sans-serif;
+    font-weight: normal;
+    font-stretch: normal;
+    font-size: 24px;
+    line-height: 36px;
+  }
+
+  &__dialog-message {
+    color: $grey333333;
+    min-height: 80px;
+  }
+
+  &__dialog-button {
+    display: flex;
+    margin-top: 50px;
+  }
+}
