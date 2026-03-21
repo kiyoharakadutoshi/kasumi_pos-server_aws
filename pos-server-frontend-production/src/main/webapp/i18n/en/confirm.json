@@ -1,4 +1,0 @@
-{
-  "MSG_CONFIRM_001": "If there is a duplicate master record for {0} at another store, update the corresponding record. Is this OK?",
-  "MSG_CONFIRM_002": "編集情報が失われます。よろしいですか？"
-}

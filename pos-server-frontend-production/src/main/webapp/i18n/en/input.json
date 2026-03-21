@@ -1,8 +1,0 @@
-{
-  "inputs": {
-    "placeholder1": "Enter code",
-    "placeholder2": "Search by store number or store name",
-    "placeholder3": "Search by store number or store name",
-    "label": "Store"
-  }
-}

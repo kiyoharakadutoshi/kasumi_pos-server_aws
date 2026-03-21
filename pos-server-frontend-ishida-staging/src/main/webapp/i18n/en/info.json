@@ -1,7 +1,0 @@
-{
-  "MSG_INFO_001": "There are more than {0} search results, only the first {0} are displayed.",
-  "MSG_INFO_002": "他の店舗で券コードが重複するマスタがある場合、該 当するレコードを更新します。",
-  "MSG_INFO_003": "取込に失敗した: {0}",
-  "MSG_INFO_008": "Price changed successfully.",
-  "MSG_INFO_009": "The product prices were successfully updated.\nHowever, an error occurred while saving the new prices."
-}

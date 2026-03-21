@@ -1,9 +1,0 @@
-{
-  "title": "メガ割設定",
-  "percentDiscount": "一般小計割引率",
-  "status": "状態",
-  "targetDate": "対象日付",
-  "contentDay": "設定曜日",
-  "excludedGroups": "除外部門コード",
-  "excludedStores": "除外店舗"
-}
