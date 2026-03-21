@@ -564,7 +564,7 @@ PRDと同等。バケット名・Lambda名のプレフィックスが stg- / pos
 | X-Ray | Defaultのみ（PRD同等）|
 | Direct Connect | なし（VPN経由のみ）|
 | Client VPN | **エンドポイントなし**（STGアカウントに未設定）→ STGへの個人PC接続経路確認要 |
-| Route53 | **ホストゾーンなし**（PRDアカウントのignicapos.comで一元管理）。STG向けCNAMEレコード（stg/api-stg/web-stg.ignicapos.com）はPRDアカウントに存在。KSM-AWS-027で環境分離を検討 |
+| Route53 | **ホストゾーンなし**（PRDアカウントのignicapos.comで一元管理）|
 | SSM Parameter Store | /ec2/keypair/key-086b7988621c86b7a（1件のみ）|
 
 ## 24. 不要リソース（削除候補・承認待ち）

@@ -20,7 +20,7 @@ AWS東京リージョン(ap-northeast-1) https://ap-northeast-1.console.aws.amaz
 ## 4. カスミPOSプロジェクト GitHubワークフロー
 
 ファイルを作成・更新するときは必ず ① git clone/pull で最新取得 → ② ファイル確認 → ③ 修正・追加 → ④ git add/commit/push の順で行う。  
-リポジトリ: https://github.com/kiyoharakadutoshi/kasumi_pos-server.git
+リポジトリ: https://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@github.com/kiyoharakadutoshi/kasumi_pos-server.git
 
 ## 5. カスミPOSプロジェクト DBエンジン
 

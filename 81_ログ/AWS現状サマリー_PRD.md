@@ -412,24 +412,6 @@ EC2 giftcard (Windows Server 2022 / i-03d6bf91c19385cdf)
 
 - ホストゾーン: ignicapos.com.（パブリック / ID: Z017481510MTQ4HID9VH2）
 - ゾーン数: 1（プライベートゾーンなし）
-- **PRDアカウントで PRD・STG 両環境のDNSを一元管理**（AWSベストプラクティス非準拠 → KSM-AWS-027）
-
-### 確認済みレコード（2026-03-18 CloudShell調査）
-
-| ドメイン | タイプ | 向き先 | TTL |
-|---|---|---|---|
-| `stg.ignicapos.com` | CNAME | `ksm-posstg-alb-web-fe-541431683.ap-northeast-1.elb.amazonaws.com` | 300 |
-| `api-stg.ignicapos.com` | CNAME | `ksm-posstg-alb-api-be-1968385482.ap-northeast-1.elb.amazonaws.com` | 300 |
-| `web-stg.ignicapos.com` | CNAME | `ksm-posstg-alb-web-fe-541431683.ap-northeast-1.elb.amazonaws.com` | 300 |
-
-> **注意**: ALB internal化（KSM-AWS-018）実施後もALB DNS名は不変のため、CNAMEレコード変更は不要。解決先IPのみプライベートIPに変動する。
-
-### ⚠️ 課題: Route53 環境分離
-
-- 現状: PRDアカウントの1ホストゾーンでPRD/STGを共有管理
-- リスク: STGのDNS変更にPRDアカウント権限が必要 → PRD誤操作リスク
-- 推奨: `stg.ignicapos.com` サブドメインをSTGアカウントに委任（delegation）
-- 対応文書: **KSM-AWS-027**（優先度: 低）
 
 ## 22. KMS（カスタムキー4本）
 
